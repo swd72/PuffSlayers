@@ -2,7 +2,7 @@
 // removes backgrounds, puts every frame of a sheet on one shared bottom-centered canvas,
 // and writes apps/web/public/sprites/v2/manifest.json for the game to load.
 import sharp from 'sharp';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const SRC = 'assets/generated';
@@ -42,19 +42,55 @@ const JOBS = [
     'status-stun': 3,
   }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx' })),
 ];
+// Art that may not be generated yet: skipped quietly until the file exists (the game uses stand-ins meanwhile).
+// World-Waking Garden growth stages (seed, sprout, bud, bloom), one sheet per seed kind
+JOBS.push(
+  ...['daisy', 'tulip', 'sunflower', 'lavender', 'cactus', 'honey-bud', 'queen-rafflesia', 'sunflower-colossus', 'lotus-moon-sage'].map((k) => ({
+    src: `v2/garden/${k}-growth.png`,
+    name: `garden/${k}`,
+    frames: 4,
+    kind: 'actor',
+    optional: true,
+  })),
+);
+// bare-pawed versions for the held-weapon layer (docs/art-prompts-v2.md §10)
+const BARE_HEROES = [...HEROES, 'molemo-root-druid'];
+JOBS.push(
+  ...BARE_HEROES.map((h) => ({ src: `v2/characters/${h}-poses-bare.png`, name: `hero-bare/${h}`, frames: 6, kind: 'actor', optional: true })),
+  ...BARE_HEROES.map((h) => h.split('-').slice(1).join('-')).map((c) => ({
+    src: `v2/characters/${c}-signature-bare.png`,
+    name: `sig-bare/${c}`,
+    frames: 4,
+    kind: 'actor',
+    optional: true,
+  })),
+);
+JOBS.push(
+  { src: 'v2/characters/molemo-root-druid-poses.png', name: 'hero/molemo-root-druid', frames: 6, kind: 'actor', optional: true },
+  { src: 'v2/characters/root-druid-signature.png', name: 'sig/root-druid', frames: 4, kind: 'actor', optional: true },
+  ...Object.entries({ 'druid-root-spike': 4, 'druid-root-erupt': 4, 'druid-root-bind': 3 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
+);
 const SKINS = ['pajama-pudding', 'sakura-festival-momo', 'pumpkin-knight-tofu', 'rainbow-ranger-usagi', 'snow-globe-kinako', 'bear-king-mimi'];
 JOBS.push(...SKINS.map((k) => ({ src: `v2/items/skins/${k}-poses.png`, name: `skin/${k}`, frames: 6, kind: 'actor' })));
 
 /** Item icons: grids of separate objects → one square 128px icon per cell (row-major order). */
 const ICON_SIZE = 128;
-const WEAPON_CLASSES = ['pillow-guard', 'carrot-knight', 'leaf-archer', 'bubble-mage', 'mochi-cleric', 'bell-bard'];
+const WEAPON_CLASSES = ['pillow-guard', 'carrot-knight', 'leaf-archer', 'bubble-mage', 'mochi-cleric', 'bell-bard', 'root-druid'];
+/** Redesigned weapons come one file per tier (v2/items/weapons/<class>-t<1-7>.png) and override that tier of the old row sheet. */
+const WEAPON_TIER_ICONS = WEAPON_CLASSES.flatMap((c) =>
+  [1, 2, 3, 4, 5, 6, 7].map((t) => ({ src: `v2/items/weapons/${c}-t${t}.png`, name: `item/weapon-${c}`, cols: 1, rows: 1, first: t - 1, optional: true })),
+);
 const ICONS = [
-  ...WEAPON_CLASSES.map((c) => ({ src: `v2/items/${c}-seven-tiers.png`, name: `item/weapon-${c}`, cols: 7, rows: 1 })),
+  ...WEAPON_CLASSES.map((c) => ({ src: `v2/items/${c}-seven-tiers.png`, name: `item/weapon-${c}`, cols: 7, rows: 1, optional: c === 'root-druid' })),
   { src: 'v2/items/headgear-eight-icons.png', name: 'item/hat', cols: 4, rows: 2 },
   { src: 'v2/items/outfits-eight-icons.png', name: 'item/outfit', cols: 4, rows: 2 },
   { src: 'v2/items/charms-eight-icons.png', name: 'item/charm', cols: 4, rows: 2 },
   { src: 'v2/items/trinkets-eight-icons.png', name: 'item/trinket', cols: 4, rows: 2 },
   { src: 'v2/items/boosters-six-icons.png', name: 'item/booster', cols: 3, rows: 2 },
+  // village hub buildings, 3x2 in the order of BUILDINGS (apps/web/src/ui/hub.ts)
+  { src: 'v2/items/village-buildings.png', name: 'item/building', cols: 3, rows: 2, optional: true },
+  // forage ingredients, 4x4 in the order of INGREDIENT_IDS (packages/sim/src/pantry.ts)
+  { src: 'v2/items/ingredients-sixteen-icons.png', name: 'item/ingredient', cols: 4, rows: 4, optional: true },
   { src: 'items/rarity-frames.png', name: 'item/frame', cols: 7, rows: 1 },
   ...['carrot-excalibur', 'bottomless-cheek-pouch', 'grandmas-knitted-scarf', 'moonlit-lullaby-bell', 'sunflower-crown', 'lucky-clover-pin'].map((r) => ({
     src: `v2/items/relic-${r}.png`,
@@ -67,6 +103,7 @@ const ICONS = [
 const BACKGROUNDS = [
   { src: 'backgrounds/01-meadow-of-naps.png', name: 'bg/01-meadow-of-naps' },
   { src: 'v2/backgrounds/01-meadow-of-naps-boss-arena.png', name: 'bg/01-meadow-of-naps-boss' },
+  { src: 'v2/backgrounds/village-hub.png', name: 'bg/village-hub', optional: true },
 ];
 
 // ---------- pixel helpers ----------
@@ -101,6 +138,46 @@ function removeFlatBackground(data, w, h) {
     if (x < w - 1) stack.push(p + 1);
     if (p >= w) stack.push(p - w);
     if (p < w * (h - 1)) stack.push(p + w);
+  }
+}
+
+/**
+ * Background showing through closed shapes (inside a bow's string, a ring) is missed by the edge flood.
+ * Clear any leftover region that matches the backdrop color AND is as flat as a backdrop
+ * (painted grey metal has shading, so it survives).
+ */
+function removeEnclosedBackground(data, w, h, bg) {
+  const { tolerance } = GRAY_BG;
+  const seen = new Uint8Array(w * h);
+  const near = (p) => {
+    const i = p * 4;
+    return data[i + 3] > 0 && Math.hypot(data[i] - bg[0], data[i + 1] - bg[1], data[i + 2] - bg[2]) <= tolerance;
+  };
+  for (let start = 0; start < w * h; start++) {
+    if (seen[start] || !near(start)) continue;
+    const region = [];
+    const stack = [start];
+    seen[start] = 1;
+    while (stack.length) {
+      const q = stack.pop();
+      region.push(q);
+      const x = q % w;
+      for (const n of [x > 0 ? q - 1 : -1, x < w - 1 ? q + 1 : -1, q >= w ? q - w : -1, q < w * (h - 1) ? q + w : -1]) {
+        if (n >= 0 && !seen[n] && near(n)) {
+          seen[n] = 1;
+          stack.push(n);
+        }
+      }
+    }
+    if (region.length < 60) continue;
+    // flatness: average distance from the backdrop color
+    let sum = 0;
+    for (const q of region) {
+      const i = q * 4;
+      sum += Math.hypot(data[i] - bg[0], data[i + 1] - bg[1], data[i + 2] - bg[2]);
+    }
+    if (sum / region.length > tolerance * 0.45) continue;
+    for (const q of region) data[q * 4 + 3] = 0;
   }
 }
 
@@ -228,11 +305,15 @@ function rowDensity(data, w, h) {
 async function extractIcons(job) {
   const { data, info } = await sharp(path.join(SRC, job.src)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;
-  if (data[3] > 200) removeFlatBackground(data, w, h);
+  if (data[3] > 200) {
+    const bg = borderColor(data, w, h);
+    removeFlatBackground(data, w, h);
+    removeEnclosedBackground(data, w, h, bg);
+  }
   const rowCuts = findCuts(rowDensity(data, w, h), h, job.rows);
   const master = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
   await mkdir(path.join(OUT, path.dirname(job.name)), { recursive: true });
-  let index = 0;
+  let index = job.first ?? 0;
   for (let r = 0; r < job.rows; r++) {
     const y0 = rowCuts[r];
     const y1 = rowCuts[r + 1];
@@ -266,8 +347,19 @@ async function background(job) {
   await sharp(path.join(SRC, job.src)).jpeg({ quality: 86 }).toFile(path.join(OUT, `${job.name}.jpg`));
 }
 
+const exists = (src) => access(path.join(SRC, src)).then(() => true, () => false);
+const ready = async (jobs, label) => {
+  const flags = await Promise.all(jobs.map((j) => (j.optional ? exists(j.src) : true)));
+  const waiting = jobs.filter((_, i) => !flags[i]);
+  if (waiting.length) console.log(label ? `${label}: ${jobs.length - waiting.length}/${jobs.length} files present` : `waiting for art (skipped): ${waiting.map((j) => j.name).join(', ')}`);
+  return jobs.filter((_, i) => flags[i]);
+};
+const jobs = await ready(JOBS);
+const icons = await ready(ICONS);
+const tierIcons = await ready(WEAPON_TIER_ICONS, 'redesigned weapon tiers');
+
 await rm(OUT, { recursive: true, force: true });
-const results = await Promise.allSettled([...JOBS.map(extract), ...ICONS.map(extractIcons)]);
+const results = await Promise.allSettled([...jobs.map(extract), ...icons.map(extractIcons)]);
 const manifest = {};
 let failed = 0;
 for (const [i, r] of results.entries()) {
@@ -276,10 +368,21 @@ for (const [i, r] of results.entries()) {
     manifest[name] = meta;
   } else {
     failed++;
-    console.error('FAIL', [...JOBS, ...ICONS][i].name, r.reason.message);
+    console.error('FAIL', [...jobs, ...icons][i].name, r.reason.message);
   }
 }
-await Promise.all(BACKGROUNDS.map(background));
+// per-tier weapon icons run after the row sheets so they overwrite those tiers
+for (const job of tierIcons) {
+  try {
+    const [name, meta] = await extractIcons(job);
+    manifest[name] = { ...meta, frames: Math.max(meta.frames, manifest[name]?.frames ?? 0) };
+  } catch (e) {
+    failed++;
+    console.error('FAIL', job.src, e.message);
+  }
+}
+const bgs = await ready(BACKGROUNDS);
+await Promise.all(bgs.map(background));
 await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 1));
-console.log(`extracted ${Object.keys(manifest).length}/${JOBS.length + ICONS.length} sheets, ${BACKGROUNDS.length} backgrounds`);
+console.log(`extracted ${Object.keys(manifest).length}/${jobs.length + icons.length} sheets, ${bgs.length} backgrounds`);
 process.exitCode = failed ? 1 : 0;

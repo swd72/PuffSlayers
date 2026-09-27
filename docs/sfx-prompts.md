@@ -92,3 +92,8 @@ magical sparkle layer, no music, no voice, no retro 8-bit, no chiptune, dry with
 - [ ] ความดังใกล้กันทั้งชุด (normalize) — เกมปรับ mix เพิ่มเองใน `VOLUME` ของ `apps/web/src/audio/sfx.ts`
 - [ ] เสียงที่ใช้บ่อยมี 2–3 takes
 - [ ] ชื่อไฟล์ตรงตามตาราง (ตัวพิมพ์เล็ก, ขีดกลาง)
+
+## 7. ตัวใหม่ (ต่อจากตาราง ult-*)
+| ไฟล์ | ยาว | ใช้กับ | Prompt |
+|---|---|---|---|
+| `ult-root-druid.mp3` | 1.8s | Root Awakening (Taro) | `deep earthquake rumble and cracking ground, thick wooden roots bursting up and creaking, then one massive earthy slam with falling dirt and a magical green chime` |

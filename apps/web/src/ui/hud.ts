@@ -1,6 +1,7 @@
-import { isBossStage, isGiantStage, recommendedLevel, type BattleState, type HeroClass, type Item } from '@puff/sim';
-import { CLASS_COLOR, STAGE_NAME, ULTIMATE_NAME, portraitUrl } from '../assets';
-import { TIER_COLOR, frameIcon, itemIcon, itemName, skinPortrait } from '../meta/itemInfo';
+import { isBossStage, isGiantStage, recommendedLevel, type BattleState, type HeroClass, type IngredientId, type Item, type SeedKind } from '@puff/sim';
+import { SEED_NAME } from '../meta/garden';
+import { CLASS_COLOR, STAGE_NAME, ULTIMATE_NAME, portraitClass, portraitUrl } from '../assets';
+import { INGREDIENT_INFO, TIER_COLOR, frameIcon, ingredientIcon, itemIcon, itemName, skinPortrait } from '../meta/itemInfo';
 
 export interface HudStatus {
   readonly petals: number;
@@ -16,7 +17,13 @@ const CLASS_ICON: Record<HeroClass, string> = {
   'bubble-mage': '<circle cx="9" cy="14" r="5"/><circle cx="16.5" cy="7.5" r="3"/><circle cx="18" cy="16" r="2"/>',
   'mochi-cleric': '<path d="M12 4 V20 M4 12 H20"/><circle cx="12" cy="12" r="3"/>',
   'bell-bard': '<path d="M6 17 C6 9 8 5 12 5 C16 5 18 9 18 17 Z"/><path d="M4 17 H20"/><circle cx="12" cy="20" r="1.4"/>',
+  'root-druid': '<path d="M12 21 V11"/><path d="M12 14 C9 14 7 12 6 9 M12 12 C15 12 17 10 18 7"/><path d="M12 21 C10 19 7 19 5 20 M12 21 C14 19 17 19 19 20"/>',
 };
+
+/** how long the cut-in takes to slide away once the skill fires */
+const CUTIN_EXIT_MS = 180;
+/** extra time before the timer removes a cut-in whose skill never arrived (e.g. caster knocked out) */
+const CUTIN_FALLBACK_MS = 400;
 
 const hex = (n: number): string => `#${n.toString(16).padStart(6, '0')}`;
 
@@ -42,6 +49,7 @@ export class Hud {
   private readonly overlay: HTMLElement;
   private readonly bossBar: HTMLElement;
   private comboCount = 0;
+  private cutin: HTMLElement | null = null;
   private lastUltimateAt = -Infinity;
 
   constructor(
@@ -53,9 +61,9 @@ export class Hud {
       <div class="hud-top">
         <div class="top-left">
           <button class="auto" type="button" aria-pressed="true"><span class="auto-label">Auto</span><span class="switch"><span class="knob"></span></span></button>
-          <button class="bag" type="button" aria-label="กระเป๋าและอุปกรณ์">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9 H19 L18 20 H6 Z"/><path d="M9 9 V7 A3 3 0 0 1 15 7 V9"/></svg>
-            <span>กระเป๋า</span><i class="bag-dot" hidden></i>
+          <button class="bag" type="button" aria-label="กลับหมู่บ้าน">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 L12 4 L20 11 V20 H14 V14 H10 V20 H4 Z"/></svg>
+            <span>หมู่บ้าน</span><i class="bag-dot" hidden></i>
           </button>
         </div>
         <div class="stage-card"><span class="stage-name">${STAGE_NAME}</span><strong class="stage-label"></strong><span class="level-label"></span><span class="wave-dots"></span></div>
@@ -124,7 +132,7 @@ export class Hud {
       button.setAttribute('aria-label', `${hero.name} — ${ULTIMATE_NAME[hero.heroClass]}`);
       button.style.setProperty('--class-color', hex(CLASS_COLOR[hero.heroClass]));
       button.innerHTML = `
-        <span class="ring"><span class="face" style="background-image:url('${skins[hero.id] ? skinPortrait(skins[hero.id] ?? '') : portraitUrl(hero.species, hero.heroClass)}')"></span></span>
+        <span class="ring"><span class="face ${skins[hero.id] ? '' : portraitClass(hero.species, hero.heroClass)}" style="background-image:url('${skins[hero.id] ? skinPortrait(skins[hero.id] ?? '') : portraitUrl(hero.species, hero.heroClass)}')"></span></span>
         <span class="class-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${CLASS_ICON[hero.heroClass]}</svg></span>
         <span class="ready">ULT</span>
         <span class="hp"><i></i></span>`;
@@ -172,10 +180,10 @@ export class Hud {
   }
 
   /** Stage-clear rewards: item cards pop in one by one above the portraits. */
-  showLoot(items: readonly Item[]): void {
+  showLoot(items: readonly Item[], forage: readonly IngredientId[] = [], seeds: readonly SeedKind[] = []): void {
     const box = this.q('.loot');
     box.innerHTML = '';
-    if (!items.length) return;
+    if (!items.length && !forage.length && !seeds.length) return;
     items.forEach((item, i) => {
       const card = document.createElement('div');
       card.className = `loot-card${item.relic ? ' relic' : ''}`;
@@ -184,8 +192,22 @@ export class Hud {
       card.innerHTML = `<img class="frame" src="${frameIcon(item.tier)}" alt=""><img class="icon" src="${itemIcon(item)}" alt="${itemName(item)}">`;
       box.appendChild(card);
     });
-    const best = items.reduce((a, b) => (b.tier > a.tier || b.relic ? b : a));
-    if (best.relic) this.banner('ได้ของแรร์!', 1800);
+    forage.forEach((id, i) => {
+      const card = document.createElement('div');
+      card.className = 'loot-card forage';
+      card.style.animationDelay = `${(items.length + i) * 0.12}s`;
+      const icon = ingredientIcon(id);
+      card.innerHTML = icon ? `<img class="icon" src="${icon}" alt="${INGREDIENT_INFO[id].name}">` : `<span class="forage-name">${INGREDIENT_INFO[id].name}</span>`;
+      box.appendChild(card);
+    });
+    seeds.forEach((kind, i) => {
+      const card = document.createElement('div');
+      card.className = 'loot-card forage seed';
+      card.style.animationDelay = `${(items.length + forage.length + i) * 0.12}s`;
+      card.innerHTML = `<span class="forage-name">เมล็ด<br>${SEED_NAME[kind]}</span>`;
+      box.appendChild(card);
+    });
+    if (items.some((i) => i.relic)) this.banner('ได้ของแรร์!', 1800);
     this.q('.bag-dot').hidden = false;
     window.setTimeout(() => {
       box.innerHTML = '';
@@ -196,7 +218,9 @@ export class Hud {
   ultimate(heroClass: HeroClass, now: number, portraitUrl: string, durationMs: number): void {
     this.comboCount = now - this.lastUltimateAt < 2500 ? this.comboCount + 1 : 1;
     this.lastUltimateAt = now;
-    const cutin = this.flash('cutin', ULTIMATE_NAME[heroClass], hex(CLASS_COLOR[heroClass]), durationMs);
+    // the timer is only a fallback: endUltimate() closes the banner when the skill really fires
+    const cutin = this.flash('cutin', ULTIMATE_NAME[heroClass], hex(CLASS_COLOR[heroClass]), durationMs + CUTIN_FALLBACK_MS);
+    this.cutin = cutin;
     cutin.style.setProperty('--dur', `${durationMs}ms`);
     if (portraitUrl) {
       const face = document.createElement('span');
@@ -205,6 +229,15 @@ export class Hud {
       cutin.prepend(face);
     }
     if (this.comboCount >= 2) this.flash('combo', `FLUFFY ×${this.comboCount}!`, '#ffc93c', 1200);
+  }
+
+  /** The ultimate has fired: the cut-in slides away right now, whatever its timer says. */
+  endUltimate(): void {
+    const cutin = this.cutin;
+    this.cutin = null;
+    if (!cutin?.isConnected) return;
+    cutin.classList.add('leaving');
+    window.setTimeout(() => cutin.remove(), CUTIN_EXIT_MS);
   }
 
   banner(text: string, ms = 1600): void {

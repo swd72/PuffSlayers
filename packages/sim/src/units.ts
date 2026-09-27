@@ -27,6 +27,7 @@ const blank = {
   buffMs: 0,
   stunMs: 0,
   slowMs: 0,
+  rootMs: 0,
   slamMs: 0,
   moving: false,
 } as const;
@@ -59,6 +60,7 @@ export function createHero(spec: HeroSpec): Unit {
     chargeRate: 1 + (g.charge ?? 0),
     reviveLeft: relics.includes('grandmas-knitted-scarf') ? 1 : 0,
     ...(spec.skin ? { skin: spec.skin } : {}),
+    ...(spec.weaponTier !== undefined ? { weaponTier: spec.weaponTier } : {}),
     isBoss: false,
     isGiant: false,
     enraged: false,

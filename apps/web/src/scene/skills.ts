@@ -6,6 +6,7 @@ import type { ActorView } from './actor';
 import type { SceneApi } from './api';
 import { decal, playFx } from './fx';
 import { PROJECTILES, launch, type ProjectileSpec } from './projectiles';
+import { druidAttack } from './rootDruid';
 
 const MELEE_HIT = 0.1;
 
@@ -73,6 +74,8 @@ export function basicAttack(api: SceneApi, src: ActorView, tgt: ActorView): numb
       gsap.delayedCall(0.18, () => playFx(api.fx, 'vfx/hit-blunt', at.x, at.y, { size: 40, anchor: 'center', tint: 0xffb3dc }));
       return 0.18;
     }
+    case 'root-druid':
+      return druidAttack(api, src, tgt);
     default:
       return enemyAttack(api, src, tgt);
   }

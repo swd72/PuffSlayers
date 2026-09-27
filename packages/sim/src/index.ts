@@ -1,5 +1,5 @@
 export * from './types';
-export { createRng } from './rng';
+export { createRng, type Rng } from './rng';
 export {
   ARENA,
   ARENA_CENTER,
@@ -28,6 +28,9 @@ export {
   fitsClass,
   gearBonus,
   itemScore,
+  mainValue,
+  plusOf,
+  rollDrop,
   relicItem,
   rollItem,
   rollLoot,
@@ -41,3 +44,65 @@ export {
   type StatKey,
   type Tier,
 } from './gear';
+export {
+  FORGE,
+  MAX_PLUS,
+  canMerge,
+  canTransferPlus,
+  dustPaid,
+  maxPlus,
+  mergeItems,
+  pityNeeded,
+  rerollCost,
+  rerollSub,
+  salvageValue,
+  transferPlus,
+  upgradeChance,
+  upgradeCost,
+  upgradeItem,
+  type UpgradeCost,
+  type UpgradeResult,
+} from './forge';
+export {
+  NAP,
+  PROGRESSION,
+  affordableLevels,
+  bonkPetals,
+  clearPetals,
+  levelUpCost,
+  levelUpCostMany,
+  napReward,
+  stagePetals,
+  type NapReward,
+} from './progression';
+export {
+  INGREDIENTS,
+  INGREDIENT_IDS,
+  PANTRY,
+  addStats,
+  mealEffect,
+  rollForage,
+  type IngredientId,
+  type IngredientInfo,
+  type IngredientRarity,
+  type MealEffect,
+  type MealReaction,
+} from './pantry';
+export {
+  GARDEN,
+  SEEDS,
+  SEED_KINDS,
+  canWater,
+  gardenBonus,
+  growth,
+  growthStage,
+  isBloomed,
+  msLeft,
+  plant,
+  restoration,
+  rollSeeds,
+  water,
+  type Plot,
+  type SeedInfo,
+  type SeedKind,
+} from './garden';

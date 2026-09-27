@@ -864,7 +864,7 @@ body {
 }
 
 .bag-actions button,
-.bag-detail > button {
+.bag-detail .wear {
   padding: 1.8cqw 3.6cqw;
   border: none;
   border-radius: 3cqw;
@@ -978,4 +978,17 @@ body {
   text-align: center;
   color: #6b6178;
   font-size: 3.2cqw;
+}
+
+/* the skill fired: the cut-in leaves at once instead of waiting for its timer */
+.cutin.leaving {
+  animation: cutin-leave 0.18s ease-in forwards;
+}
+
+.cutin.leaving .cutin-hero {
+  animation: none;
+}
+
+@keyframes cutin-leave {
+  to { transform: skewY(-6deg) translateX(110%); opacity: 0; }
 }

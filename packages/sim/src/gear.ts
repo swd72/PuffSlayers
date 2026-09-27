@@ -33,7 +33,19 @@ export interface Item {
   readonly relic?: RelicId;
   readonly main: { readonly stat: StatKey; readonly value: number };
   readonly subs: readonly { readonly stat: StatKey; readonly value: number }[];
+  /** upgrade level (+N); missing = +0 */
+  readonly plus?: number;
+  /** failed upgrade tries at the current level (guarantee gauge) */
+  readonly forgePity?: number;
+  /** Stardust actually paid into this item (upgrade tries, carried through merge / transfer) */
+  readonly dustPaid?: number;
 }
+
+/** Main stat gained per +1. */
+export const PLUS_MAIN_STEP = 0.1;
+export const plusOf = (item: Item): number => item.plus ?? 0;
+/** Main stat after upgrades. */
+export const mainValue = (item: Item): number => Math.round(item.main.value * (1 + PLUS_MAIN_STEP * plusOf(item)) * 1000) / 1000;
 
 /** Main stat multiplier and substat count per tier (GDD §6.1). */
 export const TIER_MULT: readonly number[] = [1, 1.3, 1.7, 2.2, 2.9, 3.8, 5];
@@ -47,7 +59,7 @@ const MAIN_BASE: Record<Slot, { stat: StatKey; value: number }> = {
   trinket: { stat: 'charge', value: 0.03 },
 };
 
-const SUB_BASE: Record<StatKey, number> = {
+export const SUB_BASE: Record<StatKey, number> = {
   atkPct: 0.02,
   hpPct: 0.025,
   defPct: 0.025,
@@ -93,7 +105,7 @@ export const LOOT = {
 
 const pickFrom = <T>(rng: Rng, list: readonly T[]): T => list[Math.floor(rng.next() * list.length) % list.length] as T;
 
-function rollValue(rng: Rng, base: number, tier: Tier): number {
+export function rollValue(rng: Rng, base: number, tier: Tier): number {
   const spread = 0.8 + rng.next() * 0.4;
   return Math.round(base * spread * (1 + tier * 0.15) * 1000) / 1000;
 }
@@ -140,6 +152,13 @@ export function rollTier(rng: Rng, stage: number, luck = 0, floor: Tier = 0): Ti
   return floor;
 }
 
+/** One random drop: any slot, weapons for a class in the team. */
+export function rollDrop(rng: Rng, stage: number, opts: { classes: readonly HeroClass[]; luck: number; floor: Tier; id: string }): Item {
+  const slot = pickFrom(rng, SLOTS);
+  const heroClass = slot === 'weapon' ? pickFrom(rng, opts.classes) : undefined;
+  return rollItem(rng, opts.id, { tier: rollTier(rng, stage, opts.luck, opts.floor), slot, heroClass });
+}
+
 export interface LootResult {
   readonly items: Item[];
   /** giant clears since the last relic */
@@ -153,11 +172,7 @@ export function rollLoot(
   opts: { classes: readonly HeroClass[]; boss: boolean; giant: boolean; luck: number; relicPity: number; nextId: () => string },
 ): LootResult {
   const items: Item[] = [];
-  const roll = (floor: Tier) => {
-    const slot = pickFrom(rng, SLOTS);
-    const heroClass = slot === 'weapon' ? pickFrom(rng, opts.classes) : undefined;
-    items.push(rollItem(rng, opts.nextId(), { tier: rollTier(rng, stage, opts.luck, floor), slot, heroClass }));
-  };
+  const roll = (floor: Tier) => items.push(rollDrop(rng, stage, { ...opts, floor, id: opts.nextId() }));
   for (let i = 0; i < LOOT.rollsPerClear; i++) roll(0);
   if (opts.boss) for (let i = 0; i < LOOT.bossRolls; i++) roll(3);
   let relicPity = opts.relicPity;
@@ -184,7 +199,7 @@ export function gearBonus(items: readonly Item[]): GearBonus {
     stats[stat] = Math.round(((stats[stat] ?? 0) + value) * 1000) / 1000;
   };
   for (const item of items) {
-    add(item.main.stat, item.main.value);
+    add(item.main.stat, mainValue(item));
     for (const s of item.subs) add(s.stat, s.value);
   }
   return { stats: stats as StatBlock, relics: items.flatMap((i) => (i.relic ? [i.relic] : [])) };
@@ -194,7 +209,7 @@ export function gearBonus(items: readonly Item[]): GearBonus {
 export function itemScore(item: Item): number {
   const weight: Record<StatKey, number> = { atkPct: 1, hpPct: 0.8, defPct: 0.7, crit: 1.6, dodge: 1.4, haste: 1.2, charge: 1, luck: 0.4 };
   const relicBonus = item.relic ? 0.5 : 0;
-  return item.main.value * weight[item.main.stat] + item.subs.reduce((s, x) => s + x.value * weight[x.stat], 0) + relicBonus;
+  return mainValue(item) * weight[item.main.stat] + item.subs.reduce((s, x) => s + x.value * weight[x.stat], 0) + relicBonus;
 }
 
 /** Whether an item may go on a hero of this class. */

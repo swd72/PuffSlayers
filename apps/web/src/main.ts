@@ -5,8 +5,19 @@ import { Game } from './game';
 import { BattleScene, fitView } from './scene/BattleScene';
 import { Hud } from './ui/hud';
 import { InventoryPanel } from './ui/inventory';
+import { NapPanel } from './ui/nap';
+import { HubScreen } from './ui/hub';
+import { PrepPanel } from './ui/prep';
+import { GardenPanel } from './ui/garden';
+import { WEAPON_POSE } from './scene/weaponHold';
 import { Sfx } from './audio/sfx';
 import './style.css';
+import './ui/workshop.css';
+import './ui/hub.css';
+import './ui/garden.css';
+
+/** how often the nap clock is stamped while the game is on screen */
+const HEARTBEAT_MS = 20000;
 
 async function boot(): Promise<void> {
   const appEl = document.querySelector<HTMLElement>('#app');
@@ -61,11 +72,48 @@ async function boot(): Promise<void> {
     onToggleAuto: () => game?.toggleAuto(),
     onCycleSpeed: () => game?.cycleSpeed(),
     onPortrait: (heroId) => game?.castUltimate(heroId),
-    onOpenBag: () => bag.open(),
+    // in battle, the top-left button goes home to the village
+    onOpenBag: () => goHome(),
   });
   const bag = new InventoryPanel(hudEl.parentElement ?? hudEl, {
     getSave: () => game!.currentSave,
     setSave: (save) => game?.updateSave(save),
+    onClick: () => sfx.play('click'),
+  });
+  const hub = new HubScreen(appEl, {
+    getSave: () => game!.currentSave,
+    onAdventure: () => prep.open(),
+    onOpenBag: () => bag.open(),
+    onOpenTeam: () => prep.open(),
+    onBuilding: (id) => {
+      if (id === 'garden') garden.open();
+    },
+    onClick: () => sfx.play('click'),
+  });
+  const garden = new GardenPanel(appEl, {
+    getSave: () => game!.currentSave,
+    setSave: (save) => game?.updateSave(save),
+    onClick: () => sfx.play('click'),
+    onClose: () => hub.refresh(),
+  });
+  const prep = new PrepPanel(appEl, {
+    getSave: () => game!.currentSave,
+    setSave: (save) => game?.updateSave(save),
+    onStart: () => {
+      hub.hide();
+      game?.deploy();
+    },
+    onBack: () => hub.refresh(),
+    onEditHero: (heroId) => bag.open(heroId),
+    onClick: () => sfx.play('click'),
+  });
+  const goHome = () => {
+    game?.enterHub();
+    hub.show();
+  };
+  const nap = new NapPanel(hudEl.parentElement ?? hudEl, {
+    getSave: () => game!.currentSave,
+    onClaim: () => game?.claimNap(),
     onClick: () => sfx.play('click'),
   });
   scene.resize(initial.width, initial.height);
@@ -75,13 +123,28 @@ async function boot(): Promise<void> {
     scene.resize(next.width, next.height);
   }).observe(appEl);
   game = new Game(scene, hud, {
-    onLoot: (items) => hud.showLoot(items),
-    onSave: () => undefined,
+    onLoot: (items, forage, seeds) => hud.showLoot(items, forage, seeds),
+    onSave: () => {
+      hub.refresh();
+      prep.refresh();
+    },
+    onNap: (reward) => nap.show(reward),
   });
   game.start();
+  hub.show();
+  game.checkNap();
+  // the battle stops while the tab is hidden, so time away counts as a nap
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') game?.checkNap();
+    else game?.persist();
+  });
+  window.addEventListener('pagehide', () => game?.persist());
+  window.setInterval(() => {
+    if (document.visibilityState === 'visible') game?.persist();
+  }, HEARTBEAT_MS);
   if (import.meta.env.DEV) {
     // dev-only handle for inspecting/pumping frames from the console
-    (window as unknown as { __puff: unknown }).__puff = { app, game, gsap, sfx };
+    (window as unknown as { __puff: unknown }).__puff = { app, game, gsap, sfx, weaponPose: WEAPON_POSE };
   }
   loading?.remove();
 

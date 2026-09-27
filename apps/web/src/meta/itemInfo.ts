@@ -1,5 +1,6 @@
 // Display data for items and skins: names, icons, tier colors, stat labels.
-import { TIERS, type HeroClass, type Item, type RelicId, type Slot, type StatKey, type Tier } from '@puff/sim';
+import { hasSheet } from '../assets';
+import { INGREDIENT_IDS, TIERS, type HeroClass, type IngredientId, type Item, type MealReaction, type RelicId, type Slot, type StatKey, type Tier } from '@puff/sim';
 
 const ROOT = '/sprites/v2';
 
@@ -24,6 +25,7 @@ const WEAPON_NAME: Record<HeroClass, string> = {
   'bubble-mage': 'ไม้กายสิทธิ์ฟอง',
   'mochi-cleric': 'คทาโมจิ',
   'bell-bard': 'กระดิ่ง',
+  'root-druid': 'ไม้เท้ารากไม้',
 };
 
 const DESIGN_NAME: Record<Exclude<Slot, 'weapon'>, readonly string[]> = {
@@ -63,7 +65,11 @@ export function itemName(item: Item): string {
 
 export function itemIcon(item: Item): string {
   if (item.relic) return `${ROOT}/relic/${item.relic}-0.png`;
-  if (item.slot === 'weapon') return `${ROOT}/item/weapon-${item.heroClass ?? 'carrot-knight'}-${item.tier}.png`;
+  if (item.slot === 'weapon') {
+    // classes whose weapon icons aren't generated yet borrow the cleric's staff
+    const cls = item.heroClass && hasSheet(`item/weapon-${item.heroClass}`) ? item.heroClass : 'mochi-cleric';
+    return `${ROOT}/item/weapon-${cls}-${item.tier}.png`;
+  }
   return `${ROOT}/item/${item.slot}-${item.design % 8}.png`;
 }
 
@@ -88,3 +94,43 @@ export const SKINS: readonly SkinInfo[] = [
 ];
 
 export const skinPortrait = (skinId: string): string => `${ROOT}/portrait/skin-${skinId}.png`;
+
+// ---------- ingredients (picnic) ----------
+
+export const INGREDIENT_INFO: Record<IngredientId, { name: string; desc: string }> = {
+  'sweet-clover': { name: 'โคลเวอร์หวาน', desc: 'ใบกลมหอมหวาน กินแล้วอิ่มท้อง' },
+  dandelion: { name: 'แดนดิไลออน', desc: 'เบาเหมือนปุยขน กินแล้วตัวเบา' },
+  'sunny-carrot': { name: 'แครอทแดดอุ่น', desc: 'กรอบ หวาน ตาไวขึ้น' },
+  'sweet-potato': { name: 'มันหวานเผา', desc: 'อุ่นๆ หอมๆ มีแรงสู้' },
+  'sunflower-seeds': { name: 'เมล็ดทานตะวัน', desc: 'ของโปรดคนแก้มป่อง นำโชค' },
+  'crunchy-acorn': { name: 'ลูกโอ๊กกรอบ', desc: 'เปลือกแข็ง กินแล้วตัวแกร่ง — แต่ไม่ใช่ทุกคนกินได้' },
+  'bitter-almond': { name: 'อัลมอนด์ขม', desc: 'ขมนิดๆ ทนทาน — บางเผ่าห้ามกิน' },
+  'wild-grapes': { name: 'องุ่นป่า', desc: 'ฉ่ำน้ำ ขยับไวขึ้น — แต่บางเผ่าห้ามกินเด็ดขาด' },
+  'lemon-drop': { name: 'มะนาวหยดน้ำผึ้ง', desc: 'เปรี้ยวจี๊ด ชาร์จพลังไว — เปรี้ยวเกินไปสำหรับบางคน' },
+  'forest-avocado': { name: 'อะโวคาโดป่า', desc: 'มันเยอะ บำรุงดี — บางเผ่ากินแล้วป่วย' },
+  'wild-onion': { name: 'หัวหอมป่า', desc: 'ฉุนแรง พลังพุ่ง — สัตว์ส่วนใหญ่ห้ามกิน!' },
+  'cocoa-pod': { name: 'ฝักโกโก้', desc: 'หอมช็อกโกแลต... พัฟไม่ควรกินเลย เก็บไว้ขายดีกว่า' },
+  'glow-mushroom': { name: 'เห็ดเรืองแสง', desc: 'เห็ดหายากใต้ดิน ชาร์จพลังแรง — เห็ดป่าอันตรายสำหรับบางคน' },
+  honeycomb: { name: 'รวงผึ้ง', desc: 'หวานเยิ้ม ฟื้นแรงและเร่งมือ' },
+  'wiggle-worm': { name: 'ไส้เดือนดุ๊กดิ๊ก', desc: 'อาหารโปรดของตุ่น คนอื่นไม่แตะ' },
+  'moon-berry': { name: 'เบอร์รี่แสงจันทร์', desc: 'ผลไม้ในตำนาน เก่งขึ้นทุกด้าน' },
+};
+
+export const REACTION_LABEL: Record<MealReaction, string> = {
+  favorite: 'ชอบมาก! ×2',
+  good: 'กินได้',
+  refuse: 'ไม่ยอมกิน',
+  tummyache: 'ปวดท้อง!',
+};
+
+/** Icon from the generated 4×4 ingredient sheet, if it exists yet (order = INGREDIENT_IDS). */
+export function ingredientIcon(id: IngredientId): string | null {
+  const index = INGREDIENT_IDS.indexOf(id);
+  return hasSheet('item/ingredient') && index >= 0 ? `${ROOT}/item/ingredient-${index}.png` : null;
+}
+
+/** "ATK +8% · HP +5%" for a stat block (negative values show as −). */
+export const formatStats = (stats: Partial<Record<StatKey, number>>): string =>
+  Object.entries(stats)
+    .map(([k, v]) => `${STAT_LABEL[k as StatKey]} ${(v ?? 0) >= 0 ? '+' : '−'}${Math.abs((v ?? 0) * 100).toFixed(0)}%`)
+    .join(' · ');

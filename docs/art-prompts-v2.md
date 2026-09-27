@@ -263,32 +263,50 @@ game item icon, centered, three-quarter view, chunky readable silhouette at 64 p
 glossy cel shading with soft rim light, cute fantasy style, plain flat light gray background, no frame, no text
 ```
 
-**คำขยายตาม Tier** (ใส่ต่อท้ายชื่อของ ให้ของ Tier สูงดูหรูขึ้นจริง ไม่ใช่แค่เปลี่ยนสีกรอบ)
-| Tier | `<TIER LOOK>` |
-|------|---------------|
-| Crumb | `simple homemade look, plain wood and cloth, slightly worn` |
-| Fluffy | `soft fluffy trim, mint green ribbon accents` |
-| Silky | `polished with silky sky-blue fabric and silver fittings` |
-| Dreamy | `lavender enchanted glow, tiny floating stars` |
-| Starry | `gold and peach ornate details, sparkling gem, radiant glint` |
-| Mythic Puff | `legendary, rainbow iridescent material, bouncy aura, glowing runes` |
-| Cosmic Cotton | `mythical, dark galaxy material with swirling nebula and twinkling stars inside` |
+### อาวุธ 7 Tier — **คนละดีไซน์ ไม่ใช่ของเดิมเปลี่ยนสี**
+> ❌ แบบเก่า (แถวเดียว 7 ชิ้น + "same shape family") ทำให้ได้ของรูปทรงเดียวกันเปลี่ยนสีผูกโบว์ — **เลิกใช้**
+> ✅ แบบใหม่: **สร้างทีละ Tier ทีละภาพ** แต่ละ Tier เป็น "ของคนละชิ้นที่มีเรื่องราว" ไต่จากของเก็บได้ข้างทาง → ของช่างทำ → ของวิเศษ → สิ่งมีชีวิต/ตำนาน → วัตถุจักรวาล
+> สีของ Tier มาจาก **กรอบไอคอน** ในเกมอยู่แล้ว ตัวอาวุธไม่ต้องย้อมสีตาม Tier · ห้ามใส่โบว์/ริบบิ้นเป็นตัวแยก Tier
 
-### อาวุธ — ไล่ Tier ในแถวเดียว (ใช้ดูภาพรวม แล้วค่อยทำทีละชิ้นถ้าต้องการคมชัด)
+**บันไดดีไซน์ (ใช้กับทุกอาชีพ)**
+| Tier | แนวคิด | ความรู้สึกที่อยากได้ |
+|---|---|---|
+| 1 Crumb | ของเก็บได้ข้างทาง ธรรมดามาก ดูขำๆ | "ของเริ่มต้น" |
+| 2 Fluffy | ของทำเองที่บ้าน มีการดัดแปลง | "เริ่มจริงจัง" |
+| 3 Silky | ของช่างทำ วัสดุดี มีลวดลาย | "ของจริงแล้ว" |
+| 4 Dreamy | ของวิเศษ **มีชีวิต/เวทมนตร์เริ่มโผล่** | "เริ่มอยากได้" |
+| 5 Starry | ของชั้นครู ประณีต มีสัตว์/วิญญาณประจำอาวุธ | "อยากโชว์" |
+| 6 Mythic Puff | **กลายร่าง** เป็นสิ่งมีชีวิตในตำนาน | "ว้าว" |
+| 7 Cosmic Cotton | วัตถุจากจักรวาล ฟิสิกส์แปลก ลอยได้ | "สุดทาง" |
+
+**Template (1 ภาพต่อ 1 Tier)** — บันทึกเป็น `assets/generated/v2/items/weapons/<class>-t<1-7>.png`
 ```
-Seven game weapon icons in a single row showing an upgrade progression from humble to legendary:
-<WEAPON>, 1 simple homemade, 2 fluffy mint trim, 3 silky blue and silver, 4 lavender enchanted glow,
-5 ornate gold with gems, 6 rainbow iridescent legendary, 7 cosmic galaxy material.
-Same weapon shape family across all seven, each clearly fancier than the last. [ICON] [SHEET]
+Game item icon for a cute fantasy RPG: <TIER DESIGN>. A single object, centered, three-quarter view,
+filling about 80% of the frame, unique silhouette, no ribbons unless described.
+[ICON]
 ```
-| อาชีพ | `<WEAPON>` |
-|------|-------------|
-| Pillow Guard | `a round pillow shield with a paw emblem` |
-| Carrot Knight | `an oversized carrot greatsword with a leafy hilt` |
-| Leaf Archer | `a curved bow made of a living vine` |
-| Bubble Mage | `a magic wand with a soap bubble at the tip` |
-| Mochi Cleric | `a staff topped with a glowing mochi and dango` |
-| Bell Bard | `a golden handbell with ribbons` |
+
+| Tier | 🌱 Root Druid (ไม้เท้า) | ⚔️ Carrot Knight (ดาบ) | 🏹 Leaf Archer (ธนู) |
+|---|---|---|---|
+| 1 | `a crooked bare twig with a single leaf` | `a wooden practice stick with a real carrot tied to the tip with string` | `a bent twig with a blade of grass as the bowstring` |
+| 2 | `a forked branch wrapped in twine with a pinecone tied on top and tufts of moss` | `a hand-carved wooden sword painted orange, carrot-top leaves as the pommel, bandaged grip` | `a simple wooden shortbow with a braided vine string and a leaf tassel` |
+| 3 | `a carved hazel walking staff with spiral grooves, an acorn charm hanging and a tiny bird nest in the fork` | `a real steel short sword with a carrot-shaped blade and a leaf crossguard` | `a bamboo recurve bow with feathers tucked into the grip wrap` |
+| 4 | `a living sapling staff still growing roots at the bottom, new buds, a glowing dewdrop seed cradled in curled roots` | `a warm-glowing crystal carrot blade on a hilt of sprouting green vines` | `a living vine bow blooming flowers along its limbs, a string of glowing pollen` |
+| 5 | `an ancient oak staff with a hollow holding a sleeping firefly spirit lantern, mushrooms on the bark, gold-glowing rune carvings` | `a knight's greatsword whose blade is a giant faceted carrot gem, rabbit crest on the guard` | `a golden ivy longbow with a hummingbird figurehead whose wings form the limbs` |
+| 6 | `a world-tree sprout staff: a tiny blossoming tree crown on top shedding petals, roots braided like a coiled dragon, one rainbow fruit` | `a carrot dragon sword: the blade is a dragon made of carrot with a leafy mane, flame curling from its jaws` | `a bow made of two crescent moons of rainbow leaves with a string of light and a small wind spirit` |
+| 7 | `a root of the cosmic world tree: translucent wood filled with nebula, roots ending in star tips, a planet seed orbited by tiny moons` | `a sword forged from a comet: a carrot-shaped meteor blade trailing sparks, a galaxy swirling in the core` | `a constellation bow: limbs drawn by glowing star-map lines, an aurora drawstring` |
+
+| Tier | 🫧 Bubble Mage (ไม้กายสิทธิ์) | 🍡 Mochi Cleric (คทา) | 🛡️ Pillow Guard (โล่) | 🔔 Bell Bard (กระดิ่ง) |
+|---|---|---|---|---|
+| 1 | `a bent drinking straw with a drip of soap` | `a plain wooden skewer with one dango ball` | `a flat old cushion with a patch sewn on` | `a tin can with a pebble inside hanging from a string` |
+| 2 | `a toy bubble-blower ring wand with a rubber duck charm` | `a bamboo stick with three dango and a paper fortune tag` | `a pot lid shield with a kitchen sponge strapped on the front` | `a dented cowbell on a leather strap` |
+| 3 | `a silver wand with a blown-glass bubble orb and sea-glass inlay` | `a red lacquered shrine staff with dango and a small brass bell` | `a round wooden shield with a quilted front and a stitched paw emblem` | `a brass handbell engraved with music notes` |
+| 4 | `a coral and pearl wand with bubbles swirling inside a crystal sphere where tiny fish swim` | `a staff crowned with a glowing mochi moon showing a rabbit silhouette, sakura petals drifting` | `a shield made of a solid puffy cloud with a small rainbow along the rim` | `a glass wind-chime bell with floating music notes and tiny flowers` |
+| 5 | `a golden wizard scepter holding a floating bubble with a miniature snow-globe village inside` | `a golden temple scepter with a lotus holding a pearl mochi inside a halo ring` | `a golden tortoise-shell shield with a gem paw at its center` | `an ornate golden temple bell carved with clouds, a ruby clapper` |
+| 6 | `a jellyfish staff: a glowing rainbow jellyfish bell on top trailing ribbon-like tentacles` | `a phoenix staff: a mochi egg resting in a nest of flaming rainbow feathers` | `a plush baby dragon curled up asleep into the shape of a round shield` | `a giant bluebell flower that rings with light, a tiny fairy sitting inside` |
+| 7 | `a black-hole wand: a bubble containing a spiral galaxy, ringed by orbiting planets` | `a celestial staff: a cratered moon made of mochi orbited by star-shaped dango` | `a dream shield: a crescent-moon pillow of galaxy fabric with stars stitched in` | `a planet bell: a ringed planet as the bell with a small moon as the clapper` |
+
+> pipeline ใช้ไฟล์ทีละ Tier ถ้ามี (ไม่งั้นใช้แผ่นแถวเดียวเดิม) — ทำทีละอาชีพได้เลย ไม่ต้องครบทีเดียว
 
 ### ชุดเกราะ / หมวก / Charm / Trinket — แผ่นละ 8 ชิ้น
 ```
@@ -320,6 +338,32 @@ dramatic glow and particles around it, [TIER LOOK of Mythic Puff or Cosmic Cotto
 ```
 Game consumable icon sheet, 3x2 grid: a flower-shaped petal cookie, a cup of sleepy lavender tea with steam,
 a glowing four-leaf clover, a pink revive mochi with a heart, a golden boss ticket, a fish onigiri. [ICON]
+```
+
+### วัตถุดิบเก็บได้ (Forage) — แผ่น 4×4 = 16 ชิ้น → `assets/generated/v2/items/ingredients-sixteen-icons.png`
+> ของดรอปจากด่าน เอาไว้ **ให้พัฟกินก่อนเข้าด่าน** (ดู GDD 6.12) · ภาพอ้างอิงแนว "Alchemy Herbals" ใช้แค่เป็นอารมณ์ ห้ามลอก — ออกแบบใหม่ให้เป็นโลก Puff: **อ้วนกลม น่ากิน มีหน้าตาเล็กน้อยได้ในบางชิ้น** และแยกจากกันด้วย**รูปทรง**ไม่ใช่แค่สี
+> **ลำดับในแผ่นสำคัญมาก** (ซ้าย→ขวา, บน→ล่าง) เกมจับคู่ตามลำดับนี้
+```
+Game item icon sheet, 4x4 grid of sixteen separate forage ingredients for a cute fantasy RPG where round fluffy
+animals eat them before battle. Each item chunky and appetizing with a distinct silhouette, no background plates,
+evenly spaced, nothing overlapping, in this exact order left to right, top to bottom:
+1 a sprig of sweet clover with three round heart-shaped leaves and a tiny pink blossom,
+2 a dandelion puffball with a few seeds drifting off,
+3 a stubby sun-warmed carrot with bouncy leafy top and a sparkle,
+4 a roasted sweet potato split open with golden steaming inside,
+5 a small heap of striped sunflower seeds with one cracked open,
+6 a glossy acorn with a knitted-looking cap,
+7 a pair of pale bitter almonds with a faint green tint in a cracked shell,
+8 a small bunch of dusky purple wild grapes on a curly vine,
+9 a lemon drop with a drip of honey on top,
+10 a halved forest avocado with a big round pit,
+11 a purple wild onion bulb with tangled roots and green shoots,
+12 a ridged cocoa pod split to show beans inside,
+13 a cluster of glowing teal mushrooms with spots of light,
+14 a chunk of honeycomb dripping amber honey,
+15 a wriggly pink earthworm curled into a cute spiral with a leaf,
+16 a legendary moon berry: a pale glowing berry with a crescent moon shine and floating sparkles.
+[ICON]
 ```
 
 ### สกิน — ทำ Model Sheet + Pose Set แบบข้อ 2.3 / 2.4 โดยเปลี่ยน `<OUTFIT & WEAPON>`
@@ -380,3 +424,132 @@ numbers, a green heal pillar, petals everywhere. Minimal UI: small portraits at 
   - ลูกกระจ๊อก: ~6–10 วิ ต่อคลื่น เมื่อเลเวลทีม = เลเวลแนะนำของด่าน
   - บอส: ~45–90 วิ เมื่อเลเวลพอดี, เลเวลต่ำกว่าแนะนำ 10 → นานขึ้น ~2 เท่า และมีโอกาสแพ้
   - เลเวลสูงกว่ามาก → ฟาร์มเร็ว (เหมาะกับ idle)
+
+---
+
+## 7. ตัวใหม่: **Taro** — Molemo (ตุ่น) × Root Druid
+
+> สายควบคุม: ตีปกติแล้ว **รอยแตกวิ่งไปตามพื้น → รากแทงขึ้นใต้ศัตรู** (มีโอกาสตรึง 1.2 วิ)
+> อัลติ **Root Awakening:** ตบไม้เท้าลงพื้น → รอยแตกแตกแขนงไปหาศัตรูทุกตัว → รากแทงขึ้น 3 ระลอก (ใหญ่ขึ้นทุกครั้ง) → รากพันยกศัตรูลอย → **รากยักษ์ระเบิดขึ้นกลางกลุ่มแล้วฟาดลง** → ศัตรูติดสถานะ **Rooted 3 วิ** (เดินไม่ได้ แต่ยังตีสิ่งที่อยู่ในระยะได้)
+> ตอนนี้ในเกมใช้ภาพชั่วคราว (ยืมแผ่นของ Mimi ย้อมสีน้ำตาล + เถาวัลย์ของบอสย้อมเขียว) — ทำภาพตามนี้แล้ว `npm run sprites` เกมจะสลับไปใช้ภาพจริงเอง
+
+### 7.1 เผ่า + อาชีพ
+| | Description |
+|---|---|
+| `<SPECIES>` Molemo | `a round chubby mole with velvety cocoa-brown fur, a big pink star-shaped nose, tiny squinty happy eyes, huge soft digging paws with little claws, a small sprout growing on its head` |
+| `<CLASS>` Root Druid | `mossy green hooded poncho with woven bark trim, a gnarled root staff topped with a glowing seed crystal, tiny mushrooms and leaves on the shoulders` |
+| สีหลัก | moss green `#8FBF3A` + brown |
+| ลักษณะเด่นจากมุมบน | จมูกดาวชมพู + ต้นอ่อนบนหัว + ไม้เท้ารากสูงกว่าตัว |
+
+### 7.2 ภาพที่ต้องทำ (ชื่อไฟล์ = ที่ pipeline รออยู่แล้ว)
+| ไฟล์ | Template | สิ่งที่ใส่ |
+|---|---|---|
+| `assets/generated/v2/characters/molemo-root-druid-model.png` | 2.3 Model Sheet | ใช้ล็อกหน้าตาก่อน (ไม่เข้าเกม) |
+| `assets/generated/v2/characters/molemo-root-druid-poses.png` | 2.4 Pose Set (6 ท่า) | ท่า 5 = `raising the root staff with the seed crystal blazing green` |
+| `assets/generated/v2/characters/root-druid-signature.png` | 2.5 (4 ท่า) | `four poses: raising the root staff overhead, stamping the staff into the ground with a burst of dirt, both paws spread wide commanding the earth, leaning on the staff with a proud grin` |
+| `assets/generated/v2/items/weapons/root-druid-t1.png` … `t7.png` | อาวุธ 7 Tier (ข้อ 4.10) | ดีไซน์แยกทีละ Tier ในตาราง Root Druid |
+
+### 7.3 เอฟเฟกต์ (วางใน `assets/generated/vfx2/`)
+**ลำดับท่า (ตีปกติ):** เคาะไม้เท้า → รอยแตกเล็กวิ่งไปตามพื้น *(เอนจินวาดเอง)* → **รากเล็กแทงขึ้นใต้ศัตรู**
+**ลำดับท่า (อัลติ):** วงเวทเขียวใต้ตัว → ตบพื้น (ฝุ่น) → รอยแตกแตกแขนง *(เอนจินวาดเอง)* → รากแทงขึ้น 3 ระลอก → รากพันยกศัตรู → **รากยักษ์ระเบิดขึ้น** → วงกระแทกบนพื้น
+| ไฟล์ | ชิ้นส่วน | Prompt |
+|---|---|---|
+| `druid-root-spike` [SHEET 4] | Impact (ใช้ทั้งตีปกติและอัลติ) | `a cluster of thick twisting tree roots bursting up out of cracked earth, dirt clods and green glowing sap sparks flying, four frames: ground cracking, roots shooting up, fully extended, sinking back, top-down 55 degree view` |
+| `druid-root-erupt` [SHEET 4] | Impact (finisher) | `a colossal ancient tree root erupting from a glowing green fissure in the ground, spiraling upward like a pillar with moss and leaves, boulders and dirt blasting outward, four frames: fissure glowing, root bursting up, towering at full height, crashing down with a shockwave, top-down 55 degree view` |
+| `druid-root-bind` [SHEET 3] | Aftermath (สถานะ Rooted — วนลูป) | `small tangled roots curling tightly around the base of a creature's feet with a faint green glow and tiny leaves, empty in the middle so a character can stand inside, flat ring in 55 degree perspective, three frames of gently squirming roots` |
+
+> รอยแตกบนพื้นเอนจินวาดเป็นเส้นเรืองแสงให้อยู่แล้ว ไม่ต้องทำภาพ · ท่าที่ยังไม่มีภาพจะใช้ของเดิมแทนอัตโนมัติ
+
+---
+
+## 8. หมู่บ้านพัฟ (หน้า Hub) — เฟส 1
+> ตอนนี้หน้าหมู่บ้านใช้ฉากทุ่งหญ้าเดิม + ป้ายไอคอนแทนตึก · ทำ 2 ภาพนี้แล้ว `npm run sprites` จะเปลี่ยนเอง
+
+| ไฟล์ | อัตราส่วน | Prompt |
+|---|---|---|
+| `assets/generated/v2/backgrounds/village-hub.png` | **9:16** | ดูด้านล่าง |
+| `assets/generated/v2/items/village-buildings.png` | **3:2** (ตาราง 3×2) | ดูด้านล่าง |
+
+**ฉากหมู่บ้าน** — เว้นพื้นที่ว่างให้วางตึก 6 จุด (UI วางตึกทับเอง ห้ามวาดตึกในฉาก)
+```
+Cozy storybook village clearing for a cute fantasy mobile game hub screen, high top-down camera at about
+55 degrees, vertical composition. Soft rolling meadow with winding dirt paths connecting six EMPTY round
+grassy plots spread across the middle of the image (no buildings drawn on them), little fences, flower
+patches, mushrooms, a tiny stream with a wooden bridge, lanterns on poles, a big old tree at one edge,
+warm late-afternoon light, distant castle and waterfalls on the horizon at the top, darker leafy framing
+at the bottom edge where the UI sits. No characters, no text. [STYLE] --ar 9:16
+```
+
+**ตึก 6 หลัง** — ลำดับสำคัญ (ซ้าย→ขวา, บน→ล่าง) ตรงกับที่เกมใช้
+```
+Game building icon sheet, 3x2 grid of six separate tiny chibi buildings for a cute animal village, each on a
+small round grassy base, chunky readable silhouette, same top-down 55 degree angle, in this exact order:
+1 a sprouting garden plot with a watering can and a big glowing seed (World-Waking Garden),
+2 a round treehouse library shaped like an open storybook with a capsule toy machine at the door (Puff Album),
+3 a wooden notice board with pinned paper quests and a little mailbox (Quest Board),
+4 a lily pond with a tiny pier, fishing rod and a floating bobber (Puff Pond),
+5 a small pillow-fort arena with cushion walls and pennant flags (Pillow Fight Arena),
+6 a cave entrance under a giant flower with glowing eyes peeking out (Giant Boss Raid).
+No characters, no text, evenly spaced, nothing overlapping. [ICON]
+```
+
+---
+
+## 9. สวนปลุกโลก — ต้นไม้ 4 ขั้น (เฟส 2)
+> ตอนนี้ต้นไม้ในสวนใช้สไปรต์ดอกไม้ศัตรูย่อขนาดแทน · ทำแผ่นละ 1 ดอก ได้ครบแล้วเกมเปลี่ยนเอง
+> ไฟล์: `assets/generated/v2/garden/<seed>-growth.png` · อัตราส่วน **4:1** (แถวเดียว 4 ช่อง)
+> seed = `daisy` `tulip` `sunflower` `lavender` `cactus` `honey-bud` `queen-rafflesia` `sunflower-colossus` `lotus-moon-sage`
+
+**เรื่องราว:** ดอกไม้ที่พัฟ Bonk หายงอนแล้ว กลับมาเกิดใหม่ในสวนบ้านเรา — ขั้นสุดท้ายคือดอกไม้ตัวเดิม **ยิ้มแย้มเป็นเพื่อน** (ไม่ใช่มอนสเตอร์)
+```
+Sprite sheet, single horizontal row of four growth stages of a cute <FLOWER> plant growing in a small round
+soil mound, same size soil mound and same baseline in every frame, top-down 55 degree view:
+1 a single seed half buried in the soil with a tiny sparkle, 2 a small sprout with two round leaves,
+3 a leafy stem with a closed bud peeking the <FLOWER> colors, 4 the fully bloomed <FLOWER> as a happy smiling
+flower friend with gentle sparkles. Plain flat light gray background, no floor shadow. [STYLE] [SHEET]
+```
+| seed | `<FLOWER>` |
+|---|---|
+| daisy | `white daisy` |
+| tulip | `red tulip` |
+| sunflower | `sunflower` |
+| lavender | `lavender` |
+| cactus | `round flowering cactus with a pink bloom` |
+| honey-bud | `golden honey flower dripping honey` |
+| queen-rafflesia | `giant crimson rafflesia with a tiny golden crown (rare)` |
+| sunflower-colossus | `huge towering sunflower (rare)` |
+| lotus-moon-sage | `glowing moonlit lotus (rare)` |
+
+---
+
+## 10. ตัวละคร "มือเปล่า" — ให้ถืออาวุธตามไอเทมที่ใส่
+> ตอนนี้อาวุธถูกวาดติดไปกับตัวละคร เลยเปลี่ยนตามไอเทมไม่ได้ · ทำภาพชุดนี้แล้วเกมจะ **เอาไอคอนอาวุธ Tier ที่ใส่อยู่ (49 ชิ้น) ไปวางในมือเอง** ตามท่า
+> ต้องทำครบ 2 แผ่นต่อตัว ตัวไหนมีครบ ตัวนั้นเปลี่ยนเป็นระบบใหม่ทันที (ตัวอื่นใช้ภาพเดิมไปก่อน)
+
+**กฎสำคัญ**
+- **ท่าเหมือนแผ่นเดิมทุกท่า** (อัปโหลดแผ่นเดิมเป็นภาพอ้างอิง) แต่ **ไม่มีอาวุธ/โล่/กระดิ่งเลย**
+- มือข้างที่ถืออาวุธ **กำเหมือนจับด้ามอยู่** (ไม่แบมือ) และ **ไม่มีอะไรบังมือนั้น** — เกมจะวางอาวุธทับตรงนั้น
+- ตำแหน่งตัวในแต่ละช่องเหมือนเดิม เท้าอยู่แนวเดียวกัน
+
+**Pose Set มือเปล่า** → `assets/generated/v2/characters/<species>-<class>-poses-bare.png` (เช่น `shibu-carrot-knight-poses-bare.png`)
+```
+<SPECIES>, <CLASS NAME>, <OUTFIT WITHOUT THE WEAPON>, same character and same six poses as the reference sheet,
+but holding NOTHING: no weapon, no shield, no bell, no staff. The weapon paw is closed as if gripping a handle,
+clearly visible and not covered. Six game poses facing right, seen from a high top-down camera at 55 degrees:
+1 idle, 2 running mid-stride, 3 attack wind-up, 4 attack release, 5 casting ultimate, 6 knocked back hurt.
+Plain flat light gray background, no floor shadow. [STYLE] [SHEET]
+```
+
+**Signature มือเปล่า** → `assets/generated/v2/characters/<class>-signature-bare.png` (เช่น `carrot-knight-signature-bare.png`) — ใช้ prompt ท่าเฉพาะเดิม (ข้อ 2.5) + ต่อท้าย `holding nothing, weapon paw closed as if gripping a handle`
+
+| ไฟล์ Pose | ไฟล์ Signature |
+|---|---|
+| `hamham-pillow-guard-poses-bare.png` | `pillow-guard-signature-bare.png` |
+| `shibu-carrot-knight-poses-bare.png` | `carrot-knight-signature-bare.png` |
+| `bunbun-leaf-archer-poses-bare.png` | `leaf-archer-signature-bare.png` |
+| `shibu-bubble-mage-poses-bare.png` | `bubble-mage-signature-bare.png` |
+| `bunbun-mochi-cleric-poses-bare.png` | `mochi-cleric-signature-bare.png` |
+| `hamham-bell-bard-poses-bare.png` | `bell-bard-signature-bare.png` |
+| `molemo-root-druid-poses-bare.png` | `root-druid-signature-bare.png` |
+
+> ทำทีละตัวได้ — แนะนำเริ่มที่ **Tofu (carrot-knight)** ก่อน ผมจะตั้งจุดจับ/มุมอาวุธทุกท่าให้ แล้วค่อยทำตัวอื่นตาม

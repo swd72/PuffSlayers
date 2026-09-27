@@ -1,10 +1,17 @@
 import { BOSS_MINION, TUNING, ULTIMATE_COOLDOWN_MS, ULTIMATE_DAMAGE, ULTIMATE_RADIUS } from './data';
 import { clampToArena, distance, distanceToSegment, face, moveAway, moveToward, place, type WorkUnit } from './movement';
 import type { Rng } from './rng';
+import { bonkPetals } from './progression';
 import { createEnemy } from './units';
-import type { BattleEvent, Hazard, HeroClass, Point, Unit } from './types';
+import type { BattleEvent, Hazard, HeroClass, Point, StatusKind, Unit } from './types';
 
 const DT_SEC = TUNING.tickMs / 1000;
+const STATUS_MS: Record<StatusKind, number> = {
+  bubble: TUNING.bubbleStunMs,
+  sleepy: TUNING.relic.lullabyStunMs,
+  sticky: TUNING.sticky.ms,
+  rooted: TUNING.root.basicMs,
+};
 export const isAlive = (u: Unit): boolean => u.hp > 0;
 
 /** One simulation tick's working set: mutable copies of the units plus what happened. */
@@ -92,7 +99,7 @@ export class TickContext {
     target.stunMs = 0;
     this.events.push(
       target.side === 'enemy'
-        ? { type: 'bonk', target: target.id, petals: TUNING.petalsPerBonk * (target.isBoss ? TUNING.bossPetals : 1) }
+        ? { type: 'bonk', target: target.id, petals: bonkPetals(this.stage, target.isBoss) }
         : { type: 'faint', target: target.id },
     );
   }
@@ -104,12 +111,18 @@ export class TickContext {
     this.events.push({ type: 'heal', source: source.id, target: target.id, amount: healed });
   }
 
-  private applyStatus(target: WorkUnit, status: 'bubble' | 'sticky' | 'sleepy'): void {
-    const ms = status === 'bubble' ? TUNING.bubbleStunMs : status === 'sleepy' ? TUNING.relic.lullabyStunMs : TUNING.sticky.ms;
-    if (status !== 'sticky') {
+  private applyStatus(target: WorkUnit, status: StatusKind, msOverride?: number): void {
+    // Molemo passive (Earthy Paws): honey can't slow digging paws
+    if (status === 'sticky' && target.species === 'molemo') return;
+    const ms = msOverride ?? STATUS_MS[status];
+    if (status === 'sticky') target.slowMs = ms;
+    else if (status === 'rooted') {
+      target.rootMs = Math.max(target.rootMs, ms);
+      target.moving = false;
+    } else {
       target.stunMs = ms;
       target.moving = false;
-    } else target.slowMs = ms;
+    }
     this.events.push({ type: 'status', target: target.id, status, ms });
   }
 
@@ -122,6 +135,8 @@ export class TickContext {
     }
     const slow = unit.slowMs > 0 ? TUNING.sticky.slow : 1;
     unit.slowMs = Math.max(0, unit.slowMs - TUNING.tickMs);
+    const rooted = unit.rootMs > 0;
+    unit.rootMs = Math.max(0, unit.rootMs - TUNING.tickMs);
     // enraged giants swing faster
     unit.cooldown = Math.max(0, unit.cooldown - TUNING.tickMs * slow * (unit.enraged ? TUNING.giant.enragedHaste : 1));
     unit.buffMs = Math.max(0, unit.buffMs - TUNING.tickMs);
@@ -129,7 +144,7 @@ export class TickContext {
 
     const target = this.pickTarget(unit);
     if (!target) {
-      unit.moving = unit.side === 'hero' && moveToward(unit, unit.home, 4, DT_SEC, slow);
+      unit.moving = unit.side === 'hero' && !rooted && moveToward(unit, unit.home, 4, DT_SEC, slow);
       return;
     }
     if (unit.heroClass && unit.energy >= 100 && !this.castStarted && (autoUltimate || pending.has(unit.id))) {
@@ -142,7 +157,11 @@ export class TickContext {
 
     const d = distance(unit, target);
     const ranged = unit.stats.range > 80;
-    if (d > unit.stats.range) unit.moving = moveToward(unit, target, unit.stats.range * 0.9, DT_SEC, slow);
+    if (rooted) {
+      // held in place: only turn to face, and hit if the foe is already in reach
+      unit.moving = false;
+      face(unit, target);
+    } else if (d > unit.stats.range) unit.moving = moveToward(unit, target, unit.stats.range * 0.9, DT_SEC, slow);
     else if (ranged && !unit.isBoss && d < unit.stats.range * TUNING.kiteRatio) unit.moving = moveAway(unit, target, DT_SEC, slow);
     else {
       unit.moving = false;
@@ -163,6 +182,7 @@ export class TickContext {
       this.events.push({ type: 'attack', source: unit.id, target: target.id });
       this.damage(unit, target, 1, false);
       if (unit.enemyKind === 'honey-bud' && isAlive(target)) this.applyStatus(target, 'sticky');
+      if (unit.heroClass === 'root-druid' && isAlive(target) && this.rng.next() < TUNING.root.basicChance) this.applyStatus(target, 'rooted');
     } else {
       return;
     }
@@ -287,7 +307,7 @@ export class TickContext {
     this.events.push({ type: 'ultimate', source: hero.id, heroClass, targets: targets.map((t) => t.id), from, at });
 
     for (const t of targets) {
-      if (heroClass === 'mochi-cleric') this.heal(hero, t, t.stats.maxHp * 0.3);
+      if (heroClass === 'mochi-cleric') this.heal(hero, t, t.stats.maxHp * TUNING.clericUltHeal);
       else if (heroClass === 'bell-bard') {
         t.buffMs = TUNING.bardBuffMs;
         this.events.push({ type: 'buff', source: hero.id, target: t.id });
@@ -295,6 +315,7 @@ export class TickContext {
         const excalibur = heroClass === 'carrot-knight' && hero.relics.includes('carrot-excalibur') ? TUNING.relic.excaliburDamage : 1;
         this.damage(hero, t, ULTIMATE_DAMAGE[heroClass] * excalibur, true);
         if (heroClass === 'bubble-mage' && isAlive(t)) this.applyStatus(t, 'bubble');
+        if (heroClass === 'root-druid' && isAlive(t)) this.applyStatus(t, 'rooted', TUNING.root.ultimateMs);
       }
     }
     if (heroClass === 'bell-bard' && hero.relics.includes('moonlit-lullaby-bell')) {

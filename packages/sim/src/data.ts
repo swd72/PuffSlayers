@@ -8,6 +8,7 @@ export const CLASS_STATS: Record<HeroClass, Stats> = {
   'bubble-mage': { maxHp: 820, atk: 110, def: 12, attackInterval: 1200, crit: 0.08, dodge: 0, range: 145, moveSpeed: 62 },
   'mochi-cleric': { maxHp: 900, atk: 60, def: 16, attackInterval: 1100, crit: 0.05, dodge: 0, range: 130, moveSpeed: 62 },
   'bell-bard': { maxHp: 950, atk: 80, def: 18, attackInterval: 1100, crit: 0.08, dodge: 0, range: 130, moveSpeed: 66 },
+  'root-druid': { maxHp: 980, atk: 105, def: 20, attackInterval: 1150, crit: 0.06, dodge: 0, range: 150, moveSpeed: 58 },
 };
 
 export const ENEMY_STATS: Record<EnemyKind, Stats> = {
@@ -48,6 +49,7 @@ export const SPECIES_PASSIVE: Record<Species, { hp: number; crit: number; dodge:
   bunbun: { hp: 1, crit: 0, dodge: 0.08 }, // Moon Hop
   hamham: { hp: 1.1, crit: 0, dodge: 0 }, // Cheek Pouch (HP part)
   shibu: { hp: 1, crit: 0.08, dodge: 0 }, // Doge Pride
+  molemo: { hp: 1.05, crit: 0, dodge: 0.03 }, // Earthy Paws (also: sticky honey can't slow a mole's digging paws)
 };
 
 /**
@@ -67,6 +69,7 @@ export const FORMATION: Record<HeroClass, Point> = {
   'bubble-mage': { x: -45, y: 80 },
   'mochi-cleric': { x: 5, y: 125 },
   'bell-bard': { x: 60, y: 120 },
+  'root-druid': { x: -10, y: 70 },
 };
 
 /** Area-of-effect radius of each ultimate, around the target (or along the roll for the guard). */
@@ -77,25 +80,29 @@ export const ULTIMATE_RADIUS: Record<HeroClass, number> = {
   'bubble-mage': 90,
   'mochi-cleric': Infinity,
   'bell-bard': Infinity,
+  'root-druid': 115,
 };
 
 /** Each class charges its ultimate at its own pace (ms from empty to ready, before attack bonuses). */
+/** Long enough that the team fires one ultimate every ~6–8 s: each one is a 1.5–2 s combo with a cut-in. */
 export const ULTIMATE_COOLDOWN_MS: Record<HeroClass, number> = {
-  'leaf-archer': 8000,
-  'carrot-knight': 9000,
-  'mochi-cleric': 11000,
-  'bubble-mage': 12000,
-  'bell-bard': 13000,
-  'pillow-guard': 14000,
+  'leaf-archer': 20000,
+  'carrot-knight': 22000,
+  'mochi-cleric': 18000,
+  'bubble-mage': 24000,
+  'bell-bard': 32000,
+  'pillow-guard': 35000,
+  'root-druid': 26000,
 };
 
 export const ULTIMATE_DAMAGE: Record<HeroClass, number> = {
-  'pillow-guard': 1.6,
-  'carrot-knight': 2.8,
-  'leaf-archer': 2.2,
-  'bubble-mage': 1.9,
+  'pillow-guard': 3.5,
+  'carrot-knight': 6.2,
+  'leaf-archer': 4.8,
+  'bubble-mage': 4.2,
   'mochi-cleric': 0,
   'bell-bard': 0,
+  'root-druid': 3.6,
 };
 
 export const TUNING = {
@@ -106,13 +113,14 @@ export const TUNING = {
   levelGapClamp: { min: 0.35, max: 2 },
   critMultiplier: 1.8,
   damageSpread: 0.1,
-  bardBuffMs: 5000,
+  bardBuffMs: 8000,
   bardBuffAtk: 1.3,
   healThreshold: 0.7,
-  petalsPerBonk: 8,
+  /** Mochi Rain heals every ally this share of max HP (ultimates are rare, so it is big) */
+  clericUltHeal: 0.55,
   /** small bonus charge on top of the cooldown, so fighting still speeds things up */
-  energyPerAttack: 3,
-  energyPerHit: 2,
+  energyPerAttack: 1.5,
+  energyPerHit: 1,
   /** how long the ultimate cut-in holds the battle before the skill fires */
   castMs: 900,
   /** enemies within this distance of a Pillow Guard must hit it first */
@@ -129,7 +137,9 @@ export const TUNING = {
   /** Pillow Guard Ultimate Roll */
   roll: { length: 170, knockback: 26 },
   /** Bubble Prison */
-  bubbleStunMs: 2000,
+  bubbleStunMs: 4000,
+  /** Root Druid: basic attacks may root (can't move, can still hit), the ultimate roots everything it hits */
+  root: { basicChance: 0.3, basicMs: 1200, ultimateMs: 3000 },
   /** Honey Bud sticky honey */
   sticky: { ms: 2500, slow: 0.55 },
   /** boss behaviour */
@@ -145,7 +155,6 @@ export const TUNING = {
     /** enraged slams drop this many circles at once */
     enragedSlams: 3,
   },
-  bossPetals: 5,
   /** relic numbers (GDD §6.4) */
   relic: { excaliburDamage: 1.6, pouchSeeds: 5, scarfReviveHp: 0.4, lullabyStunMs: 1000, lullabyRadius: 130, crownWaveHeal: 0.15 },
 } as const;

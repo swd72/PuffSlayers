@@ -461,6 +461,41 @@
   "refHeight": 360,
   "additive": false
  },
+ "hero/molemo-root-druid": {
+  "frames": 6,
+  "width": 255,
+  "height": 291,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig/root-druid": {
+  "frames": 4,
+  "width": 220,
+  "height": 228,
+  "refHeight": 220,
+  "additive": false
+ },
+ "vfx/druid-root-spike": {
+  "frames": 4,
+  "width": 396,
+  "height": 465,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/druid-root-erupt": {
+  "frames": 4,
+  "width": 401,
+  "height": 462,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/druid-root-bind": {
+  "frames": 3,
+  "width": 573,
+  "height": 345,
+  "refHeight": 335,
+  "additive": true
+ },
  "skin/pajama-pudding": {
   "frames": 6,
   "width": 268,
@@ -545,6 +580,13 @@
   "refHeight": 128,
   "additive": false
  },
+ "item/weapon-root-druid": {
+  "frames": 7,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
  "item/hat": {
   "frames": 8,
   "width": 128,
@@ -575,6 +617,20 @@
  },
  "item/booster": {
   "frames": 6,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/building": {
+  "frames": 6,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/ingredient": {
+  "frames": 16,
   "width": 128,
   "height": 128,
   "refHeight": 128,

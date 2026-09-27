@@ -2,8 +2,9 @@
 import { Container, Graphics, Sprite, type Texture } from 'pixi.js';
 import gsap from 'gsap';
 import { ARENA, type Unit } from '@puff/sim';
-import { bossSheet, enemySheet, frames, hasSheet, heroSheet, sheetMeta, signatureSheet } from '../assets';
+import { bossSheet, enemySheet, frames, hasSheet, heroSheet, heroTint, sheetMeta, signatureSheet } from '../assets';
 import { playFx, statusLoop } from './fx';
+import { GRIP, WEAPON_POSE, bareSheet, weaponSheet } from './weaponHold';
 
 export const HERO_HEIGHT = 72;
 export const ENEMY_HEIGHT = 62;
@@ -40,9 +41,13 @@ export class ActorView {
   private readonly phase = Math.random() * 6;
   private override: { set: PoseSet; index: number } | null = null;
   private overrideTween: gsap.core.Tween | null = null;
+  private flinchTl: gsap.core.Timeline | null = null;
   private bubble: Sprite | null = null;
   private sleepy: Sprite | null = null;
   private sticky: Sprite | null = null;
+  private rooted: Container | null = null;
+  /** the equipped weapon, held in the paw (only for puffs drawn with bare paws) */
+  private weapon: Sprite | null = null;
   /** the sim position is ignored while a scripted move (leap, roll) plays */
   scripted = false;
   gone = false;
@@ -63,17 +68,30 @@ export class ActorView {
         : unit.bossKind
           ? bossSheet(unit.bossKind)
           : enemySheet(unit.enemyKind ?? 'daisy');
-    this.addSet('pose', main);
+    // bare-pawed art + a separate weapon layer, when it exists (default outfit only for now)
+    const bare = !!unit.heroClass && !skinSheet && hasSheet(bareSheet(main)) && hasSheet(weaponSheet(unit.heroClass));
+    this.addSet('pose', bare ? bareSheet(main) : main);
     // signature poses are drawn in the default outfit, so skinned puffs reuse their own pose frames
-    if (unit.heroClass && !skinSheet) this.addSet('sig', signatureSheet(unit.heroClass));
+    if (unit.heroClass && !skinSheet) this.addSet('sig', bare && hasSheet(bareSheet(signatureSheet(unit.heroClass))) ? bareSheet(signatureSheet(unit.heroClass)) : bare ? '' : signatureSheet(unit.heroClass));
     if (unit.heroClass === 'pillow-guard' && !skinSheet && hasSheet('sig/cheek-cannon')) this.addSet('cheek', 'sig/cheek-cannon');
 
     const first = this.frame('pose', 0);
     this.sprite = new Sprite(first.texture);
+    this.sprite.tint = this.baseTint;
     this.sprite.anchor.set(0.5, 1);
     this.sprite.scale.set(first.scale);
     const shadow = new Graphics().ellipse(0, 0, this.height * 0.3, this.height * 0.08).fill({ color: 0x2a1633, alpha: 0.28 });
     this.body.addChild(this.sprite);
+    if (bare && unit.heroClass) {
+      const icons = frames(weaponSheet(unit.heroClass));
+      const icon = icons[Math.min(icons.length - 1, unit.weaponTier ?? 0)];
+      if (icon) {
+        const grip = GRIP[unit.heroClass];
+        this.weapon = new Sprite(icon);
+        this.weapon.anchor.set(grip.x, grip.y);
+        this.body.addChild(this.weapon);
+      }
+    }
     this.hpBar.position.set(0, -this.height - 6);
     // bosses show their HP in the big HUD bar instead
     this.hpBar.visible = !unit.isBoss;
@@ -139,6 +157,7 @@ export class ActorView {
     const f = this.override ? this.frame(this.override.set, this.override.index) : this.frame('pose', defaultIndex);
     this.sprite.texture = f.texture;
     this.sprite.scale.set(f.scale * u.facing * this.nativeFacing, f.scale);
+    this.holdWeapon(this.override ?? { set: 'pose', index: defaultIndex });
 
     if (u.hp <= 0) return;
     const t = time * 12 + this.phase;
@@ -153,10 +172,28 @@ export class ActorView {
     this.refreshStatus();
   }
 
-  drawHp(): void {
+  /** Redraws the bar; `hp` shows an in-between value while a combo is still landing. */
+  /** Puts the weapon in the paw for the frame being shown. */
+  private holdWeapon(frame: { set: PoseSet; index: number }): void {
+    const w = this.weapon;
+    const cls = this.unit.heroClass;
+    if (!w || !cls) return;
+    const table = WEAPON_POSE[cls];
+    const list = this.sets.has(frame.set) ? table[frame.set] : table.pose;
+    const hold = list[Math.min(frame.index, list.length - 1)] ?? table.pose[0]!;
+    const facing = this.unit.facing;
+    const size = (hold.size * this.height) / Math.max(1, w.texture.height);
+    w.position.set(hold.x * this.height * facing, -hold.y * this.height + this.sprite.y);
+    w.rotation = (hold.rot * Math.PI * facing) / 180;
+    w.scale.set(size * facing, size);
+    const want = hold.behind ? 0 : this.body.children.length - 1;
+    if (this.body.getChildIndex(w) !== want) this.body.setChildIndex(w, want);
+  }
+
+  drawHp(hp = this.unit.hp): void {
     const u = this.unit;
     const w = u.isBoss ? 110 : 34;
-    const ratio = Math.max(0, u.hp / u.stats.maxHp);
+    const ratio = Math.max(0, hp / u.stats.maxHp);
     const color = u.side === 'hero' ? 0x4cd964 : 0xff4d5e;
     this.hpBar
       .clear()
@@ -173,7 +210,8 @@ export class ActorView {
       if (!this.sprite.destroyed && this.unit.hp > 0) this.sprite.tint = this.baseTint;
     });
     const push = -this.unit.facing * strength;
-    gsap.timeline().to(this.body, { x: push, duration: 0.05 }).to(this.body, { x: 0, duration: 0.25, ease: 'bounce.out' });
+    this.flinchTl?.kill();
+    this.flinchTl = gsap.timeline().to(this.body, { x: push, duration: 0.05 }).to(this.body, { x: 0, duration: 0.25, ease: 'bounce.out' });
     if (this.unit.side === 'enemy' && !this.override) this.pose('pose', this.unit.isBoss ? 4 : 3, 0.18);
     else if (this.unit.side === 'hero' && !this.override) this.pose('pose', 5, 0.15);
   }
@@ -198,6 +236,20 @@ export class ActorView {
     this.body.rotation = 0;
   }
 
+  /** Roots curl up around the feet until the sim lets go. Uses the druid-root-bind sheet once it exists. */
+  makeRooted(): void {
+    if (this.rooted || this.gone || this.unit.rootMs <= 0) return;
+    if (hasSheet('vfx/druid-root-bind')) {
+      // a flat ring: centred on the feet so the puff stands inside it
+      this.rooted = statusLoop(this.root, 'vfx/druid-root-bind', 2, this.height * 0.45, 'center');
+    } else {
+      this.rooted = rootCoil(this.height);
+      this.root.addChild(this.rooted);
+    }
+    this.root.setChildIndex(this.rooted, Math.min(1, this.root.children.length - 1));
+    gsap.fromTo(this.rooted.scale, { x: 0.3, y: 0.3 }, { x: 1, y: 1, duration: 0.2, ease: 'back.out(2)' });
+  }
+
   makeSticky(): void {
     if (this.sticky || this.gone) return;
     this.sticky = statusLoop(this.root, 'vfx/status-sticky', 6, this.height * 0.45);
@@ -218,6 +270,11 @@ export class ActorView {
       this.sleepy.destroy();
       this.sleepy = null;
     }
+    if (this.rooted && this.unit.rootMs <= 0) {
+      const coil = this.rooted;
+      this.rooted = null;
+      gsap.to(coil, { alpha: 0, duration: 0.25, onComplete: () => coil.destroy({ children: true }) });
+    }
     if (this.sticky && this.unit.slowMs <= 0) {
       this.sticky.destroy();
       this.sticky = null;
@@ -225,7 +282,8 @@ export class ActorView {
   }
 
   private get baseTint(): number {
-    return this.unit.enraged ? ENRAGED_TINT : 0xffffff;
+    if (this.unit.enraged) return ENRAGED_TINT;
+    return this.unit.species && this.unit.heroClass && !this.unit.skin ? heroTint(this.unit.species, this.unit.heroClass) : 0xffffff;
   }
 
   /** Giant boss berserk: red tint and flames at its feet for the rest of the fight. */
@@ -249,9 +307,30 @@ export class ActorView {
   destroy(): void {
     this.gone = true;
     this.overrideTween?.kill();
+    // killTweensOf misses timeline steps that haven't started yet, so the knockback is killed by hand
+    this.flinchTl?.kill();
     if (this.root.destroyed) return;
     // stop anything still animating this unit (leaps, knockbacks, bonk flights) before its display objects go away
-    gsap.killTweensOf([this.root, this.root.scale, this.body, this.body.scale, this.sprite, this.sprite.scale]);
+    // one call per target: gsap.killTweensOf([...]) with Pixi objects in an array silently kills nothing
+    const targets = [this.root, this.root.scale, this.body, this.body.scale, this.sprite, this.sprite.scale, this.weapon, this.weapon?.scale, this.rooted, this.rooted?.scale];
+    for (const t of targets) if (t) gsap.killTweensOf(t);
     this.root.destroy({ children: true });
   }
+}
+
+/** Drawn stand-in for the root-bind sheet: a few curled roots hugging the feet. */
+function rootCoil(height: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const w = height * 0.32;
+  for (let i = 0; i < 5; i++) {
+    const x = -w + (i / 4) * w * 2;
+    const tip = -height * (0.18 + (i % 2) * 0.1);
+    g.moveTo(x * 1.2, 4).bezierCurveTo(x * 1.4, tip * 0.4, x * 0.4, tip * 0.8, x * 0.7, tip);
+  }
+  g.stroke({ color: 0x5a3a1e, width: 5, cap: 'round' });
+  g.stroke({ color: 0x9fd05a, width: 2, cap: 'round', alpha: 0.9 });
+  g.ellipse(0, 2, w * 1.1, w * 0.3).stroke({ color: 0x5a3a1e, width: 4, alpha: 0.9 });
+  c.addChild(g);
+  return c;
 }

@@ -11,18 +11,18 @@ Idle RPG บนเว็บ (มือถือเป็นหลัก) — ส
 ## โครงสร้างโค้ด (npm workspaces)
 | Path | หน้าที่ |
 |---|---|
-| `packages/sim` | ระบบต่อสู้ **deterministic** (seed เดิม = ผลเดิม), pure step(), tick 100ms · `data.ts` ค่าทั้งหมด/TUNING · `combat.ts` TickContext (AI, สกิล, บอส, ของแรร์) · `battle.ts` step/cast/wave · `units.ts` สร้างยูนิต+เลเวล/เกียร์ · `gear.ts` ไอเทม/ดรอป/ของแรร์ · `stages.ts` คลื่น/บอส/Giant |
+| `packages/sim` | ระบบต่อสู้ **deterministic** (seed เดิม = ผลเดิม), pure step(), tick 100ms · `data.ts` ค่าทั้งหมด/TUNING · `combat.ts` TickContext (AI, สกิล, บอส, ของแรร์) · `battle.ts` step/cast/wave · `units.ts` สร้างยูนิต+เลเวล/เกียร์ · `gear.ts` ไอเทม/ดรอป/ของแรร์ · `forge.ts` ตีบวก/รวม/แยก/สุ่ม substat/ย้าย +N · `progression.ts` ค่าเลเวล Petal, Petal ต่อด่าน, Nap Bank · `stages.ts` คลื่น/บอส/Giant |
 | `apps/web` | Vite + TS + PixiJS v8 + GSAP + pixi-filters; UI เป็น HTML/CSS (cqw units) |
-| `apps/web/src/scene` | `BattleScene` (ตัวคุม+จับคู่ event→เวลา impact) · `actor.ts` (ท่า/สถานะ/HP) · `skills.ts` (ตีปกติ, Cheek Cannon, บอส) · `ultimates.ts` (ท่าไม้ตาย 6 แบบ) · `projectiles.ts` · `fx.ts` (playFx/decal/statusLoop) · `anime.ts` (shockwave/zoom/speedlines/glow) |
-| `apps/web/src/meta` | `save.ts` (localStorage `puff.save.v1`: stage, teamLevel, petals, items, equipped, skins) · `itemInfo.ts` (ชื่อไทย/ไอคอน) |
-| `apps/web/src/ui` | `hud.ts` (แถบบน, portrait, บอสบาร์, cut-in, loot) · `inventory.ts` (หน้ากระเป๋า) |
+| `apps/web/src/scene` | `BattleScene` (ตัวคุม+จับคู่ event→เวลา impact) · `actor.ts` (ท่า/สถานะ/HP) · `skills.ts` (ตีปกติ, Cheek Cannon, บอส) · `ultimates.ts`/`ultimateSupport.ts` (ท่าไม้ตาย 6 แบบ เป็นคอมโบ 1.5–2 วิ หลายฮิต — ดาเมจเดียวจาก sim ถูกแบ่งแสดงตามจังหวะฮิต, finisher ใหญ่สุด) · `choreo.ts` (at/dash/hop/script — ทุกสเต็ปเช็กว่า actor ยังไม่ถูก destroy) · `projectiles.ts` · `fx.ts` (playFx/decal/statusLoop) · `anime.ts` (shockwave/zoom/speedlines/glow) |
+| `apps/web/src/meta` | `save.ts` (localStorage key `puff.save.v1` แต่ข้อมูล `v: 3`: stage, team, levels ต่อตัว, petals, stardust, lastSeen, pendingNap, items, equipped, skins — migrate จาก v1/v2 + `withRoster()` เติมพัฟที่เพิ่มเข้ามาใหม่ให้เซฟเก่าเอง) · `workshop.ts` (อัปเลเวล/ตีบวก/รวม/แยก บนเซฟ + ข้อความ toast) · `itemInfo.ts` (ชื่อไทย/ไอคอน) |
+| `apps/web/src/ui` | `hud.ts` (แถบบน, portrait, บอสบาร์, cut-in, loot) · `inventory.ts` (หน้ากระเป๋า+อัปเลเวล) · `itemDetail.ts` (การ์ดไอเทม+ปุ่มตีบวก/รวม/แยก) · `nap.ts` (หน้า "ขณะที่คุณหลับ…") · `workshop.css` |
 | `apps/web/src/audio/sfx.ts` | เล่นไฟล์จาก `public/audio/sfx/<name>.mp3|ogg|wav` — **ห้ามกลับไปใช้เสียงสังเคราะห์** (ผู้ใช้บอกว่าป๋องแป๋ง) |
 | `tools/extract-v2.mjs` | ตัดภาพ `assets/generated/{v2,vfx2}` → `apps/web/public/sprites/v2/*` + `manifest.json` (หาจุดตัดจากช่องว่าง, ลบพื้นเทา, key ควันดำ→additive, portrait อัตโนมัติ, ไอคอนแบบกริด) |
 
 ## คำสั่ง
 ```bash
 npm run dev       # http://localhost:5173 (host:true → Wi-Fi 192.168.1.107, Tailscale 100.79.30.74)
-npm test          # vitest (51 tests, coverage ~98% ของ sim)
+npm test          # vitest (86 tests, coverage ~98% ของ sim)
 npm run sprites   # รัน extract-v2 หลังเพิ่ม/แก้ภาพ
 npm run build
 ```
@@ -30,17 +30,24 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 
 ## สถานะเกมตอนนี้ (ทำเสร็จแล้ว)
 - ต่อสู้เรียลไทม์เดินอิสระหลายทิศ, มุมมองแผนที่ top-down, ตัวละคร ~72px (ยักษ์ 250, บอส 170), เต็มจอทุกสัดส่วน (fitView)
-- ทีม 6: Pudding (hamham pillow-guard), Tofu (shibu carrot-knight), Usagi (bunbun leaf-archer), Kinako (shibu bubble-mage), Momo (bunbun mochi-cleric), Mimi (hamham bell-bard)
+- Roster 7 ตัว ลงสนาม 6 (`ROSTER`/`TEAM_SIZE` ใน assets.ts, สลับ "ลงทีม/พัก" ในกระเป๋า, `save.team`): Pudding (hamham pillow-guard), Tofu (shibu carrot-knight), Usagi (bunbun leaf-archer), Kinako (shibu bubble-mage), Momo (bunbun mochi-cleric), Mimi (hamham bell-bard), **Taro (molemo root-druid)** — เผ่าตุ่นใหม่ (ไม่ติด Sticky), สถานะ **Rooted** (`rootMs`: เดินไม่ได้แต่ยังตีได้), อัลติ Root Awakening (`scene/rootDruid.ts`)
+- Taro มีภาพจริงแล้ว (stand-in จะใช้เฉพาะพัฟที่ยังไม่มีแผ่น:  (`STAND_IN` ใน assets.ts = แผ่น hamham-bell-bard ย้อมน้ำตาล + CSS `.stand-in`, เอฟเฟกต์ยืม boss-summon/boss-vine-slam ย้อมเขียว ผ่าน `vfxOr()`)) · pipeline รองรับ job `optional` (ข้ามถ้ายังไม่มีไฟล์)
+- **ปิกนิกก่อนลุย** (GDD 6.12, `sim/pantry.ts`, `meta/picnic.ts`, `ui/lunchbox.ts`): วัตถุดิบ 16 ชนิดดรอปจากด่าน, แต่ละพัฟเลือกมื้อก่อนลุย → กินอัตโนมัติก่อนทุกด่าน (รวมตอนเริ่มใหม่หลังแพ้), บางอย่างเป็นพิษกับบางเผ่าตามสัตว์จริง (ปวดท้อง = บัฟติดลบ), สมุดอาหาร `save.foodLog` · ไอคอนวัตถุดิบยังไม่มีภาพ (แสดงเป็นวงกลมตัวอักษร) → prompt ใน art-prompts ข้อ 4.10
+- **อาวุธ 7 Tier ออกแบบใหม่:** ทำทีละ Tier ที่ `assets/generated/v2/items/weapons/<class>-t<1-7>.png` (ทับแผ่นแถวเดิมทีละ Tier) · ห้ามกลับไปใช้ template แถวเดียว "same shape family"
 - ท่าไม้ตาย: cast 900ms (เกมหยุด + cut-in แบนเนอร์) แล้วค่อยปล่อย; cooldown ต่างกันต่ออาชีพ; สกิล "ออกจากตัว→วิ่ง→กระแทก" (ลูกศร, เมล็ดพ่นจากปาก, ฟองลอย, โมจิโค้ง, กระโดดฟัน, กลิ้ง)
 - Hamham Cheek Cannon, สถานะ bubble/sticky/sleepy, บอสทุก 5 ด่าน (เรียกสมุน, วงเตือนฟาดพื้น), **Giant Boss ทุก 10 ด่าน** (×2.4 HP, ENRAGED <50%)
-- ความยากตามเลเวล (recommendedLevel = 6 + stage*2, ทีม +2 Lv/ด่าน — ตัวแทนชั่วคราว)
-- อุปกรณ์ 5 ช่อง × 7 Tier, ดรอปตอนชนะ, ของแรร์ 6 ชิ้นมีผลจริง, สกิน 6 ชุด (ปลดล็อกทุกชุดเพื่อทดลอง), หน้ากระเป๋า, เซฟ localStorage
+- ความยากตามเลเวล (recommendedLevel = 6 + stage*2) · **เลเวลต่อตัวอัปด้วย Petal** (ราคา ×1.08/เลเวล, Petal/ตัวที่ Bonk ×1.08²/ด่าน + โบนัสผ่านด่าน) — ไม่มี +2 Lv/ด่านอัตโนมัติแล้ว
+- อุปกรณ์ 5 ช่อง × 7 Tier, ดรอปตอนชนะ, ของแรร์ 6 ชิ้นมีผลจริง, สกิน 6 ชุด (ปลดล็อกทุกชุดเพื่อทดลอง), หน้ากระเป๋า, เซฟ localStorage · **ตีบวก** (+1–3 สำเร็จเสมอ, เกจการันตี, ไม่แตก) · **รวม** 3→Tier ถัดไป (+รวมอัตโนมัติ Crumb–Silky) · **แยก** → Stardust · สุ่ม substat · ย้าย +N · **Nap Bank** (สูงสุด 12 ชม., ฟาร์มด่านล่าสุดที่ผ่าน, แตะรับทีเดียว)
 
-## ยังไม่ได้ทำ (ลำดับที่เสนอไว้)
-1. ตีบวก + รวมของ + แยก Stardust · ชุดเซ็ต · Weapon Perk (Starry+) · ใช้ไอเทมเสริม (มีภาพแล้ว)
-2. รางวัลตอนหลับ + อัปเลเวลด้วย Petal (Petal เก็บได้แต่ยังใช้ไม่ได้)
-3. สวนปลุกโลก (GDD 0.5) · สมุดสะสม + กาชา Puff Capsule
-4. ตกปลา, ภารกิจรายวัน, Co-op, Arena · เสียงจริง/เพลง · ฉากบอส Chapter 2–6 (มีภาพแล้วใน `assets/generated/v2/backgrounds`)
+- **หน้าหมู่บ้าน (Hub)** `ui/hub.ts` + **เตรียมลงด่าน** `ui/prep.ts` (`ui/hub.css`): เปิดเกมมาที่หมู่บ้าน, สนามหยุด (`game.mode`), เวลาในหมู่บ้านนับเป็น Nap, ปุ่มบนซ้ายในสนาม = กลับหมู่บ้าน, มื้อก่อนลุยเสิร์ฟตอนกด "เริ่มลุย!" · ตึก 6 หลังล็อกไว้ตามเฟส (ภาพ: art-prompts ข้อ 8)
+
+- **สวนปลุกโลก (เฟส 2 ✅)** `sim/garden.ts` · `meta/garden.ts` · `ui/garden.ts`+`garden.css`: Bonk ดอกไม้มีโอกาสได้เมล็ด (บอสได้แน่นอน, นับทั้งชนะ/แพ้), ปลูก 6 แปลงโตตามเวลาจริง (ออฟไลน์ก็โต), รดน้ำได้ครั้งละขั้น, เก็บดอก → บัฟถาวรทั้งทีม (ทุก 5 ดอก, มีเพดาน) + % ฟื้นฟูโลก · ภาพต้นไม้แต่ละขั้นยังไม่มี (ใช้สไปรต์ดอกไม้ศัตรูย่อขนาดแทน; รองรับแผ่น `garden/<seed>` 4 เฟรม)
+- **อาวุธในมือ (ชั้นแยก)** `scene/weaponHold.ts`: ถ้ามีแผ่น `hero-bare/*` เกมใช้ตัวละครมือเปล่า + วางไอคอนอาวุธ Tier ที่ใส่ตามท่า (ตาราง `WEAPON_POSE` ปรับสดได้ที่ `window.__puff.weaponPose`) · ยังไม่มีภาพมือเปล่า → prompt art-prompts ข้อ 10 · **ห้ามใช้ `gsap.killTweensOf([...])` กับ array ของ Pixi object — ไม่ kill อะไรเลย ให้เรียกทีละตัว**
+
+## ยังไม่ได้ทำ (แผนเฟสที่ตกลงแล้ว — ดู GDD 0.6)
+3. สมุดพัฟ + กาชา Puff Capsule (Dew Drop, pity) + ชิ้นส่วนพัฟจากบอส
+4. ภารกิจรายวัน + ตกปลา
+5. Raid + Arena แบบ local ก่อน แล้วต่อเซิร์ฟเวอร์ · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal, เสียงจริงที่ยังขาด
 - Git: branch `master`, ยังไม่มี remote — ถามผู้ใช้ก่อน commit/push ทุกครั้ง
 
 ## วิธีตรวจงานในเบราว์เซอร์ (สำคัญ)
@@ -49,6 +56,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
   window.__pump = (ms, stop) => { const end = performance.now() + ms; while (performance.now() < end) { const t = performance.now(); while (performance.now() - t < 16) {} gsap.ticker.tick(); app.ticker.update(); if (stop && stop()) return true; } return false; };
   ```
 - ข้ามด่าน: `g.state = g.newBattle(10)` (private แต่เข้าถึงได้ใน JS) + `g.scene.reset(); g.start()`
+- ทดสอบ Nap Bank: แก้ `lastSeen` ใน localStorage ให้ถอยหลัง (เช่น −3 ชม.) แล้ว reload · pane ซ่อน = `visibilityState` hidden → heartbeat ไม่ stamp เวลา
 - ทดสอบมือถือด้วย `resize_window` preset mobile แล้ว reset เป็น desktop ตอนจบ
 - CSS animation ตรวจด้วย `el.getAnimations()[0].currentTime = t` (pane ซ่อน)
 

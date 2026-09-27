@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import gsap from 'gsap';
-import type { BattleEvent, BattleState, HeroClass, Unit } from '@puff/sim';
+import type { BattleEvent, BattleState, HeroClass, MealReaction, Unit } from '@puff/sim';
+import { REACTION_LABEL } from '../meta/itemInfo';
 import { BACKGROUND, CLASS_COLOR } from '../assets';
 import type { Sfx } from '../audio/sfx';
 import { ActorView } from './actor';
@@ -23,6 +24,18 @@ export function fitView(screenWidth: number, screenHeight: number): { width: num
 }
 
 const HIT_DELAY = 0.12;
+/** the finisher of an ultimate combo counts this many ordinary hits */
+const FINISHER_WEIGHT = 2.5;
+
+/** Splits a total into whole-number hits; the last (finisher) gets the biggest share and any rounding. */
+export function splitAmount(total: number, hits: number): number[] {
+  if (hits <= 1) return [total];
+  const unit = total / (hits - 1 + FINISHER_WEIGHT);
+  // tiny totals (unit < 1) all go to the finisher; the empty hits show no number
+  const small = Array.from({ length: hits - 1 }, () => Math.floor(unit));
+  const used = small.reduce((s, n) => s + n, 0);
+  return [...small, Math.max(0, total - used)];
+}
 
 export interface SceneHooks {
   /** a hero starts an ultimate cut-in lasting castMs of game time */
@@ -49,7 +62,8 @@ export class BattleScene {
   private readonly actors = new Map<string, ActorView>();
   // per event batch: when each hit lands (seconds), so numbers pop on impact
   private readonly hitAt = new Map<string, number>();
-  private readonly impactAt = new Map<string, number>();
+  /** ultimate hit moments per target (several per combo) */
+  private readonly impactAt = new Map<string, number[]>();
   private readonly lastHit = new Map<string, number>();
   private time = 0;
   private size: { width: number; height: number } = { width: VIEW.width, height: VIEW.height };
@@ -169,10 +183,11 @@ export class BattleScene {
       case 'ultimateCast':
         return this.animateCast(ev.source, ev.heroClass, ev.castMs);
       case 'ultimate':
-        for (const [id, t] of playUltimate(api, ev)) this.impactAt.set(id, t);
+        for (const [id, times] of playUltimate(api, ev)) this.impactAt.set(id, times);
         return;
       case 'status':
         if (ev.status === 'sticky') this.later(ev.target, this.lastHit.get(ev.target) ?? HIT_DELAY, (a) => a.makeSticky());
+        if (ev.status === 'rooted') this.later(ev.target, this.lastHit.get(ev.target) ?? HIT_DELAY, (a) => a.makeRooted());
         if (ev.status === 'sleepy') this.later(ev.target, 0.4, (a) => a.fallAsleep());
         return;
       case 'revive':
@@ -242,7 +257,9 @@ export class BattleScene {
   private showDamage(sourceId: string, targetId: string, amount: number, crit: boolean, ultimate: boolean): void {
     const src = this.actors.get(sourceId);
     const fromBossSlam = ultimate && src?.unit.isBoss;
-    const delay = ultimate ? (fromBossSlam ? 0.03 : (this.impactAt.get(targetId) ?? 0.2)) : (this.hitAt.get(`${sourceId}>${targetId}`) ?? HIT_DELAY);
+    const combo = ultimate && !fromBossSlam ? this.impactAt.get(targetId) : undefined;
+    if (combo?.length) return this.showCombo(targetId, amount, combo, 'damage');
+    const delay = ultimate ? (fromBossSlam ? 0.03 : 0.2) : (this.hitAt.get(`${sourceId}>${targetId}`) ?? HIT_DELAY);
     this.lastHit.set(targetId, Math.max(delay, this.lastHit.get(targetId) ?? 0));
     this.later(targetId, delay, (a) => {
       if (!ultimate) this.sfx.play(crit ? 'crit' : 'hit');
@@ -260,12 +277,61 @@ export class BattleScene {
   private showHeal(sourceId: string, targetId: string, amount: number): void {
     const src = this.actors.get(sourceId);
     const tgt = this.actors.get(targetId);
-    let delay = this.impactAt.get(targetId);
-    if (delay === undefined) delay = src && tgt && !src.gone && !tgt.gone ? healToss(this.api, src, tgt) : 0.1;
+    const combo = this.impactAt.get(targetId);
+    if (combo?.length) return this.showCombo(targetId, amount, combo, 'heal');
+    const delay = src && tgt && !src.gone && !tgt.gone ? healToss(this.api, src, tgt) : 0.1;
     this.later(targetId, delay, (a) => {
       this.sfx.play('heal');
       floatNumber(this.fx, `+${amount}`, 'heal', a.root.x, a.root.y - a.height * a.root.scale.y);
       a.drawHp();
+    });
+  }
+
+  /**
+   * An ultimate lands as a combo: the sim's single number is split across the hit moments,
+   * the finisher carrying the biggest share, and the HP bar steps down (or up) with each hit.
+   */
+  private showCombo(targetId: string, amount: number, times: readonly number[], kind: 'damage' | 'heal'): void {
+    const chunks = splitAmount(amount, times.length);
+    const last = times.length - 1;
+    this.lastHit.set(targetId, Math.max(times[last] ?? 0, this.lastHit.get(targetId) ?? 0));
+    times.forEach((when, i) => {
+      const rest = chunks.slice(i + 1).reduce((s, n) => s + n, 0);
+      this.later(targetId, when, (a) => {
+        const y = a.root.y - a.height * a.root.scale.y - (i % 2) * 10;
+        const x = a.root.x + ((i % 3) - 1) * 10;
+        if (kind === 'heal') {
+          if (i === last) this.sfx.play('heal');
+          if (chunks[i]) floatNumber(this.fx, `+${chunks[i]}`, 'heal', x, y);
+          a.drawHp(Math.max(0, a.unit.hp - rest));
+          return;
+        }
+        if (i < last) this.sfx.play('hit');
+        if (chunks[i]) floatNumber(this.fx, (chunks[i] ?? 0).toLocaleString('en-US'), i === last ? 'ultimate' : 'crit', x, y);
+        a.flinch(i === last ? 12 : 5);
+        a.drawHp(Math.min(a.unit.stats.maxHp, a.unit.hp + rest));
+      });
+    });
+  }
+
+  /** Pre-stage picnic: each puff shows how its meal went (yum, favorite, won't eat, tummy ache). */
+  showMeals(meals: readonly { heroId: string; effect: { reaction: MealReaction } }[]): void {
+    meals.forEach((meal, i) => {
+      gsap.delayedCall(i * 0.12, () => {
+        const a = this.actors.get(meal.heroId);
+        if (!a || a.gone) return;
+        const { reaction } = meal.effect;
+        const kind = reaction === 'tummyache' ? 'crit' : reaction === 'refuse' ? 'miss' : 'heal';
+        floatNumber(this.fx, REACTION_LABEL[reaction], kind, a.root.x, a.root.y - a.height - 8);
+        if (reaction === 'tummyache') {
+          risingMotes(this.fx, a.root.x, a.root.y, 0x9be27a, 8);
+          a.flinch(4);
+          this.sfx.play('faint');
+        } else if (reaction !== 'refuse') {
+          risingMotes(this.fx, a.root.x, a.root.y, reaction === 'favorite' ? 0xff9ec8 : 0xfff0b0, reaction === 'favorite' ? 12 : 6);
+          this.sfx.play('heal');
+        }
+      });
     });
   }
 
@@ -304,6 +370,9 @@ export class BattleScene {
     actor.gone = true;
     const delay = (this.lastHit.get(targetId) ?? HIT_DELAY) + 0.05;
     gsap.delayedCall(delay, () => {
+      // a long combo can finish after the stage has already been cleared and the scene reset
+      // (the Petals still count — only the animation is skipped)
+      if (actor.root.destroyed) return this.hooks.onPetals(petalCount);
       const c = actor.chest();
       playFx(this.fx, 'vfx/bonk-petals', c.x, c.y + actor.height * 0.3, { size: actor.unit.isBoss ? 200 : 80, anchor: 'center', frameTime: 0.08 });
       this.hooks.onPetals(petalCount);

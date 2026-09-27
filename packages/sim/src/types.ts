@@ -1,11 +1,11 @@
 import type { GearBonus, RelicId } from './gear';
 
-export type Species = 'bunbun' | 'hamham' | 'shibu';
-export type HeroClass = 'pillow-guard' | 'carrot-knight' | 'leaf-archer' | 'bubble-mage' | 'mochi-cleric' | 'bell-bard';
+export type Species = 'bunbun' | 'hamham' | 'shibu' | 'molemo';
+export type HeroClass = 'pillow-guard' | 'carrot-knight' | 'leaf-archer' | 'bubble-mage' | 'mochi-cleric' | 'bell-bard' | 'root-druid';
 export type EnemyKind = 'daisy' | 'tulip' | 'sunflower' | 'lavender' | 'cactus' | 'honey-bud';
 export type BossKind = 'queen-rafflesia' | 'sunflower-colossus' | 'lotus-moon-sage';
 export type Side = 'hero' | 'enemy';
-export type StatusKind = 'bubble' | 'sticky' | 'sleepy';
+export type StatusKind = 'bubble' | 'sticky' | 'sleepy' | 'rooted';
 
 export interface Point {
   readonly x: number;
@@ -53,6 +53,8 @@ export interface Unit {
   readonly stunMs: number;
   /** stuck in honey: moves and attacks slower */
   readonly slowMs: number;
+  /** held by roots (Root Druid): cannot move, but can still hit whatever is in reach */
+  readonly rootMs: number;
   /** species / boss skill timer (Hamham Cheek Cannon, boss summon) */
   readonly skillMs: number;
   /** boss ground-slam timer */
@@ -65,6 +67,8 @@ export interface Unit {
   readonly reviveLeft: number;
   /** cosmetic outfit id, if any */
   readonly skin?: string;
+  /** tier of the equipped weapon (cosmetic: which weapon the puff holds) */
+  readonly weaponTier?: number;
   readonly x: number;
   readonly y: number;
   /** 1 = facing right, -1 = facing left */
@@ -83,6 +87,8 @@ export interface HeroSpec {
   /** summed stats + relics of equipped items */
   readonly gear?: GearBonus;
   readonly skin?: string;
+  /** tier of the equipped weapon, drawn in the puff's hand */
+  readonly weaponTier?: number;
 }
 
 export type EnemySpec = { readonly kind: EnemyKind } | { readonly boss: BossKind; readonly giant?: boolean };

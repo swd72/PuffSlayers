@@ -1,0 +1,440 @@
+/* World-Waking Garden: a grassy sheet with soil beds; plants grow in stages and bloom with a sparkle. */
+
+.garden {
+  position: absolute;
+  inset: 0;
+  z-index: 17;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(15, 8, 24, 0.5);
+  font-family: var(--font-body);
+}
+
+.garden[hidden] {
+  display: none;
+}
+
+.garden-sheet {
+  width: 100%;
+  max-height: 96%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.2cqw;
+  padding: 3cqw 3.4cqw calc(4cqw + env(safe-area-inset-bottom));
+  border-radius: 6cqw 6cqw 0 0;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.55) 0 1cqw, transparent 1.4cqw),
+    radial-gradient(circle at 88% 14%, rgba(255, 255, 255, 0.45) 0 0.8cqw, transparent 1.2cqw),
+    linear-gradient(180deg, #eaf7d6, #d7efbd 60%, #c9e6a8);
+  color: var(--ink);
+  animation: sheet-up 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.garden-sheet button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.garden-head {
+  display: flex;
+  align-items: center;
+  gap: 2.4cqw;
+}
+
+.garden-head small {
+  font-size: 2.6cqw;
+  color: #5b6b4a;
+}
+
+.garden-head h2 {
+  margin: 0;
+  font-size: 5.4cqw;
+  color: #2f4a17;
+}
+
+.pick-all {
+  margin-left: auto;
+  padding: 1.6cqw 3cqw;
+  border: none;
+  border-radius: 99cqw;
+  background: linear-gradient(180deg, #ffe07a, var(--gold));
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 3cqw;
+  box-shadow: 0 0.9cqw 0 #c98a1c;
+  animation: go-glow 1.8s ease-in-out infinite;
+}
+
+.restore {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1cqw 2cqw;
+  padding: 2cqw 2.6cqw;
+  border-radius: 4cqw;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 3.2cqw;
+}
+
+.restore b {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 4.6cqw;
+  color: #3f7a1a;
+}
+
+.restore .bar {
+  flex: 1;
+  min-width: 30cqw;
+  height: 2.6cqw;
+  border-radius: 99cqw;
+  background: #e1d6c4;
+  overflow: hidden;
+}
+
+.restore .bar i {
+  display: block;
+  width: var(--r);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9fd05a, #5fb33a);
+}
+
+.restore small {
+  flex-basis: 100%;
+  font-size: 2.6cqw;
+  color: #5b6b4a;
+}
+
+.garden-toast {
+  min-height: 4cqw;
+  margin: -1cqw 0;
+  text-align: center;
+  font-size: 3.2cqw;
+  font-weight: 700;
+}
+
+.garden-toast.ok {
+  color: #2e7d32;
+  animation: toast-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.garden-toast.bad {
+  color: #c0392b;
+}
+
+/* ---------- plots ---------- */
+.plots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2cqw;
+}
+
+.plot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6cqw;
+  min-height: 42cqw;
+  padding: 1.4cqw 1cqw 1.6cqw;
+  border-radius: 4cqw;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 0.5cqw rgba(95, 140, 50, 0.25);
+  overflow: hidden;
+}
+
+/* bed + plant sit in their own box so the labels below never cover them */
+.plant-area {
+  position: relative;
+  width: 100%;
+  height: 25cqw;
+  flex-shrink: 0;
+}
+
+/* the soil bed the plant stands in */
+.bed {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 0;
+  height: 9cqw;
+  border-radius: 50%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 2.2cqw, rgba(0, 0, 0, 0.1) 2.2cqw 2.6cqw),
+    radial-gradient(ellipse at 50% 35%, #9a6a42, #6e4527 70%);
+  box-shadow: inset 0 -1cqw 0 rgba(0, 0, 0, 0.18), 0 0.6cqw 0 #c9e6a8;
+}
+
+.plant {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 4.5cqw;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.plant-art,
+.plant-sprite {
+  max-width: 90%;
+  max-height: 100%;
+  object-fit: contain;
+  transform-origin: 50% 100%;
+  animation: sway 3s ease-in-out infinite;
+}
+
+/* stand-in growth: small and sleepy while healing, full color at bloom */
+.plant-sprite.stage-1 {
+  scale: 0.45;
+  filter: saturate(0.3) brightness(1.05);
+}
+
+.plant-sprite.stage-2 {
+  scale: 0.7;
+  filter: saturate(0.65);
+}
+
+.plant-sprite.stage-3 {
+  scale: 1;
+}
+
+.plant-seed {
+  width: 5cqw;
+  height: 3.6cqw;
+  margin-bottom: 1cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f0d49a, #9a6a2a);
+  box-shadow: 0 0.4cqw 0 rgba(0, 0, 0, 0.25);
+  animation: sway 2.4s ease-in-out infinite;
+}
+
+@keyframes sway {
+  50% {
+    rotate: 3deg;
+  }
+}
+
+.plot.bloom {
+  background: rgba(255, 250, 225, 0.85);
+  box-shadow: inset 0 0 0 0.6cqw #ffd66b, 0 0 4cqw rgba(255, 214, 107, 0.6);
+}
+
+.plot.rare {
+  box-shadow: inset 0 0 0 0.6cqw #b27ae8;
+}
+
+.sparkle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 20%, #fff 0 0.7cqw, transparent 1.1cqw),
+    radial-gradient(circle at 78% 30%, #fff6b0 0 0.9cqw, transparent 1.3cqw),
+    radial-gradient(circle at 60% 12%, #fff 0 0.5cqw, transparent 0.9cqw);
+  animation: twinkle 1.4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.plot-name {
+  position: relative;
+  font-size: 2.9cqw;
+  font-weight: 700;
+  color: #2f4a17;
+}
+
+.grow {
+  position: relative;
+  width: 80%;
+  height: 1.6cqw;
+  border-radius: 99cqw;
+  background: #e1d6c4;
+  overflow: hidden;
+}
+
+.grow i {
+  display: block;
+  width: calc(var(--g) * 100%);
+  height: 100%;
+  background: linear-gradient(90deg, #b5e07a, #6fbf3a);
+}
+
+.time {
+  position: relative;
+  font-size: 2.5cqw;
+  color: #5b6b4a;
+}
+
+.water,
+.pick {
+  position: relative;
+  padding: 0.8cqw 3cqw;
+  border: none;
+  border-radius: 99cqw;
+  font-size: 2.8cqw;
+  font-weight: 700;
+  transition: transform 0.12s ease;
+}
+
+.water {
+  background: #cfe9ff;
+  color: #1f5b99;
+  box-shadow: 0 0.7cqw 0 #8fb9e0;
+}
+
+.pick {
+  background: linear-gradient(180deg, #ffe07a, var(--gold));
+  color: var(--ink);
+  box-shadow: 0 0.7cqw 0 #c98a1c;
+  animation: go-glow 1.6s ease-in-out infinite;
+}
+
+.water:active,
+.pick:active {
+  transform: translateY(0.6cqw);
+}
+
+.plot.empty {
+  justify-content: flex-start;
+}
+
+.plot-hint {
+  position: relative;
+  margin-top: 1cqw;
+  text-align: center;
+  font-size: 2.8cqw;
+  font-weight: 700;
+  color: #5b6b4a;
+}
+
+.plot-hint small {
+  font-weight: 500;
+  font-size: 2.3cqw;
+}
+
+/* ---------- pouch & bonuses ---------- */
+.garden-sub {
+  margin: 0.6cqw 0 0;
+  font-size: 3.8cqw;
+  color: #2f4a17;
+}
+
+.garden-sub small {
+  font-size: 2.6cqw;
+  font-weight: 500;
+  color: #5b6b4a;
+}
+
+.pouch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.6cqw;
+}
+
+.seed-chip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 1.4cqw;
+  padding: 1.2cqw 2.6cqw 1.2cqw 1.6cqw;
+  border: none;
+  border-radius: 3cqw;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  font-size: 3cqw;
+  font-weight: 700;
+  box-shadow: 0 0.8cqw 0 #b9d69a;
+  transition: transform 0.12s ease;
+}
+
+.seed-chip small {
+  grid-column: 2;
+  font-size: 2.3cqw;
+  font-weight: 500;
+  color: #2e7d32;
+}
+
+.seed-chip.rare {
+  box-shadow: 0 0.8cqw 0 #b27ae8;
+}
+
+.seed-chip:active {
+  transform: translateY(0.6cqw);
+}
+
+.seed-dot {
+  grid-row: span 2;
+  width: 4.4cqw;
+  height: 3.2cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f0d49a, #9a6a2a);
+}
+
+.seed-chip.rare .seed-dot {
+  background: radial-gradient(circle at 35% 30%, #f3dcff, #7a3fc8);
+}
+
+.garden-bonus {
+  margin: 0;
+  padding: 1.6cqw 2.6cqw;
+  border-radius: 3cqw;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 3.1cqw;
+  font-weight: 700;
+  color: #2e7d32;
+}
+
+.blooms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2cqw;
+  font-size: 2.7cqw;
+}
+
+.blooms span {
+  padding: 0.6cqw 2cqw;
+  border-radius: 99cqw;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.spot-count {
+  position: absolute;
+  top: -1cqw;
+  right: 15%;
+  min-width: 5.4cqw;
+  height: 5.4cqw;
+  padding: 0 1.2cqw;
+  border-radius: 99cqw;
+  background: #ff5a6e;
+  color: #fff;
+  font-style: normal;
+  font-family: var(--font-display);
+  font-size: 3.2cqw;
+  line-height: 5.4cqw;
+  border: 0.6cqw solid #fff;
+}
+
+.loot-card.seed {
+  box-shadow: 0 0 0 0.6cqw #9a6a2a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-art,
+  .plant-sprite,
+  .plant-seed,
+  .sparkle,
+  .pick,
+  .pick-all {
+    animation: none;
+  }
+}

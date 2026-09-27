@@ -1,0 +1,729 @@
+/* Bag forge + level-up + currencies + the Nap Bank screen. Sizes use cqw like the rest of the HUD. */
+
+:root {
+  --petal: #ff9eb5;
+  --petal-deep: #ff6f91;
+  --dust: #8b7bff;
+  --dust-glow: #ffe38a;
+}
+
+/* ---------- currency icons ---------- */
+.petal-ico,
+.dust-ico {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.25em;
+  vertical-align: -0.12em;
+}
+
+.petal-ico {
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg) scale(0.85);
+  background: var(--petal);
+  box-shadow: inset -0.15em -0.15em 0 var(--petal-deep);
+}
+
+.dust-ico {
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  background: radial-gradient(circle, #fff 0 18%, var(--dust-glow) 30%, var(--dust) 75%);
+}
+
+.bag-head .wallet {
+  display: flex;
+  gap: 1.6cqw;
+  margin-left: auto;
+  margin-right: 2cqw;
+  font-family: var(--font-display);
+  font-size: 3.6cqw;
+}
+
+.bag-head .wallet > span {
+  padding: 0.6cqw 2cqw;
+  border-radius: 99cqw;
+  background: #f0e3d4;
+}
+
+/* ---------- level up ---------- */
+.bag-level {
+  display: flex;
+  gap: 2cqw;
+}
+
+.bag-level button {
+  border: none;
+  border-radius: 3.4cqw;
+  font-weight: 700;
+  color: var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.bag-level .lv-btn {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2cqw 3.6cqw;
+  font-size: 3.8cqw;
+  background: linear-gradient(180deg, #ffe07a, var(--gold));
+  box-shadow: 0 1cqw 0 #c98a1c;
+}
+
+.bag-level .lv-btn small {
+  font-family: var(--font-display);
+  font-size: 3.6cqw;
+  font-weight: 400;
+}
+
+.bag-level .lv-team {
+  padding: 2cqw 3cqw;
+  font-size: 3.2cqw;
+  background: #f0e3d4;
+  box-shadow: 0 1cqw 0 #d9c6b2;
+}
+
+.bag-level button:active:not(:disabled),
+.forge button:active:not(:disabled) {
+  transform: translateY(0.8cqw);
+  box-shadow: 0 0.2cqw 0 rgba(0, 0, 0, 0.25);
+}
+
+.bag-sheet button:disabled {
+  filter: grayscale(0.8);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bag-actions {
+  flex-wrap: wrap;
+}
+
+.bag-actions button + button.auto-merge {
+  background: #9fdcc3;
+  box-shadow: 0 0.8cqw 0 #5fae8d;
+}
+
+/* ---------- toast ---------- */
+.bag-toast {
+  min-height: 4.4cqw;
+  margin: -1cqw 0;
+  text-align: center;
+  font-size: 3.4cqw;
+  font-weight: 700;
+}
+
+.bag-toast.ok {
+  color: #1f8a4c;
+  animation: toast-pop 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.bag-toast.bad {
+  color: #c0392b;
+}
+
+@keyframes toast-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+
+/* ---------- +N badge ---------- */
+.tile .plus {
+  position: absolute;
+  right: 4%;
+  bottom: 2%;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 3.2cqw;
+  line-height: 1;
+  color: #fff;
+  -webkit-text-stroke: 0.6cqw var(--ink);
+  paint-order: stroke fill;
+}
+
+.bag-detail .plus-label {
+  font-style: normal;
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: #e0781c;
+}
+
+/* ---------- item detail layout + forge ---------- */
+.bag-detail {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2cqw;
+}
+
+.detail-top {
+  display: flex;
+  gap: 2.4cqw;
+  align-items: center;
+}
+
+.bag-detail .wear {
+  align-self: flex-start;
+}
+
+.bag-detail .sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1cqw;
+}
+
+.bag-detail .reroll {
+  padding: 0.2cqw 1.6cqw;
+  border: 0.4cqw solid #d9cff7;
+  border-radius: 99cqw;
+  background: #f4f0ff;
+  color: #5a47b8;
+  font-size: 2.6cqw;
+  font-weight: 700;
+}
+
+.forge {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.8cqw;
+}
+
+.forge button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2cqw;
+  padding: 1.6cqw 2.6cqw;
+  border: none;
+  border-radius: 3cqw;
+  color: var(--ink);
+  text-align: left;
+  font-size: 3.3cqw;
+  font-weight: 700;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.forge button small {
+  font-size: 2.7cqw;
+  font-weight: 500;
+  color: rgba(42, 22, 51, 0.75);
+}
+
+.forge .up-btn {
+  grid-column: 1 / -1;
+  font-size: 3.8cqw;
+  background: linear-gradient(100deg, #ffd0a8, #ffb3c7);
+  box-shadow: 0 0.9cqw 0 #d9868f;
+}
+
+.forge .move-btn {
+  grid-column: 1 / -1;
+  background: #ffe9a8;
+  box-shadow: 0 0.9cqw 0 #d9b24e;
+}
+
+.forge .merge-btn {
+  background: #c9e9ff;
+  box-shadow: 0 0.9cqw 0 #7fb3dc;
+}
+
+.forge .salvage-btn {
+  background: #ece6ff;
+  box-shadow: 0 0.9cqw 0 #a99bdc;
+}
+
+.forge .salvage-btn.confirm {
+  background: #ff9e8a;
+  box-shadow: 0 0.9cqw 0 #d9705c;
+  animation: nudge 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes nudge {
+  to {
+    transform: scale(1.03);
+  }
+}
+
+/* ---------- nap bank ---------- */
+.nap-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+  padding: 5cqw;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.35) 0 0.4cqw, transparent 0.6cqw),
+    radial-gradient(circle at 78% 22%, rgba(255, 255, 255, 0.3) 0 0.3cqw, transparent 0.5cqw),
+    radial-gradient(circle at 60% 8%, rgba(255, 255, 255, 0.4) 0 0.5cqw, transparent 0.7cqw),
+    linear-gradient(180deg, rgba(34, 24, 74, 0.92), rgba(62, 36, 92, 0.88));
+  pointer-events: auto;
+  font-family: var(--font-body);
+  animation: nap-fade 0.4s ease both;
+}
+
+.nap-panel[hidden] {
+  display: none;
+}
+
+@keyframes nap-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.nap-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3cqw;
+  padding: 6cqw 5cqw 5cqw;
+  border-radius: 7cqw;
+  background: linear-gradient(180deg, #fff8ec, #ffeede);
+  color: var(--ink);
+  text-align: center;
+  box-shadow: 0 3cqw 8cqw rgba(0, 0, 0, 0.45);
+  animation: sheet-up 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.nap-kicker {
+  margin: 0;
+  font-size: 3.6cqw;
+  letter-spacing: 0.1em;
+  color: #7a5fc8;
+}
+
+.nap-card h2 {
+  margin: 0;
+  font-size: 5.6cqw;
+  line-height: 1.2;
+}
+
+.nap-cap {
+  margin: 0;
+  font-size: 2.9cqw;
+  color: #a8235a;
+}
+
+.nap-bed {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 4cqw 0;
+  border-radius: 50% / 30%;
+  background: radial-gradient(ellipse at 50% 70%, #ffd9e4 0 55%, transparent 70%);
+}
+
+.nap-puff {
+  width: 14cqw;
+  height: 14cqw;
+  margin: 0 -1.4cqw;
+  border: 0.7cqw solid #fff;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f3e7d8;
+  rotate: calc((var(--i) - 2.5) * 7deg);
+  animation: breathe 2.6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.4s);
+}
+
+@keyframes breathe {
+  50% {
+    scale: 1.05 0.95;
+  }
+}
+
+.nap-z {
+  position: absolute;
+  top: 0;
+  right: 18%;
+  font-family: var(--font-display);
+  font-size: 5cqw;
+  color: #7a5fc8;
+  opacity: 0;
+  animation: float-z 2.4s ease-in infinite;
+}
+
+.nap-z:nth-of-type(2) {
+  right: 12%;
+  font-size: 4cqw;
+  animation-delay: 0.8s;
+}
+
+.nap-z:nth-of-type(3) {
+  right: 7%;
+  font-size: 6.5cqw;
+  animation-delay: 1.6s;
+}
+
+@keyframes float-z {
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(3cqw, -8cqw) rotate(15deg);
+  }
+}
+
+.nap-totals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3cqw;
+  font-size: 3.4cqw;
+}
+
+.nap-totals > span {
+  padding: 1.4cqw 3cqw;
+  border-radius: 99cqw;
+  background: #fff;
+  box-shadow: inset 0 0 0 0.5cqw #f0e3d4;
+}
+
+.nap-totals b {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 5cqw;
+}
+
+.nap-totals i {
+  font-size: 4.4cqw;
+}
+
+.nap-items {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.4cqw;
+}
+
+.nap-items .tile {
+  width: 11cqw;
+  height: 11cqw;
+  animation: loot-in 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+.nap-more {
+  display: grid;
+  place-items: center;
+  width: 11cqw;
+  height: 11cqw;
+  border-radius: 3cqw;
+  background: #f0e3d4;
+  font-family: var(--font-display);
+  font-size: 4cqw;
+}
+
+.nap-claim {
+  margin-top: 1cqw;
+  padding: 3cqw 12cqw;
+  border: none;
+  border-radius: 99cqw;
+  background: linear-gradient(180deg, #ffe07a, var(--gold));
+  color: var(--ink);
+  font: inherit;
+  font-size: 5cqw;
+  font-weight: 700;
+  box-shadow: 0 1.2cqw 0 #c98a1c, 0 0 6cqw rgba(255, 201, 60, 0.6);
+  cursor: pointer;
+  animation: claim-pulse 1.4s ease-in-out infinite;
+}
+
+.nap-claim:focus-visible {
+  outline: 0.8cqw solid #fff;
+  outline-offset: 0.8cqw;
+}
+
+.nap-claim:active {
+  transform: translateY(1cqw);
+  box-shadow: 0 0.2cqw 0 #c98a1c;
+}
+
+@keyframes claim-pulse {
+  50% {
+    box-shadow: 0 1.2cqw 0 #c98a1c, 0 0 10cqw rgba(255, 201, 60, 0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nap-puff,
+  .nap-z,
+  .nap-claim,
+  .forge .salvage-btn.confirm {
+    animation: none;
+  }
+
+  .nap-z {
+    opacity: 0.7;
+  }
+}
+
+/* ---------- roster: 7 puffs, 6 fight ---------- */
+.bag-heroes {
+  gap: 1cqw;
+}
+
+.bag-heroes button {
+  position: relative;
+  width: 12cqw;
+  height: 12cqw;
+  overflow: visible;
+}
+
+.bag-heroes button img {
+  border-radius: 50%;
+}
+
+.bag-heroes button.bench img {
+  filter: grayscale(0.85) brightness(0.9);
+  opacity: 0.7;
+}
+
+.bag-heroes button i {
+  position: absolute;
+  left: 50%;
+  bottom: -1.4cqw;
+  translate: -50% 0;
+  padding: 0 1.2cqw;
+  border-radius: 99cqw;
+  background: #6b6178;
+  color: #fff;
+  font-style: normal;
+  font-size: 2.3cqw;
+  line-height: 1.5;
+}
+
+.bag-team-count {
+  margin: -1cqw 0 0;
+  font-size: 2.8cqw;
+  color: #6b6178;
+  text-align: center;
+}
+
+.bag-level .team-btn {
+  padding: 2cqw 3cqw;
+  font-size: 3.2cqw;
+}
+
+.bag-level .team-btn.in {
+  background: #9fdcc3;
+  box-shadow: 0 1cqw 0 #5fae8d;
+}
+
+.bag-level .team-btn.out {
+  background: #e4dcef;
+  box-shadow: 0 1cqw 0 #b9aed0;
+}
+
+/* a puff still waiting on its own art is drawn with a borrowed sheet: warm it up so it reads as someone else */
+.stand-in {
+  filter: sepia(0.75) saturate(1.3) hue-rotate(-12deg) brightness(0.92);
+}
+
+.bag-heroes button.bench img.stand-in {
+  filter: sepia(0.75) grayscale(0.8) brightness(0.85);
+}
+
+/* ---------- picnic: lunch slot + pantry ---------- */
+.bag-lunch {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+
+.lunch-label {
+  flex-shrink: 0;
+  font-size: 3.1cqw;
+  font-weight: 700;
+}
+
+.lunch-slot {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.6cqw;
+  min-height: 11cqw;
+  padding: 1cqw 2.4cqw 1cqw 1.2cqw;
+  border: 0.5cqw dashed #cfe3b0;
+  border-radius: 3cqw;
+  background: #f6fbeb;
+  color: var(--ink);
+  text-align: left;
+  font-size: 3cqw;
+}
+
+.lunch-slot > i {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 2.4cqw;
+  color: #7a9a50;
+}
+
+.lunch-name small {
+  font-weight: 500;
+  color: #6b6178;
+}
+
+.lunch-empty {
+  color: #8a8296;
+}
+
+.bag-lunch.empty-stock .lunch-slot {
+  border-color: #f0b3a8;
+  background: #fff3f0;
+}
+
+.food-icon {
+  flex-shrink: 0;
+  width: 9cqw;
+  height: 9cqw;
+  object-fit: contain;
+}
+
+/* no icon sheet yet: a round chip with the first letters of the name */
+.food-icon.text {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 3cqw;
+  font-weight: 700;
+  color: #fff;
+  background: #8fbf3a;
+}
+
+.food-icon.text.rarity-uncommon {
+  background: #5aa0e0;
+}
+
+.food-icon.text.rarity-rare {
+  background: #b27ae8;
+}
+
+.react {
+  flex-shrink: 0;
+  padding: 0.2cqw 1.6cqw;
+  border-radius: 99cqw;
+  font-size: 2.5cqw;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.react.fav { background: #ffe0ee; color: #c2185b; }
+.react.ok { background: #e3f6d8; color: #2e7d32; }
+.react.no { background: #ececf2; color: #6b6178; }
+.react.bad { background: #ffe1dc; color: #c0392b; }
+.react.unknown { background: #fff4d6; color: #9a6b00; }
+
+.bag-pantry {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6cqw;
+  padding: 2cqw;
+  border-radius: 4cqw;
+  background: #f6fbeb;
+  animation: toast-pop 0.25s ease-out;
+}
+
+.pantry-hint {
+  margin: 0;
+  font-size: 2.7cqw;
+  color: #5b6b4a;
+}
+
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.6cqw;
+}
+
+.food-card {
+  display: flex;
+  flex-direction: column;
+  border: 0.5cqw solid #e2ecd2;
+  border-radius: 3cqw;
+  background: #fff;
+  overflow: hidden;
+}
+
+.food-card.rarity-uncommon { border-color: #cfe1f5; }
+.food-card.rarity-rare { border-color: #e2d0f7; box-shadow: 0 0 2cqw rgba(178, 122, 232, 0.35); }
+
+.food-card.on {
+  border-color: #8fbf3a;
+  box-shadow: 0 0 0 0.6cqw #8fbf3a;
+}
+
+.food-pick {
+  display: flex;
+  gap: 1.4cqw;
+  align-items: flex-start;
+  padding: 1.4cqw;
+  border: none;
+  background: none;
+  color: var(--ink);
+  text-align: left;
+}
+
+.food-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4cqw;
+  min-width: 0;
+  font-size: 2.8cqw;
+}
+
+.food-text small {
+  font-weight: 500;
+  color: #6b6178;
+}
+
+.food-buff {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.food-sell,
+.food-none {
+  border: none;
+  background: #f3efe6;
+  color: #6b6178;
+  font-size: 2.6cqw;
+  font-weight: 700;
+  padding: 0.8cqw;
+}
+
+.food-none {
+  border-radius: 3cqw;
+  padding: 1.6cqw;
+}
+
+/* forage in the stage-clear popup */
+.loot-card.forage {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(246, 251, 235, 0.95);
+  box-shadow: 0 0 0 0.6cqw #8fbf3a;
+  filter: none;
+}
+
+.loot-card.forage .icon {
+  inset: 10%;
+  width: 80%;
+  height: 80%;
+}
+
+.forage-name {
+  padding: 0 1cqw;
+  font-size: 2.3cqw;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  color: #3d5a1a;
+}

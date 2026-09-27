@@ -1,8 +1,10 @@
 # Puff Slayers — ภาพไอเทมจาก art-prompts-v2.md ข้อ 4.10
 
-สร้างจาก prompt ใน `docs/art-prompts-v2.md` ข้อ 4.10 โดยแทนค่าอาวุธ ช่องอุปกรณ์ ของแรร์ และสกินตามตารางในหัวข้อนั้น และใช้ระดับ Tier จาก `docs/GDD.md` ข้อ 6 ภาพทั้งหมดเป็น concept sheet/ต้นฉบับสำหรับคัดเลือกและตัดเป็น asset ต่อ ยังไม่มีการผูกเข้ากับโค้ดเกม
+สร้างจาก prompt ใน `docs/art-prompts-v2.md` ข้อ 4.10 โดยแทนค่าอาวุธ ช่องอุปกรณ์ ของแรร์ และสกินตามตารางในหัวข้อนั้น และใช้ระดับ Tier จาก `docs/GDD.md` ข้อ 6 ภาพอาวุธแยก Tier ใน `weapons/` ถูกตัดเป็นไอคอน 128×128 และใช้ในเกมผ่าน `npm run sprites` แล้ว
 
 ## อาวุธ 7 Tier (ซ้ายไปขวา: Crumb, Fluffy, Silky, Dreamy, Starry, Mythic Puff, Cosmic Cotton)
+
+ภาพอาวุธดีไซน์ใหม่อยู่ใน [`weapons/`](weapons/) เป็นไฟล์ `<class>-t1.png` ถึง `t7.png` อาชีพละ 7 ภาพ รวม 49 ภาพ ตัวตัดสไปรต์ใช้ภาพเหล่านี้ทับ Tier ที่ตรงกันจากแผ่นแถวเดิมด้านล่าง
 
 - [Carrot Knight](carrot-knight-seven-tiers.png)
 - [Pillow Guard](pillow-guard-seven-tiers.png)

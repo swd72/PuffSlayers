@@ -66,7 +66,9 @@ describe('status effects', () => {
   it('Bubble Prison traps enemies so they cannot move or attack', () => {
     let s = battle([hero('mage', 'shibu', 'bubble-mage')], { autoUltimate: true });
     const me = s.units.find((u) => u.id === 'mage')!;
-    const foe = createEnemy({ kind: 'tulip' }, 'w0-e0', 1, { x: me.x + 100, y: me.y });
+    const tulip = createEnemy({ kind: 'tulip' }, 'w0-e0', 1, { x: me.x + 100, y: me.y });
+    // tough enough to survive the ultimate, so the trap itself can be checked
+    const foe = { ...tulip, hp: 99999, stats: { ...tulip.stats, maxHp: 99999 } };
     s = patch(withEnemies(s, [foe]), 'mage', { energy: 100 });
     const { state, events } = run(s, Math.ceil(TUNING.castMs / TUNING.tickMs) + 1);
     expect(events).toContainEqual({ type: 'status', target: 'w0-e0', status: 'bubble', ms: TUNING.bubbleStunMs });

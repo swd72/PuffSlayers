@@ -1,12 +1,18 @@
 // Ultimate choreography: every skill starts at the caster, travels, and lands on its targets.
+// Each one is a 1.5–2 s combo with several hits; the damage number is split across them (see BattleScene).
 import gsap from 'gsap';
 import type { HeroClass, Point } from '@puff/sim';
 import { CLASS_COLOR } from '../assets';
 import type { ActorView } from './actor';
-import { glowFlare, screenFlash, speedLines } from './anime';
+import { glowFlare, magicCircle, screenFlash, slashArc, sparks, speedLines } from './anime';
 import type { SceneApi } from './api';
+import { addHit, alive, at, dash, hitAll, hop, nearestFirst, script, type ImpactTimes } from './choreo';
 import { decal, fxSprite, playFx } from './fx';
 import { PROJECTILES, launch } from './projectiles';
+import { rootAwakening } from './rootDruid';
+import { bearHugFestival, mochiRain } from './ultimateSupport';
+
+export type { ImpactTimes } from './choreo';
 
 export interface UltimateEvent {
   readonly source: string;
@@ -16,16 +22,14 @@ export interface UltimateEvent {
   readonly at: Point;
 }
 
-/** Per target: how many seconds until the skill actually hits it. */
-export type ImpactTimes = Map<string, number>;
-
-const every = (targets: readonly ActorView[], delay: number): ImpactTimes => new Map(targets.map((t) => [t.unit.id, delay]));
+/** How long the field stays dimmed while a combo plays. */
+const COMBO_DIM = 1.8;
 
 export function playUltimate(api: SceneApi, ev: UltimateEvent): ImpactTimes {
   const caster = api.actor(ev.source);
   if (!caster) return new Map();
   const targets = ev.targets.map((id) => api.actor(id)).filter((a): a is ActorView => !!a && !a.gone);
-  api.dim(0.9);
+  api.dim(COMBO_DIM);
   switch (ev.heroClass) {
     case 'carrot-knight':
       return carrotCrescent(api, caster, ev, targets);
@@ -39,195 +43,280 @@ export function playUltimate(api: SceneApi, ev: UltimateEvent): ImpactTimes {
       return mochiRain(api, caster, targets);
     case 'bell-bard':
       return bearHugFestival(api, caster, targets);
+    case 'root-druid':
+      return rootAwakening(api, caster, ev.at, targets);
   }
 }
 
-/** Crouch → leap in an arc → spin → slam down; a fire wave rolls on and leaves a scorch mark. */
+/**
+ * Three dash-slashes through the pack (afterimages, crescent arcs), then a spinning leap
+ * and a flaming crescent slam that sends a fire wave rolling on.
+ */
 function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, targets: ActorView[]): ImpactTimes {
-  const land = { x: knight.unit.x, y: knight.unit.y };
+  const color = CLASS_COLOR['carrot-knight'];
   const flip = knight.unit.facing < 0;
-  const leap = 0.42;
-  const impact = 0.08 + leap;
-  knight.scripted = true;
+  const order = nearestFirst(knight, targets);
+  const stops = [0, 1, 2].map((i) => order[i % Math.max(1, order.length)]?.root ?? ev.at);
+  const slashes = [0.22, 0.46, 0.7];
+  const slam = 1.35;
+  script(knight, 1.65);
   knight.root.position.set(ev.from.x, ev.from.y);
-  knight.pose('sig', 0, 0.08);
-  playFx(api.ground, 'vfx/knight-leap-dust', ev.from.x, ev.from.y + 6, { size: 70, frameTime: 0.3 });
-  api.sound('swing');
-  const tl = gsap.timeline({ delay: 0.08 });
-  tl.call(() => knight.pose('sig', 1, leap * 0.45));
-  tl.to(knight.root, { x: land.x, y: land.y, duration: leap, ease: 'power1.inOut' }, 0);
-  tl.to(knight.body, { y: -95, duration: leap * 0.5, ease: 'power2.out' }, 0);
-  tl.call(() => knight.pose('sig', 2, leap * 0.3), undefined, leap * 0.45);
-  tl.to(knight.body, { y: 0, duration: leap * 0.5, ease: 'power3.in' }, leap * 0.5);
-  tl.call(() => {
+  knight.pose('sig', 0, 0.12);
+  playFx(api.ground, 'vfx/knight-leap-dust', ev.from.x, ev.from.y + 6, { size: 70, frameTime: 0.2 });
+
+  slashes.forEach((when, i) => {
+    const stop = stops[i]!;
+    const side = i % 2 === 0 ? -1 : 1;
+    at(when - 0.14, [knight], () => {
+      knight.pose('sig', 1 + (i % 2), 0.2);
+      dash(api, knight, { x: stop.x + side * 34, y: stop.y + 6 }, 0.13, color);
+      api.sound('swing');
+    });
+    at(when, [knight], () => {
+      const c = { x: stop.x, y: stop.y - 30 };
+      slashArc(api.fx, c.x, c.y, 46, (side * Math.PI) / 4 + Math.PI / 2, color, 0.3);
+      playFx(api.fx, 'vfx/knight-slash-small', c.x, c.y + 18, { size: 90, flip: side > 0, frameTime: 0.05 });
+      sparks(api.fx, c.x, c.y, 0xffc680, 10, 140);
+      api.shake(5);
+    });
+  });
+
+  // spinning leap to the centre of the pack, then the flaming crescent
+  at(0.84, [knight], () => {
+    knight.pose('sig', 1, 0.25);
+    gsap.to(knight.root, { x: ev.at.x - knight.unit.facing * 30, y: ev.at.y, duration: 0.5, ease: 'power1.inOut' });
+    hop(knight, 120, 0.5, 1);
+    speedLines(api.overlay, ev.at.x, ev.at.y - 40, 0xffe0b0, 0.5);
+  });
+  at(slam - 0.16, [knight], () => {
+    knight.pose('sig', 2, 0.2);
+    playFx(api.fx, 'vfx/knight-crescent-smear', ev.at.x, ev.at.y + 10, { size: 170, flip, frameTime: 0.05, zIndex: ev.at.y + 30 });
+    if (knight.unit.relics.includes('carrot-excalibur')) {
+      // Carrot Excalibur: a second, golden crescent crosses the first
+      playFx(api.fx, 'vfx/knight-crescent-smear', ev.at.x, ev.at.y + 10, { size: 195, flip: !flip, frameTime: 0.05, tint: 0xffe07a, zIndex: ev.at.y + 31 });
+    }
+  });
+  at(slam, [knight], () => {
     knight.pose('sig', 3, 0.45);
-    knight.scripted = false;
-  }, undefined, leap);
-  gsap.delayedCall(impact - 0.14, () => playFx(api.fx, 'vfx/knight-crescent-smear', land.x, land.y + 10, { size: 150, flip, frameTime: 0.06, zIndex: land.y + 30 }));
-  if (knight.unit.relics.includes('carrot-excalibur')) {
-    // Carrot Excalibur: a second, golden crescent crosses the first
-    gsap.delayedCall(impact - 0.02, () => playFx(api.fx, 'vfx/knight-crescent-smear', land.x, land.y + 10, { size: 175, flip: !flip, frameTime: 0.06, tint: 0xffe07a, zIndex: land.y + 31 }));
-  }
-  gsap.delayedCall(impact, () => {
-    const t = targets[0]?.chest() ?? { x: ev.at.x, y: ev.at.y - 30 };
-    playFx(api.fx, 'vfx/knight-impact', t.x, t.y + 20, { size: 130, anchor: 'center', frameTime: 0.07 });
-    const wave = fxSprite('vfx/knight-firewave', { size: 120, byWidth: true, anchor: 'center', flip });
-    wave.position.set(land.x, land.y - 12);
-    wave.zIndex = land.y + 25;
+    const t = { x: ev.at.x, y: ev.at.y - 30 };
+    playFx(api.fx, 'vfx/knight-impact', t.x, t.y + 20, { size: 150, anchor: 'center', frameTime: 0.07 });
+    const wave = fxSprite('vfx/knight-firewave', { size: 140, byWidth: true, anchor: 'center', flip });
+    wave.position.set(ev.at.x, ev.at.y - 12);
+    wave.zIndex = ev.at.y + 25;
     api.fx.addChild(wave);
-    gsap.timeline({ onComplete: () => wave.destroy() }).to(wave, { x: land.x + knight.unit.facing * 150, duration: 0.45, ease: 'power2.out' }).to(wave, { alpha: 0, duration: 0.2 }, 0.3);
-    decal(api.ground, 'vfx/knight-scorch', land.x + knight.unit.facing * 40, land.y, { width: 130, hold: 1.4 });
-    glowFlare(api.fx, t.x, t.y, 0xff8a2a, 140, 0.45);
-    api.filters.shockwave(t.x, t.y, 24);
-    api.filters.zoomBurst(t.x, t.y, 0.16);
+    gsap.timeline({ onComplete: () => wave.destroy() }).to(wave, { x: ev.at.x + knight.unit.facing * 170, duration: 0.5, ease: 'power2.out' }).to(wave, { alpha: 0, duration: 0.2 }, 0.35);
+    decal(api.ground, 'vfx/knight-scorch', ev.at.x + knight.unit.facing * 40, ev.at.y, { width: 150, hold: 1.4 });
+    glowFlare(api.fx, t.x, t.y, 0xff8a2a, 170, 0.5);
+    api.filters.shockwave(t.x, t.y, 26);
+    api.filters.zoomBurst(t.x, t.y, 0.18);
     screenFlash(api.overlay, api.screen, 0xffc680, 0.4);
     api.sound('ult-carrot-knight');
-    api.shake(13);
+    api.shake(14);
     api.hitstop(90);
   });
-  return every(targets, impact);
+  return hitAll(targets, [...slashes, slam]);
 }
 
-/** Aim up, fire a light arrow into the sky, a target circle appears, then arrows rain down. */
+/** Backflip, three arrow volleys, then a light arrow into the sky and a storm of arrows raining down in waves. */
 function leafStorm(api: SceneApi, archer: ActorView, ev: UltimateEvent, targets: ActorView[]): ImpactTimes {
-  archer.pose('sig', 3, 0.7);
-  const bow = archer.muzzle(0.1, 0.7);
-  api.sound('pew');
-  launch(api.fx, PROJECTILES.skyArrow, bow, { x: bow.x, y: bow.y - 360 });
-  decal(api.ground, 'vfx/archer-target-zone', ev.at.x, ev.at.y, { width: 210, hold: 1 });
-  const rain = 0.45;
-  gsap.delayedCall(rain, () => {
-    playFx(api.fx, 'vfx/archer-rain', ev.at.x, ev.at.y + 20, { size: 230, byWidth: true, frameTime: 0.1, zIndex: ev.at.y + 40 });
-    speedLines(api.overlay, ev.at.x, ev.at.y - 20, 0xd9ffc2, 0.4);
+  const color = CLASS_COLOR['leaf-archer'];
+  const hits: ImpactTimes = new Map();
+  script(archer, 1.75);
+  const back = { x: archer.root.x - archer.unit.facing * 40, y: archer.root.y };
+  archer.pose('sig', 2, 0.3);
+  gsap.to(archer.root, { x: back.x, y: back.y, duration: 0.3, ease: 'power2.out' });
+  hop(archer, 50, 0.3, 1);
+
+  const volleys = [0.35, 0.52, 0.69];
+  volleys.forEach((when, v) => {
+    at(when, [archer], () => {
+      archer.pose('sig', 3, 0.14);
+      const bow = archer.muzzle(0.25, 0.55);
+      playFx(api.fx, 'vfx/archer-release', bow.x, bow.y, { size: 46, anchor: 'center', flip: archer.unit.facing < 0, frameTime: 0.05 });
+      api.sound('pew');
+    });
+    targets.forEach((t, i) => {
+      if ((i + v) % 2 === 1 && targets.length > 2) return; // alternate targets so volleys read as separate shots
+      const bow = archer.muzzle(0.25, 0.55);
+      const to = t.chest();
+      const flight = Math.max(0.12, Math.hypot(to.x - bow.x, to.y - bow.y) / PROJECTILES.arrow.speed);
+      addHit(hits, t.unit.id, when + flight);
+      at(when, [archer, t], () => launch(api.fx, PROJECTILES.arrow, archer.muzzle(0.25, 0.55), t.chest(), () => {
+        if (!alive(t)) return;
+        const c = t.chest();
+        playFx(api.fx, 'vfx/archer-hit', c.x, c.y, { size: 48, anchor: 'center', frameTime: 0.05 });
+      }));
+    });
+  });
+
+  at(0.85, [archer], () => {
+    archer.pose('sig', 3, 0.5);
+    const bow = archer.muzzle(0.1, 0.7);
+    launch(api.fx, PROJECTILES.skyArrow, bow, { x: bow.x, y: bow.y - 360 });
+    decal(api.ground, 'vfx/archer-target-zone', ev.at.x, ev.at.y, { width: 230, hold: 1 });
+    magicCircle(api.ground, ev.at.x, ev.at.y, 110, color, 1);
+    api.sound('pew');
+  });
+  const rain = [1.2, 1.38, 1.56];
+  at(1.1, [archer], () => {
+    playFx(api.fx, 'vfx/archer-rain', ev.at.x, ev.at.y + 20, { size: 250, byWidth: true, frameTime: 0.12, zIndex: ev.at.y + 40 });
+    speedLines(api.overlay, ev.at.x, ev.at.y - 20, 0xd9ffc2, 0.6);
     api.sound('ult-leaf-archer');
   });
-  const hits: ImpactTimes = new Map();
-  targets.forEach((t, i) => {
-    const when = rain + 0.12 + (i % 4) * 0.05;
-    hits.set(t.unit.id, when);
-    gsap.delayedCall(when, () => {
-      const c = t.chest();
-      playFx(api.fx, 'vfx/archer-hit', c.x, c.y, { size: 56, anchor: 'center', frameTime: 0.06 });
+  rain.forEach((when, wave) => {
+    at(when, [archer], () => {
+      api.shake(wave === rain.length - 1 ? 10 : 5);
+      if (wave === rain.length - 1) api.filters.zoomBurst(ev.at.x, ev.at.y - 20, 0.14);
+    });
+    targets.forEach((t, i) => {
+      const w = when + (i % 3) * 0.03;
+      addHit(hits, t.unit.id, w);
+      at(w, [t], () => {
+        const c = t.chest();
+        playFx(api.fx, 'vfx/archer-hit', c.x + (wave - 1) * 8, c.y, { size: 56, anchor: 'center', frameTime: 0.05 });
+      });
     });
   });
-  gsap.delayedCall(rain + 0.15, () => {
-    api.filters.zoomBurst(ev.at.x, ev.at.y - 20, 0.12);
-    api.shake(8);
-  });
   return hits;
 }
 
-/** A rune circle opens, big bubbles float out to each foe and swallow it (the sim stuns them). */
+/** Bubbles gather and orbit the mage, fly out to swallow each foe, get peppered by more bubbles, then all squeeze at once. */
 function bubblePrison(api: SceneApi, mage: ActorView, ev: UltimateEvent, targets: ActorView[]): ImpactTimes {
-  mage.pose('sig', 2, 0.8);
-  decal(api.ground, 'vfx/bubble-circle', ev.at.x, ev.at.y, { width: 210, hold: 1.2 });
-  const wand = mage.muzzle(0.3, 0.6);
-  playFx(api.fx, 'vfx/bubble-blow', wand.x, wand.y, { size: 70, byWidth: true, anchor: 'center', flip: mage.unit.facing < 0, frameTime: 0.15 });
-  api.sound('ult-bubble-mage');
+  const color = CLASS_COLOR['bubble-mage'];
   const hits: ImpactTimes = new Map();
-  targets.forEach((t, i) => {
-    const wait = 0.15 + i * 0.07;
-    const to = t.chest();
-    const flight = Math.max(PROJECTILES.bigBubble.minDuration, Math.hypot(to.x - wand.x, to.y - wand.y) / PROJECTILES.bigBubble.speed);
-    hits.set(t.unit.id, wait + flight);
-    gsap.delayedCall(wait, () =>
-      launch(api.fx, PROJECTILES.bigBubble, wand, to, () => {
-        playFx(api.fx, 'vfx/bubble-splash', to.x, to.y, { size: 60, anchor: 'center', frameTime: 0.06 });
-        t.trapInBubble();
+  mage.pose('sig', 2, 1.6);
+  magicCircle(api.ground, mage.root.x, mage.root.y, 60, color, 1.6);
+  decal(api.ground, 'vfx/bubble-circle', ev.at.x, ev.at.y, { width: 230, hold: 1.5 });
+  api.sound('ult-bubble-mage');
+
+  // orbiting bubbles around the mage
+  const orbs = Array.from({ length: 6 }, () => fxSprite('vfx/bubble-orb', { size: 30, anchor: 'center' }));
+  const spin = { a: 0, r: 10 };
+  for (const o of orbs) api.fx.addChild(o);
+  gsap.to(spin, {
+    a: Math.PI * 3,
+    r: 46,
+    duration: 0.7,
+    ease: 'power1.in',
+    onUpdate: () =>
+      orbs.forEach((o, i) => {
+        if (o.destroyed) return;
+        const a = spin.a + (i / orbs.length) * Math.PI * 2;
+        o.position.set(mage.root.x + Math.cos(a) * spin.r, mage.root.y - 40 + Math.sin(a) * spin.r * 0.5);
+        o.zIndex = o.y + 60;
       }),
-    );
+    onComplete: () => orbs.forEach((o) => o.destroy()),
   });
-  const last = Math.max(0.4, ...hits.values());
-  gsap.delayedCall(last, () => {
-    api.filters.shockwave(ev.at.x, ev.at.y - 20, 18);
-    api.shake(6);
+
+  const wand = () => mage.muzzle(0.3, 0.6);
+  targets.forEach((t, i) => {
+    const wait = 0.7 + i * 0.05;
+    const to = t.chest();
+    const flight = Math.max(PROJECTILES.bigBubble.minDuration, Math.hypot(to.x - wand().x, to.y - wand().y) / PROJECTILES.bigBubble.speed);
+    addHit(hits, t.unit.id, wait + flight);
+    at(wait, [mage, t], () => {
+      playFx(api.fx, 'vfx/bubble-blow', wand().x, wand().y, { size: 60, byWidth: true, anchor: 'center', flip: mage.unit.facing < 0, frameTime: 0.08 });
+      launch(api.fx, PROJECTILES.bigBubble, wand(), t.chest(), () => {
+        if (!alive(t)) return;
+        const c = t.chest();
+        playFx(api.fx, 'vfx/bubble-splash', c.x, c.y, { size: 60, anchor: 'center', frameTime: 0.06 });
+        t.trapInBubble();
+      });
+    });
+    // a second stream of small bubbles pops against the prison
+    const pepper = 1.25 + (i % 3) * 0.04;
+    addHit(hits, t.unit.id, pepper);
+    at(pepper - 0.2, [mage, t], () => launch(api.fx, PROJECTILES.bubble, wand(), t.chest()));
+    at(pepper, [t], () => {
+      const c = t.chest();
+      playFx(api.fx, 'vfx/bubble-splash', c.x + 10, c.y - 6, { size: 38, anchor: 'center', frameTime: 0.05 });
+    });
+  });
+
+  const burst = 1.65;
+  at(burst, [], () => {
+    for (const t of targets.filter((x) => alive(x))) {
+      const c = t.chest();
+      // the prison squeezes (big splash); it pops for real with bubble-prison-burst when the stun ends
+      playFx(api.fx, 'vfx/bubble-splash', c.x, c.y, { size: 100, anchor: 'center', frameTime: 0.06 });
+      playFx(api.fx, 'vfx/status-stun', t.root.x, t.root.y - t.height * 1.05, { size: 44, anchor: 'center', frameTime: 0.1 });
+      addHit(hits, t.unit.id, burst);
+    }
+    glowFlare(api.fx, ev.at.x, ev.at.y - 20, color, 220, 0.5);
+    api.filters.shockwave(ev.at.x, ev.at.y - 20, 22);
+    screenFlash(api.overlay, api.screen, 0xd8f0ff, 0.3);
+    api.shake(9);
+    api.hitstop(70);
   });
   return hits;
 }
 
-/** Curl into a ball, roll straight through the pack (trail behind), bounce and slam. */
+/** Curl into a ball and roll through the pack, bounce, roll back through, then a huge body-slam in the middle. */
 function ultimateRoll(api: SceneApi, guard: ActorView, ev: UltimateEvent, targets: ActorView[]): ImpactTimes {
-  const roll = 0.38;
-  const start = 0.1;
-  const dx = ev.at.x - ev.from.x;
-  const dy = ev.at.y - ev.from.y;
-  const len = Math.hypot(dx, dy) || 1;
-  guard.scripted = true;
-  guard.root.position.set(ev.from.x, ev.from.y);
-  guard.pose('sig', 1, start);
-  gsap.delayedCall(start, () => guard.pose('sig', 2, roll));
+  const color = CLASS_COLOR['pillow-guard'];
+  const hits: ImpactTimes = new Map();
+  const a = ev.from;
+  const b = ev.at;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy || 1;
+  script(guard, 1.75);
+  guard.root.position.set(a.x, a.y);
+  guard.pose('sig', 1, 0.12);
+
   const trail = fxSprite('vfx/guard-roll-trail', { size: 120, byWidth: true, anchor: 'center' });
   trail.anchor.set(1, 0.5);
-  trail.rotation = Math.atan2(dy, dx);
-  trail.position.set(ev.from.x, ev.from.y - 20);
   trail.alpha = 0;
   api.fx.addChild(trail);
-  const tl = gsap.timeline({ delay: start, onComplete: () => trail.destroy() });
-  tl.to(guard.root, { x: ev.at.x, y: ev.at.y, duration: roll, ease: 'power1.in' }, 0);
-  tl.to(trail, { alpha: 1, duration: 0.08 }, 0);
-  tl.to(trail, { x: ev.at.x, y: ev.at.y - 20, duration: roll, ease: 'power1.in' }, 0);
-  tl.to(trail, { alpha: 0, duration: 0.25 }, roll);
-  tl.call(() => {
-    guard.scripted = false;
+  const pass = (start: number, from: Point, to: Point, dur: number) => {
+    at(start, [guard], () => {
+      guard.pose('sig', 2, dur);
+      trail.rotation = Math.atan2(to.y - from.y, to.x - from.x);
+      trail.position.set(from.x, from.y - 20);
+      gsap.to(trail, { alpha: 1, duration: 0.06 });
+      gsap.to(trail, { x: to.x, y: to.y - 20, duration: dur, ease: 'power1.in' });
+      gsap.to(trail, { alpha: 0, duration: 0.15, delay: dur });
+      gsap.to(guard.root, { x: to.x, y: to.y, duration: dur, ease: 'power1.in' });
+      gsap.fromTo(guard.body, { rotation: 0 }, { rotation: Math.PI * 4 * Math.sign(to.x - from.x || 1), duration: dur, onComplete: () => void (guard.body.rotation = 0) });
+      api.sound('swing');
+    });
+    for (const t of targets) {
+      // hit when the ball passes the target's spot along the path
+      const along = Math.max(0, Math.min(1, ((t.root.x - a.x) * dx + (t.root.y - a.y) * dy) / len2));
+      const when = start + dur * (to === b ? along : 1 - along);
+      addHit(hits, t.unit.id, when);
+      at(when, [t], () => {
+        const c = t.chest();
+        playFx(api.fx, 'vfx/guard-bash', c.x, c.y, { size: 60, anchor: 'center', frameTime: 0.05 });
+        api.shake(4);
+      });
+    }
+  };
+  pass(0.12, a, b, 0.34);
+  at(0.46, [guard], () => hop(guard, 40, 0.2));
+  pass(0.66, b, a, 0.34);
+
+  // big jump into the middle and body-slam
+  const slam = 1.45;
+  at(1.0, [guard], () => {
+    guard.pose('sig', 1, 0.45);
+    gsap.to(guard.root, { x: b.x, y: b.y, duration: 0.45, ease: 'power1.inOut' });
+    hop(guard, 150, 0.45);
+    speedLines(api.overlay, b.x, b.y - 40, 0xfff0c0, 0.45);
+  });
+  at(slam, [], () => trail.destroy());
+  at(slam, [guard], () => {
     guard.pose('sig', 3, 0.4);
-    playFx(api.ground, 'vfx/guard-slam-ring', ev.at.x, ev.at.y, { size: 200, byWidth: true, anchor: 'center', frameTime: 0.08 });
-    decal(api.ground, 'vfx/guard-taunt', ev.at.x, ev.at.y, { width: 120, hold: 1.4 });
-    api.filters.shockwave(ev.at.x, ev.at.y, 28);
-    api.filters.zoomBurst(ev.at.x, ev.at.y - 20, 0.12);
+    playFx(api.ground, 'vfx/guard-slam-ring', b.x, b.y, { size: 230, byWidth: true, anchor: 'center', frameTime: 0.07 });
+    decal(api.ground, 'vfx/guard-taunt', b.x, b.y, { width: 130, hold: 1.2 });
+    glowFlare(api.fx, b.x, b.y - 20, color, 200, 0.5, 0.5);
+    sparks(api.fx, b.x, b.y - 10, 0xfff0c0, 20, 180);
+    api.filters.shockwave(b.x, b.y, 30);
+    api.filters.zoomBurst(b.x, b.y - 20, 0.14);
     api.sound('ult-pillow-guard');
-    api.shake(15);
+    api.shake(16);
     api.hitstop(100);
-  }, undefined, roll);
-  const hits: ImpactTimes = new Map();
-  for (const t of targets) {
-    // hit when the ball passes the target's spot along the path
-    const along = Math.max(0, Math.min(1, ((t.unit.x - ev.from.x) * dx + (t.unit.y - ev.from.y) * dy) / (len * len)));
-    const when = start + roll * along;
-    hits.set(t.unit.id, when);
-    gsap.delayedCall(when, () => {
-      const c = t.chest();
-      playFx(api.fx, 'vfx/guard-bash', c.x, c.y, { size: 60, anchor: 'center', frameTime: 0.06 });
-    });
-  }
-  return hits;
-}
-
-/** A golden halo opens in the sky and glowing mochi fall onto every ally. */
-function mochiRain(api: SceneApi, cleric: ActorView, allies: ActorView[]): ImpactTimes {
-  cleric.pose('sig', 3, 0.9);
-  const sky = { x: api.screen.x + api.screen.width / 2, y: 330 };
-  playFx(api.fx, 'vfx/holy-sky-ring', sky.x, sky.y, { size: 200, byWidth: true, anchor: 'center', frameTime: 0.5, fade: 0.4, zIndex: 0 });
-  api.sound('ult-mochi-cleric');
-  screenFlash(api.overlay, api.screen, 0xfff0b0, 0.2);
-  const hits: ImpactTimes = new Map();
-  allies.forEach((a, i) => {
-    const wait = 0.15 + i * 0.07;
-    const to = { x: a.root.x, y: a.root.y - a.height * 0.3 };
-    hits.set(a.unit.id, wait + PROJECTILES.mochiRain.minDuration + 0.05);
-    gsap.delayedCall(wait, () =>
-      launch(api.fx, PROJECTILES.mochiRain, to, to, () => {
-        playFx(api.fx, 'vfx/mochi-splat', to.x, to.y, { size: 56, anchor: 'center', frameTime: 0.08 });
-        playFx(api.fx, 'vfx/heal-pillar', a.root.x, a.root.y + 6, { size: 120, frameTime: 0.12 });
-      }),
-    );
   });
+  for (const t of targets) addHit(hits, t.unit.id, slam);
   return hits;
-}
-
-/** A giant golden bell drops and rings; sound waves spread and every ally glows. */
-function bearHugFestival(api: SceneApi, bard: ActorView, allies: ActorView[]): ImpactTimes {
-  bard.pose('sig', 0, 0.9);
-  playFx(api.fx, 'vfx/bard-giant-bell', bard.root.x, bard.root.y + 8, { size: 140, frameTime: 0.12 });
-  gsap.delayedCall(0.25, () => {
-    playFx(api.ground, 'vfx/bard-soundwave', bard.root.x, bard.root.y, { size: 260, byWidth: true, anchor: 'center', frameTime: 0.1 });
-    api.sound('ult-bell-bard');
-    api.filters.shockwave(bard.root.x, bard.root.y - 20, 16);
-  });
-  for (const a of allies) {
-    gsap.delayedCall(0.35, () => {
-      decal(api.ground, 'vfx/bard-aura', a.root.x, a.root.y, { width: 90, hold: 1.2 });
-      glowFlare(api.fx, a.root.x, a.root.y - a.height * 0.4, CLASS_COLOR['bell-bard'], 90, 0.5);
-    });
-  }
-  return every(allies, 0.35);
 }

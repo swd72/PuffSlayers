@@ -40,6 +40,7 @@ export const SFX_NAMES: readonly SfxName[] = [
   'ult-pillow-guard',
   'ult-mochi-cleric',
   'ult-bell-bard',
+  'ult-root-druid',
 ];
 
 const BASE_URL = '/audio/sfx';
