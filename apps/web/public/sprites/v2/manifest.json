@@ -461,6 +461,83 @@
   "refHeight": 360,
   "additive": false
  },
+ "garden/daisy": {
+  "frames": 4,
+  "width": 207,
+  "height": 257,
+  "refHeight": 220,
+  "additive": false
+ },
+ "garden/tulip": {
+  "frames": 4,
+  "width": 181,
+  "height": 256,
+  "refHeight": 220,
+  "additive": false
+ },
+ "garden/sunflower": {
+  "frames": 4,
+  "width": 181,
+  "height": 242,
+  "refHeight": 220,
+  "additive": false
+ },
+ "garden/lavender": {
+  "frames": 4,
+  "width": 196,
+  "height": 260,
+  "refHeight": 220,
+  "additive": false
+ },
+ "garden/cactus": {
+  "frames": 4,
+  "width": 219,
+  "height": 255,
+  "refHeight": 220,
+  "additive": false
+ },
+ "garden/honey-bud": {
+  "frames": 4,
+  "width": 177,
+  "height": 237,
+  "refHeight": 220,
+  "additive": false
+ },
+ "garden/queen-rafflesia": {
+  "frames": 4,
+  "width": 234,
+  "height": 234,
+  "refHeight": 220,
+  "additive": false
+ },
+ "garden/sunflower-colossus": {
+  "frames": 4,
+  "width": 224,
+  "height": 269,
+  "refHeight": 220,
+  "additive": false
+ },
+ "garden/lotus-moon-sage": {
+  "frames": 4,
+  "width": 204,
+  "height": 248,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero-bare/shibu-carrot-knight": {
+  "frames": 6,
+  "width": 229,
+  "height": 234,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig-bare/carrot-knight": {
+  "frames": 4,
+  "width": 225,
+  "height": 238,
+  "refHeight": 220,
+  "additive": false
+ },
  "hero/molemo-root-druid": {
   "frames": 6,
   "width": 255,
