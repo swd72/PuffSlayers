@@ -44,7 +44,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - **สวนปลุกโลก (เฟส 2 ✅)** `sim/garden.ts` · `meta/garden.ts` · `ui/garden.ts`+`garden.css`: Bonk ดอกไม้มีโอกาสได้เมล็ด (บอสได้แน่นอน, นับทั้งชนะ/แพ้), ปลูก 6 แปลงโตตามเวลาจริง (ออฟไลน์ก็โต), รดน้ำได้ครั้งละขั้น, เก็บดอก → บัฟถาวรทั้งทีม (ทุก 5 ดอก, มีเพดาน) + % ฟื้นฟูโลก · ภาพต้นไม้แต่ละขั้นยังไม่มี (ใช้สไปรต์ดอกไม้ศัตรูย่อขนาดแทน; รองรับแผ่น `garden/<seed>` 4 เฟรม)
 - **อาวุธในมือ (ชั้นแยก)** `scene/weaponHold.ts`: ถ้ามีแผ่น `hero-bare/*` เกมใช้ตัวละครมือเปล่า + วางไอคอนอาวุธ Tier ที่ใส่ตามท่า (ตาราง `WEAPON_POSE` ปรับสดได้ที่ `window.__puff.weaponPose`) · ยังไม่มีภาพมือเปล่า → prompt art-prompts ข้อ 10 · **ห้ามใช้ `gsap.killTweensOf([...])` กับ array ของ Pixi object — ไม่ kill อะไรเลย ให้เรียกทีละตัว**
 
-- **เฟส 3–5 (local) ✅:** สมุดพัฟ 13 ตัว (7 เริ่มต้น + Latte/Senbei/Nugget/Sakura ★5, Daifuku/Kuma-Shiba ★6 — ยังใช้ภาพยืมอาชีพเดียวกัน, prompt art-prompts ข้อ 11) · Puff Capsule (Dew Drop, ฟรีวันละครั้ง, pity ★4/10 ★5/60, spark 150) · ชิ้นส่วนพัฟประจำบทจากทุกด่าน (บอสมากกว่า) · ภารกิจรายวัน · Puff Pond · Arena พัฟ vs พัฟ (`BattleConfig.rivals` + `puffHpScale`, คู่แข่งยิงอัลติเอง, 90 วิ) · Raid (EnemySpec `hpMult`/`hpLeft`, 60 วิ/รอบ, Game mode `'raid'`) · ด่านแสดงเป็น "บท-ด่าน" (10 ด่าน/บท)
+- **เฟส 3–5 (local) ✅:** สมุดพัฟ 13 ตัว (7 เริ่มต้น + Latte/Senbei/Nugget/Sakura ★5, Daifuku/Kuma-Shiba ★6 — **มีภาพจริงครบแล้ว**; stand-in ยืมแผ่นอาชีพเดียวกันเผื่อพัฟอนาคต) · Puff Capsule (Dew Drop, ฟรีวันละครั้ง, pity ★4/10 ★5/60, spark 150) · ชิ้นส่วนพัฟประจำบทจากทุกด่าน (บอสมากกว่า) · ภารกิจรายวัน · Puff Pond · Arena พัฟ vs พัฟ (`BattleConfig.rivals` + `puffHpScale`, คู่แข่งยิงอัลติเอง, 90 วิ) · Raid (EnemySpec `hpMult`/`hpLeft`, HP ×10, 60 วิ/รอบ, Game mode `'raid'`; เลเวลแนะนำตีได้ ~7%/รอบ) · ด่านแสดงเป็น "บท-ด่าน" (10 ด่าน/บท)
 - **เลย์เอาต์:** `#app` เป็นกรอบ 9:16; จอกว้างมีแผงข้างซ้าย/ขวา + พื้นหลังเบลอ · หมู่บ้านวางตึกบน `.hub-world` ที่สัดส่วนเท่าภาพ (941×1672) จึงไม่เพี้ยนทุกจอ
 - **ห้ามใช้ class `.ready` ใน UI ใหม่** — ชนกับป้าย ULT ของ HUD (style.css) ใช้ `.hot` แทน
 - `BattleScene.reset()` kill ทุก tween (`gsap.exportRoot().kill()`) + ล้างเลเยอร์ fx; `ActorView.destroy()` ถอดออกทันทีแต่ free ทีหลัง 5 วิ (`actor.removed` แทน `root.destroyed`)
@@ -53,7 +53,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 
 ## ยังไม่ได้ทำ
 - ต่อเซิร์ฟเวอร์ (Arena ของผู้เล่นจริง, Raid pool ร่วม), Co-op Burrow Run, ร้าน Honor, ทำอาหารจากปลา
-- ภาพพัฟใหม่ 6 ตัว, ภาพปลา/ไอคอนวัตถุดิบ · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal/Raid, เสียงจริงที่ยังขาด
+- ภาพที่ยังขาด: มือเปล่าอีก 6 อาชีพ (มีแค่ Tofu `hero-bare/shibu-carrot-knight` + `sig-bare/carrot-knight`), ไอคอนวัตถุดิบ · มีแล้ว: พัฟใหม่ 6 ตัว, ไอคอนปลา `item/fish-0..11`, ต้นไม้ในสวน `garden/<seed>` 4 ขั้น · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal/Raid, เสียงจริงที่ยังขาด
 
 ## วิธีตรวจงานในเบราว์เซอร์ (สำคัญ)
 - Browser pane มักถูกซ่อน → rAF แทบไม่เดิน. ใช้ dev handle `window.__puff = { app, game, gsap, sfx }` แล้ว pump เฟรมเอง:

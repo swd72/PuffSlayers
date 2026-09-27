@@ -96,7 +96,7 @@ export const RAID = {
   ticketsPerDay: 3,
   timeLimitMs: 60_000,
   /** the raid boss has this many times a giant's HP, shared across the week's attempts */
-  hpMult: 12,
+  hpMult: 10,
   /** chests at these shares of the pool */
   milestones: [0.1, 0.25, 0.5, 0.75, 1] as const,
   /** Dew Drops per chest (the last chest is the big one) */
