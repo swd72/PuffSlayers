@@ -1,0 +1,632 @@
+{
+ "hero/bunbun-leaf-archer": {
+  "frames": 6,
+  "width": 238,
+  "height": 256,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/bunbun-mochi-cleric": {
+  "frames": 6,
+  "width": 240,
+  "height": 249,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/hamham-bell-bard": {
+  "frames": 6,
+  "width": 258,
+  "height": 246,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/hamham-pillow-guard": {
+  "frames": 6,
+  "width": 267,
+  "height": 243,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/shibu-bubble-mage": {
+  "frames": 6,
+  "width": 317,
+  "height": 298,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/shibu-carrot-knight": {
+  "frames": 6,
+  "width": 298,
+  "height": 279,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig/carrot-knight": {
+  "frames": 4,
+  "width": 251,
+  "height": 275,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig/leaf-archer": {
+  "frames": 4,
+  "width": 198,
+  "height": 220,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig/bubble-mage": {
+  "frames": 4,
+  "width": 257,
+  "height": 266,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig/pillow-guard": {
+  "frames": 4,
+  "width": 265,
+  "height": 246,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig/mochi-cleric": {
+  "frames": 4,
+  "width": 207,
+  "height": 223,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig/bell-bard": {
+  "frames": 4,
+  "width": 256,
+  "height": 231,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig/cheek-cannon": {
+  "frames": 2,
+  "width": 311,
+  "height": 220,
+  "refHeight": 220,
+  "additive": false
+ },
+ "enemy/daisy-dozer": {
+  "frames": 4,
+  "width": 261,
+  "height": 239,
+  "refHeight": 220,
+  "additive": false
+ },
+ "enemy/tulip-pip": {
+  "frames": 4,
+  "width": 214,
+  "height": 222,
+  "refHeight": 220,
+  "additive": false
+ },
+ "enemy/sunflower-spitter": {
+  "frames": 4,
+  "width": 285,
+  "height": 226,
+  "refHeight": 220,
+  "additive": false
+ },
+ "enemy/lavender-nurse": {
+  "frames": 4,
+  "width": 210,
+  "height": 230,
+  "refHeight": 220,
+  "additive": false
+ },
+ "enemy/cactus-cuddle": {
+  "frames": 4,
+  "width": 205,
+  "height": 223,
+  "refHeight": 220,
+  "additive": false
+ },
+ "enemy/honey-bud": {
+  "frames": 4,
+  "width": 277,
+  "height": 238,
+  "refHeight": 220,
+  "additive": false
+ },
+ "boss/queen-rafflesia": {
+  "frames": 6,
+  "width": 196,
+  "height": 264,
+  "refHeight": 220,
+  "additive": false
+ },
+ "boss/sunflower-colossus": {
+  "frames": 6,
+  "width": 214,
+  "height": 258,
+  "refHeight": 220,
+  "additive": false
+ },
+ "boss/lotus-moon-sage": {
+  "frames": 6,
+  "width": 154,
+  "height": 224,
+  "refHeight": 220,
+  "additive": false
+ },
+ "vfx/archer-arrow-trail": {
+  "frames": 1,
+  "width": 1447,
+  "height": 216,
+  "refHeight": 216,
+  "additive": true
+ },
+ "vfx/archer-arrow": {
+  "frames": 1,
+  "width": 1523,
+  "height": 266,
+  "refHeight": 266,
+  "additive": true
+ },
+ "vfx/archer-hit": {
+  "frames": 3,
+  "width": 425,
+  "height": 405,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/archer-rain": {
+  "frames": 4,
+  "width": 388,
+  "height": 371,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/archer-release": {
+  "frames": 1,
+  "width": 565,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/archer-sky-arrow": {
+  "frames": 1,
+  "width": 57,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/archer-target-zone": {
+  "frames": 1,
+  "width": 758,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/bard-aura": {
+  "frames": 1,
+  "width": 748,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/bard-giant-bell": {
+  "frames": 4,
+  "width": 398,
+  "height": 361,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/bard-soundwave": {
+  "frames": 3,
+  "width": 914,
+  "height": 326,
+  "refHeight": 246,
+  "additive": true
+ },
+ "vfx/bonk-petals": {
+  "frames": 4,
+  "width": 388,
+  "height": 370,
+  "refHeight": 360,
+  "additive": false
+ },
+ "vfx/boss-summon": {
+  "frames": 4,
+  "width": 359,
+  "height": 413,
+  "refHeight": 360,
+  "additive": false
+ },
+ "vfx/boss-telegraph": {
+  "frames": 1,
+  "width": 689,
+  "height": 360,
+  "refHeight": 360,
+  "additive": false
+ },
+ "vfx/boss-vine-slam": {
+  "frames": 4,
+  "width": 361,
+  "height": 367,
+  "refHeight": 360,
+  "additive": false
+ },
+ "vfx/bubble-blow": {
+  "frames": 1,
+  "width": 666,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/bubble-circle": {
+  "frames": 1,
+  "width": 882,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/bubble-orb": {
+  "frames": 1,
+  "width": 373,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/bubble-prison-burst": {
+  "frames": 4,
+  "width": 368,
+  "height": 365,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/bubble-prison": {
+  "frames": 3,
+  "width": 396,
+  "height": 361,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/bubble-splash": {
+  "frames": 3,
+  "width": 402,
+  "height": 366,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/cheek-spit-puff": {
+  "frames": 3,
+  "width": 748,
+  "height": 359,
+  "refHeight": 315,
+  "additive": true
+ },
+ "vfx/guard-bash": {
+  "frames": 3,
+  "width": 404,
+  "height": 364,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/guard-roll-trail": {
+  "frames": 1,
+  "width": 1516,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/guard-slam-ring": {
+  "frames": 4,
+  "width": 700,
+  "height": 357,
+  "refHeight": 287,
+  "additive": true
+ },
+ "vfx/guard-taunt": {
+  "frames": 1,
+  "width": 802,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/heal-pillar": {
+  "frames": 3,
+  "width": 326,
+  "height": 367,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/hit-blunt": {
+  "frames": 3,
+  "width": 470,
+  "height": 375,
+  "refHeight": 360,
+  "additive": false
+ },
+ "vfx/hit-crit": {
+  "frames": 3,
+  "width": 393,
+  "height": 368,
+  "refHeight": 360,
+  "additive": false
+ },
+ "vfx/holy-sky-ring": {
+  "frames": 1,
+  "width": 382,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/knight-crescent-smear": {
+  "frames": 4,
+  "width": 755,
+  "height": 366,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/knight-firewave": {
+  "frames": 1,
+  "width": 883,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/knight-impact": {
+  "frames": 4,
+  "width": 413,
+  "height": 435,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/knight-leap-dust": {
+  "frames": 1,
+  "width": 360,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/knight-scorch": {
+  "frames": 1,
+  "width": 773,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/knight-slash-small": {
+  "frames": 3,
+  "width": 586,
+  "height": 392,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/mochi-orb": {
+  "frames": 1,
+  "width": 499,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/mochi-splat": {
+  "frames": 3,
+  "width": 425,
+  "height": 385,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/seed-bullet": {
+  "frames": 1,
+  "width": 790,
+  "height": 360,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/seed-pop": {
+  "frames": 3,
+  "width": 550,
+  "height": 467,
+  "refHeight": 360,
+  "additive": true
+ },
+ "vfx/seed-trail": {
+  "frames": 1,
+  "width": 1381,
+  "height": 267,
+  "refHeight": 267,
+  "additive": true
+ },
+ "vfx/status-burn": {
+  "frames": 3,
+  "width": 322,
+  "height": 436,
+  "refHeight": 360,
+  "additive": false
+ },
+ "vfx/status-sleepy": {
+  "frames": 3,
+  "width": 231,
+  "height": 422,
+  "refHeight": 360,
+  "additive": false
+ },
+ "vfx/status-sticky": {
+  "frames": 3,
+  "width": 605,
+  "height": 448,
+  "refHeight": 350,
+  "additive": false
+ },
+ "vfx/status-stun": {
+  "frames": 3,
+  "width": 565,
+  "height": 365,
+  "refHeight": 360,
+  "additive": false
+ },
+ "skin/pajama-pudding": {
+  "frames": 6,
+  "width": 268,
+  "height": 256,
+  "refHeight": 220,
+  "additive": false
+ },
+ "skin/sakura-festival-momo": {
+  "frames": 6,
+  "width": 251,
+  "height": 241,
+  "refHeight": 220,
+  "additive": false
+ },
+ "skin/pumpkin-knight-tofu": {
+  "frames": 6,
+  "width": 243,
+  "height": 257,
+  "refHeight": 220,
+  "additive": false
+ },
+ "skin/rainbow-ranger-usagi": {
+  "frames": 6,
+  "width": 261,
+  "height": 223,
+  "refHeight": 220,
+  "additive": false
+ },
+ "skin/snow-globe-kinako": {
+  "frames": 6,
+  "width": 256,
+  "height": 291,
+  "refHeight": 220,
+  "additive": false
+ },
+ "skin/bear-king-mimi": {
+  "frames": 6,
+  "width": 239,
+  "height": 254,
+  "refHeight": 220,
+  "additive": false
+ },
+ "item/weapon-pillow-guard": {
+  "frames": 7,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/weapon-carrot-knight": {
+  "frames": 7,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/weapon-leaf-archer": {
+  "frames": 7,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/weapon-bubble-mage": {
+  "frames": 7,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/weapon-mochi-cleric": {
+  "frames": 7,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/weapon-bell-bard": {
+  "frames": 7,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/hat": {
+  "frames": 8,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/outfit": {
+  "frames": 8,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/charm": {
+  "frames": 8,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/trinket": {
+  "frames": 8,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/booster": {
+  "frames": 6,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/frame": {
+  "frames": 7,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "relic/carrot-excalibur": {
+  "frames": 1,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "relic/bottomless-cheek-pouch": {
+  "frames": 1,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "relic/grandmas-knitted-scarf": {
+  "frames": 1,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "relic/moonlit-lullaby-bell": {
+  "frames": 1,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "relic/sunflower-crown": {
+  "frames": 1,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "relic/lucky-clover-pin": {
+  "frames": 1,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ }
+}

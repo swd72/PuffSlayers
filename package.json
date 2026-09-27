@@ -1,0 +1,21 @@
+{
+  "name": "puff-slayers",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @puff/web",
+    "build": "npm run build -w @puff/web",
+    "test": "vitest run",
+    "sprites": "node tools/extract-v2.mjs"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.11",
+    "sharp": "^0.35.4",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}

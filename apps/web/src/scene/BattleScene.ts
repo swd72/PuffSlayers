@@ -1,0 +1,326 @@
+import { Container, Graphics, Sprite, Texture } from 'pixi.js';
+import gsap from 'gsap';
+import type { BattleEvent, BattleState, HeroClass, Unit } from '@puff/sim';
+import { BACKGROUND, CLASS_COLOR } from '../assets';
+import type { Sfx } from '../audio/sfx';
+import { ActorView } from './actor';
+import { ScreenFilters, glowFlare, risingMotes, type ScreenRect } from './anime';
+import type { SceneApi } from './api';
+import { floatNumber, playFx, ring, shake } from './fx';
+import { basicAttack, bossSlam, bossSummon, bossTelegraph, cheekCannon, healToss } from './skills';
+import { playUltimate } from './ultimates';
+
+/** Design space: the battlefield is laid out in 540×960; extra screen area just shows more background. */
+export const VIEW = { width: 540, height: 960 } as const;
+
+/** Renderer size that keeps the whole design space visible and fills any screen aspect. */
+export function fitView(screenWidth: number, screenHeight: number): { width: number; height: number } {
+  const aspect = screenWidth / Math.max(1, screenHeight);
+  const design = VIEW.width / VIEW.height;
+  return aspect <= design
+    ? { width: VIEW.width, height: Math.round(VIEW.width / aspect) }
+    : { width: Math.round(VIEW.height * aspect), height: VIEW.height };
+}
+
+const HIT_DELAY = 0.12;
+
+export interface SceneHooks {
+  /** a hero starts an ultimate cut-in lasting castMs of game time */
+  onUltimateCast(heroId: string, heroClass: HeroClass, castMs: number): void;
+  onPetals(amount: number): void;
+  onHitstop(ms: number): void;
+  /** big centered announcement (BOSS!, ENRAGED!) */
+  onBanner(text: string): void;
+}
+
+export class BattleScene {
+  /** positioned so the 540×960 design space sits centered on screen */
+  private readonly root = new Container();
+  /** shaken and filtered as a whole */
+  readonly world = new Container();
+  private readonly bg = new Sprite(Texture.from(BACKGROUND));
+  private screen: ScreenRect = { x: 0, y: 0, width: VIEW.width, height: VIEW.height };
+  private readonly ground = new Container();
+  private readonly dimmer = new Graphics();
+  private readonly field = new Container();
+  private readonly fx = new Container();
+  private readonly overlay = new Container();
+  private readonly filters: ScreenFilters;
+  private readonly actors = new Map<string, ActorView>();
+  // per event batch: when each hit lands (seconds), so numbers pop on impact
+  private readonly hitAt = new Map<string, number>();
+  private readonly impactAt = new Map<string, number>();
+  private readonly lastHit = new Map<string, number>();
+  private time = 0;
+  private size: { width: number; height: number } = { width: VIEW.width, height: VIEW.height };
+
+  constructor(
+    stage: Container,
+    private readonly hooks: SceneHooks,
+    private readonly sfx: Sfx,
+  ) {
+    this.dimmer.alpha = 0;
+    for (const layer of [this.ground, this.field, this.fx]) layer.sortableChildren = true;
+    this.world.addChild(this.bg, this.ground, this.dimmer, this.field, this.fx);
+    this.root.addChild(this.world, this.overlay);
+    stage.addChild(this.root);
+    this.filters = new ScreenFilters(this.world);
+    this.resize(VIEW.width, VIEW.height);
+  }
+
+  /** Call with the renderer size from fitView(); centers the field and stretches the backdrop. */
+  resize(rendererWidth: number, rendererHeight: number): void {
+    this.size = { width: rendererWidth, height: rendererHeight };
+    const ox = (rendererWidth - VIEW.width) / 2;
+    const oy = (rendererHeight - VIEW.height) / 2;
+    this.root.position.set(ox, oy);
+    this.screen = { x: -ox, y: -oy, width: rendererWidth, height: rendererHeight };
+    const tex = this.bg.texture;
+    const cover = Math.max(rendererWidth / tex.width, rendererHeight / tex.height);
+    this.bg.scale.set(cover);
+    this.bg.position.set((VIEW.width - tex.width * cover) / 2, (VIEW.height - tex.height * cover) / 2);
+    this.dimmer.clear().rect(this.screen.x, this.screen.y, rendererWidth, rendererHeight).fill(0x0b0614);
+    this.filters.setArea(this.screen);
+  }
+
+  setBackground(url: string): void {
+    this.bg.texture = Texture.from(url);
+    this.resize(this.size.width, this.size.height);
+  }
+
+  private get api(): SceneApi {
+    return {
+      ground: this.ground,
+      field: this.field,
+      fx: this.fx,
+      overlay: this.overlay,
+      filters: this.filters,
+      screen: this.screen,
+      actor: (id) => {
+        const a = this.actors.get(id);
+        return a && !a.gone ? a : undefined;
+      },
+      dim: (seconds) => {
+        gsap.killTweensOf(this.dimmer);
+        gsap.timeline().to(this.dimmer, { alpha: 0.55, duration: 0.12 }).to(this.dimmer, { alpha: 0, duration: 0.35 }, seconds);
+      },
+      shake: (strength) => shake(this.world, strength),
+      hitstop: (ms) => this.hooks.onHitstop(ms),
+      sound: (name) => this.sfx.play(name),
+    };
+  }
+
+  /** Creates views for new units and hands every view its latest sim data. */
+  sync(state: BattleState): void {
+    for (const unit of state.units) {
+      const actor = this.actors.get(unit.id);
+      if (actor) {
+        if (!actor.gone) actor.unit = unit;
+      } else if (unit.hp > 0) {
+        this.spawn(unit);
+      }
+    }
+  }
+
+  reset(): void {
+    for (const actor of this.actors.values()) actor.destroy();
+    this.actors.clear();
+  }
+
+  update(deltaSeconds: number): void {
+    this.time += deltaSeconds;
+    for (const actor of this.actors.values()) actor.update(deltaSeconds, this.time);
+  }
+
+  handle(events: readonly BattleEvent[]): void {
+    for (const event of events) this.handleOne(event);
+    this.hitAt.clear();
+    this.impactAt.clear();
+    this.lastHit.clear();
+  }
+
+  private handleOne(ev: BattleEvent): void {
+    const api = this.api;
+    switch (ev.type) {
+      case 'attack': {
+        const src = api.actor(ev.source);
+        const tgt = api.actor(ev.target);
+        if (src && tgt) this.hitAt.set(`${ev.source}>${ev.target}`, basicAttack(api, src, tgt));
+        return;
+      }
+      case 'cheekCannon': {
+        const src = api.actor(ev.source);
+        const targets = ev.targets.map((id) => api.actor(id)).filter((a): a is ActorView => !!a);
+        if (!src) return;
+        for (const [id, t] of cheekCannon(api, src, targets)) this.hitAt.set(`${ev.source}>${id}`, t);
+        return;
+      }
+      case 'damage':
+        return this.showDamage(ev.source, ev.target, ev.amount, ev.crit, ev.ultimate);
+      case 'dodge': {
+        const delay = this.hitAt.get(`${ev.source}>${ev.target}`) ?? HIT_DELAY;
+        return this.later(ev.target, delay, (a) => {
+          this.sfx.play('miss');
+          floatNumber(this.fx, 'MISS', 'miss', a.root.x, a.root.y - a.height);
+        });
+      }
+      case 'heal':
+        return this.showHeal(ev.source, ev.target, ev.amount);
+      case 'ultimateCast':
+        return this.animateCast(ev.source, ev.heroClass, ev.castMs);
+      case 'ultimate':
+        for (const [id, t] of playUltimate(api, ev)) this.impactAt.set(id, t);
+        return;
+      case 'status':
+        if (ev.status === 'sticky') this.later(ev.target, this.lastHit.get(ev.target) ?? HIT_DELAY, (a) => a.makeSticky());
+        if (ev.status === 'sleepy') this.later(ev.target, 0.4, (a) => a.fallAsleep());
+        return;
+      case 'revive':
+        return this.later(ev.target, (this.lastHit.get(ev.target) ?? HIT_DELAY) + 0.1, (a) => {
+          a.revive();
+          a.drawHp();
+          floatNumber(this.fx, 'REVIVE!', 'heal', a.root.x, a.root.y - a.height);
+          glowFlare(this.fx, a.root.x, a.root.y - a.height * 0.4, 0xffd6f0, a.height * 2, 0.8);
+          risingMotes(this.fx, a.root.x, a.root.y, 0xffc2e2, 14);
+          this.sfx.play('heal');
+        });
+      case 'summon':
+        return bossSummon(api, api.actor(ev.source), ev.spawned.map((id) => api.actor(id)).filter((a): a is ActorView => !!a));
+      case 'telegraph':
+        return bossTelegraph(api, api.actor(ev.source), ev.at, ev.radius, ev.delayMs);
+      case 'slam':
+        return bossSlam(api, api.actor(ev.source), ev.at);
+      case 'enrage':
+        return this.animateEnrage(ev.source);
+      case 'buff':
+        return this.sfx.play('buff');
+      case 'bonk':
+        return this.animateBonk(ev.target, ev.petals);
+      case 'faint':
+        this.sfx.play('faint');
+        return this.later(ev.target, this.lastHit.get(ev.target) ?? HIT_DELAY, (a) => a.faint());
+      case 'wave':
+        return this.sfx.play('wave');
+      case 'victory':
+        return this.sfx.play('victory');
+      case 'defeat':
+        return this.sfx.play('defeat');
+    }
+  }
+
+  private spawn(unit: Unit): void {
+    const actor = new ActorView(unit, this.field);
+    this.actors.set(unit.id, actor);
+    if (unit.side === 'hero') {
+      actor.body.y = -260;
+      gsap.to(actor.body, { y: 0, duration: 0.55, ease: 'bounce.out', delay: Math.random() * 0.3 });
+    } else if (unit.isBoss) {
+      this.hooks.onBanner(unit.isGiant ? 'GIANT BOSS!' : 'BOSS!');
+      actor.body.scale.set(0.2);
+      actor.pose('pose', 1, 1.2);
+      gsap.to(actor.body.scale, { x: 1, y: 1, duration: 0.7, ease: 'back.out(2)' });
+      gsap.delayedCall(0.5, () => {
+        this.sfx.play('wave');
+        shake(this.world, 12);
+        this.filters.shockwave(unit.x, unit.y, 22);
+      });
+    } else {
+      actor.body.scale.set(0);
+      ring(this.ground, 0xff9eb5, unit.x, unit.y, 24);
+      gsap.to(actor.body.scale, { x: 1, y: 1, duration: 0.45, ease: 'back.out(3)', delay: Math.random() * 0.25 });
+    }
+  }
+
+  private later(id: string, delay: number, fn: (actor: ActorView) => void): void {
+    gsap.delayedCall(delay, () => {
+      // a bonked unit is 'gone' but still shows its final hit until its view is destroyed
+      const a = this.actors.get(id);
+      if (a && !a.root.destroyed) fn(a);
+    });
+  }
+
+  private showDamage(sourceId: string, targetId: string, amount: number, crit: boolean, ultimate: boolean): void {
+    const src = this.actors.get(sourceId);
+    const fromBossSlam = ultimate && src?.unit.isBoss;
+    const delay = ultimate ? (fromBossSlam ? 0.03 : (this.impactAt.get(targetId) ?? 0.2)) : (this.hitAt.get(`${sourceId}>${targetId}`) ?? HIT_DELAY);
+    this.lastHit.set(targetId, Math.max(delay, this.lastHit.get(targetId) ?? 0));
+    this.later(targetId, delay, (a) => {
+      if (!ultimate) this.sfx.play(crit ? 'crit' : 'hit');
+      floatNumber(this.fx, amount.toLocaleString('en-US'), ultimate ? 'ultimate' : crit ? 'crit' : 'normal', a.root.x, a.root.y - a.height * a.root.scale.y);
+      a.flinch(ultimate ? 10 : 4);
+      a.drawHp();
+      if (crit) {
+        const c = a.chest();
+        playFx(this.fx, 'vfx/hit-crit', c.x, c.y, { size: 54, anchor: 'center', frameTime: 0.05 });
+        shake(this.world, 4);
+      }
+    });
+  }
+
+  private showHeal(sourceId: string, targetId: string, amount: number): void {
+    const src = this.actors.get(sourceId);
+    const tgt = this.actors.get(targetId);
+    let delay = this.impactAt.get(targetId);
+    if (delay === undefined) delay = src && tgt && !src.gone && !tgt.gone ? healToss(this.api, src, tgt) : 0.1;
+    this.later(targetId, delay, (a) => {
+      this.sfx.play('heal');
+      floatNumber(this.fx, `+${amount}`, 'heal', a.root.x, a.root.y - a.height * a.root.scale.y);
+      a.drawHp();
+    });
+  }
+
+  /** Cut-in phase: the field dims and the caster powers up; the skill itself comes after. */
+  private animateCast(sourceId: string, heroClass: HeroClass, castMs: number): void {
+    const src = this.actors.get(sourceId);
+    if (!src) return;
+    const seconds = castMs / 1000;
+    this.hooks.onUltimateCast(sourceId, heroClass, castMs);
+    this.sfx.play('cast');
+    this.api.dim(seconds - 0.1);
+    src.pose('pose', 4, seconds);
+    const color = CLASS_COLOR[heroClass];
+    glowFlare(this.fx, src.root.x, src.root.y - src.height * 0.4, color, src.height * 2.4, seconds);
+    ring(this.ground, color, src.root.x, src.root.y, src.height * 0.7);
+    risingMotes(this.fx, src.root.x, src.root.y, color, 12);
+  }
+
+  private animateEnrage(bossId: string): void {
+    const boss = this.actors.get(bossId);
+    if (!boss) return;
+    boss.enrage();
+    this.hooks.onBanner('ENRAGED!');
+    this.sfx.play('cast');
+    const c = boss.chest();
+    glowFlare(this.fx, c.x, c.y, 0xff4a2a, boss.height * 2, 0.9);
+    this.filters.shockwave(c.x, c.y, 34);
+    this.filters.zoomBurst(c.x, c.y, 0.2);
+    this.api.dim(0.8);
+    shake(this.world, 18);
+  }
+
+  private animateBonk(targetId: string, petalCount: number): void {
+    const actor = this.actors.get(targetId);
+    if (!actor) return;
+    actor.gone = true;
+    const delay = (this.lastHit.get(targetId) ?? HIT_DELAY) + 0.05;
+    gsap.delayedCall(delay, () => {
+      const c = actor.chest();
+      playFx(this.fx, 'vfx/bonk-petals', c.x, c.y + actor.height * 0.3, { size: actor.unit.isBoss ? 200 : 80, anchor: 'center', frameTime: 0.08 });
+      this.hooks.onPetals(petalCount);
+      this.sfx.play('bonk');
+      if (actor.unit.isBoss) {
+        actor.pose('pose', 5, 3);
+        shake(this.world, 16);
+        this.filters.shockwave(c.x, c.y, 30);
+        gsap.to(actor.root, { alpha: 0, duration: 1.2, delay: 0.8, onComplete: () => actor.destroy() });
+        return;
+      }
+      const away = c.x < VIEW.width / 2 ? -1 : 1;
+      gsap
+        .timeline({ onComplete: () => actor.destroy() })
+        .to(actor.body.scale, { x: 1.3, y: 0.55, duration: 0.1 })
+        .to(actor.root, { y: actor.root.y - 44, x: actor.root.x + away * 32, alpha: 0, duration: 0.5, ease: 'power2.out' })
+        .to(actor.body, { rotation: 2.5 * away, duration: 0.5 }, '<');
+    });
+  }
+}

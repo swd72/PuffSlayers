@@ -1,0 +1,20 @@
+{
+  "name": "@puff/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@puff/sim": "0.1.0",
+    "gsap": "^3.15.0",
+    "pixi-filters": "^6.1.5",
+    "pixi.js": "^8.21.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1"
+  }
+}
