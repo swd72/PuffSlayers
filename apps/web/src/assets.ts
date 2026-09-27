@@ -1,5 +1,5 @@
 import { Assets, Texture } from 'pixi.js';
-import type { BossKind, EnemyKind, HeroClass, HeroSpec, Species } from '@puff/sim';
+import { PUFFS, STARTER_PUFFS, type BossKind, type EnemyKind, type HeroClass, type HeroSpec, type Species } from '@puff/sim';
 
 const ROOT = '/sprites/v2';
 
@@ -9,21 +9,13 @@ export const BOSS_BACKGROUND = `${ROOT}/bg/01-meadow-of-naps-boss.jpg`;
 
 export type HeroDef = Omit<HeroSpec, 'level'>;
 
-/** Every puff the player owns; six of them fight (see SaveData.team). */
-export const ROSTER: readonly HeroDef[] = [
-  { id: 'pudding', name: 'Pudding', species: 'hamham', heroClass: 'pillow-guard' },
-  { id: 'tofu', name: 'Tofu', species: 'shibu', heroClass: 'carrot-knight' },
-  { id: 'usagi', name: 'Usagi', species: 'bunbun', heroClass: 'leaf-archer' },
-  { id: 'kinako', name: 'Kinako', species: 'shibu', heroClass: 'bubble-mage' },
-  { id: 'momo', name: 'Momo', species: 'bunbun', heroClass: 'mochi-cleric' },
-  { id: 'mimi', name: 'Mimi', species: 'hamham', heroClass: 'bell-bard' },
-  { id: 'taro', name: 'Taro', species: 'molemo', heroClass: 'root-druid' },
-];
+/** Every puff in the game (the Puff Album); the save's `owned` list says which ones the player has. */
+export const ROSTER: readonly HeroDef[] = PUFFS.map(({ id, name, species, heroClass }) => ({ id, name, species, heroClass }));
 
 /** Most puffs on the field at once. */
 export const TEAM_SIZE = 6;
 /** The starting six (Taro joins on the bench). */
-export const DEFAULT_TEAM: readonly string[] = ROSTER.slice(0, TEAM_SIZE).map((h) => h.id);
+export const DEFAULT_TEAM: readonly string[] = STARTER_PUFFS.slice(0, TEAM_SIZE);
 
 export const heroDef = (id: string): HeroDef | undefined => ROSTER.find((h) => h.id === id);
 
@@ -44,15 +36,22 @@ let manifest: Record<string, SheetMeta> = {};
  * Stand-in art for a puff whose sheets haven't been generated yet (drawn with a tint so it reads as different).
  * Once `npm run sprites` finds the real sheet, it is used automatically.
  */
-const STAND_IN = { species: 'hamham', heroClass: 'bell-bard', tint: 0xc9a07a } as const;
+const STAND_IN = { species: 'hamham', heroClass: 'bell-bard' } as const;
+/** stand-in tint per species, so a borrowed sheet reads as a different puff */
+const SPECIES_TINT: Record<Species, number> = { bunbun: 0xfff0f6, hamham: 0xffd9a8, shibu: 0xffc58f, molemo: 0xc9a07a };
 const hasOwnArt = (species: Species, heroClass: HeroClass): boolean => `hero/${species}-${heroClass}` in manifest;
+/** Borrow a sheet of the same class (so the weapon and moves fit), else the old generic stand-in. */
+function standInArt(heroClass: HeroClass): string {
+  const same = Object.keys(manifest).find((k) => k.startsWith('hero/') && k.endsWith(`-${heroClass}`) && !k.includes('/bare'));
+  return same ? same.slice('hero/'.length) : `${STAND_IN.species}-${STAND_IN.heroClass}`;
+}
 
 export const heroSheet = (species: Species, heroClass: HeroClass): string =>
-  hasOwnArt(species, heroClass) ? `hero/${species}-${heroClass}` : `hero/${STAND_IN.species}-${STAND_IN.heroClass}`;
-/** CSS class for portraits drawn with stand-in art (a warm filter so it doesn't pass for the real puff). */
-export const portraitClass = (species: Species, heroClass: HeroClass): string => (hasOwnArt(species, heroClass) ? '' : 'stand-in');
+  hasOwnArt(species, heroClass) ? `hero/${species}-${heroClass}` : `hero/${standInArt(heroClass)}`;
+/** CSS class for portraits drawn with stand-in art (a filter per species so it doesn't pass for the real puff). */
+export const portraitClass = (species: Species, heroClass: HeroClass): string => (hasOwnArt(species, heroClass) ? '' : `stand-in stand-in-${species}`);
 /** Tint for stand-in art (white when the puff has its own sheets). */
-export const heroTint = (species: Species, heroClass: HeroClass): number => (hasOwnArt(species, heroClass) ? 0xffffff : STAND_IN.tint);
+export const heroTint = (species: Species, heroClass: HeroClass): number => (hasOwnArt(species, heroClass) ? 0xffffff : SPECIES_TINT[species]);
 export const signatureSheet = (heroClass: HeroClass): string => `sig/${heroClass}`;
 /** A new effect sheet if it has been generated, otherwise a similar existing one. */
 export const vfxOr = (sheet: string, fallback: string): string => (sheet in manifest ? sheet : fallback);
@@ -60,7 +59,7 @@ export const enemySheet = (kind: EnemyKind): string => `enemy/${ENEMY_FILE[kind]
 export const bossSheet = (kind: BossKind): string => `boss/${kind}`;
 export const frameUrl = (sheet: string, frame: number): string => `${ROOT}/${sheet}-${frame}.png`;
 export const portraitUrl = (species: Species, heroClass: HeroClass): string =>
-  hasOwnArt(species, heroClass) ? `${ROOT}/portrait/${species}-${heroClass}.png` : `${ROOT}/portrait/${STAND_IN.species}-${STAND_IN.heroClass}.png`;
+  `${ROOT}/portrait/${hasOwnArt(species, heroClass) ? `${species}-${heroClass}` : standInArt(heroClass)}.png`;
 
 const ENEMY_FILE: Record<EnemyKind, string> = {
   daisy: 'daisy-dozer',

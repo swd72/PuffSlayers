@@ -67,6 +67,14 @@ JOBS.push(
 );
 JOBS.push(
   { src: 'v2/characters/molemo-root-druid-poses.png', name: 'hero/molemo-root-druid', frames: 6, kind: 'actor', optional: true },
+  // Puff Album puffs (phase 3): until their sheets exist the game borrows a same-class sheet, tinted
+  ...['bunbun-carrot-knight', 'shibu-pillow-guard', 'hamham-leaf-archer', 'hamham-mochi-cleric', 'hamham-bubble-mage', 'shibu-bell-bard'].map((h) => ({
+    src: `v2/characters/${h}-poses.png`,
+    name: `hero/${h}`,
+    frames: 6,
+    kind: 'actor',
+    optional: true,
+  })),
   { src: 'v2/characters/root-druid-signature.png', name: 'sig/root-druid', frames: 4, kind: 'actor', optional: true },
   ...Object.entries({ 'druid-root-spike': 4, 'druid-root-erupt': 4, 'druid-root-bind': 3 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
 );

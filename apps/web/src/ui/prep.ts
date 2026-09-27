@@ -1,9 +1,9 @@
 // "เตรียมลงด่าน": see what's ahead, pick who fights (6 of the roster) and check their meals, then go.
 import { ENEMY_NAMES, INGREDIENTS, isBossStage, isGiantStage, recommendedLevel, stageWaves, type EnemyKind, type BossKind } from '@puff/sim';
-import { CLASS_COLOR, ROSTER, STAGE_NAME, TEAM_SIZE, portraitClass, portraitUrl } from '../assets';
+import { CLASS_COLOR, STAGE_NAME, TEAM_SIZE, portraitClass, portraitUrl } from '../assets';
 import { INGREDIENT_INFO, REACTION_LABEL, skinPortrait } from '../meta/itemInfo';
 import { knownReaction, pantryCount } from '../meta/picnic';
-import { heroLevel, teamLevel, type SaveData } from '../meta/save';
+import { heroLevel, ownedRoster, teamLevel, type SaveData } from '../meta/save';
 import { toggleTeam } from '../meta/workshop';
 
 export interface PrepDeps {
@@ -113,7 +113,7 @@ export class PrepPanel {
 
       <h3 class="prep-sub">ทีมลงสนาม <b>${save.team.length}/${TEAM_SIZE}</b> <small>แตะเพื่อลง/พัก</small></h3>
       <div class="prep-team">
-        ${ROSTER.map((h) => {
+        ${ownedRoster(save).map((h) => {
           const inTeam = save.team.includes(h.id);
           const skin = save.skins[h.id];
           const meal = save.lunch[h.id];

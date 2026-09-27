@@ -1,5 +1,6 @@
 import { isBossStage, isGiantStage, recommendedLevel, type BattleState, type HeroClass, type IngredientId, type Item, type SeedKind } from '@puff/sim';
 import { SEED_NAME } from '../meta/garden';
+import { chapterName, stageLabel } from '../meta/guide';
 import { CLASS_COLOR, STAGE_NAME, ULTIMATE_NAME, portraitClass, portraitUrl } from '../assets';
 import { INGREDIENT_INFO, TIER_COLOR, frameIcon, ingredientIcon, itemIcon, itemName, skinPortrait } from '../meta/itemInfo';
 
@@ -8,6 +9,8 @@ export interface HudStatus {
   readonly auto: boolean;
   readonly speed: number;
   readonly teamLevel: number;
+  /** Arena / Raid: replaces the stage card text (title, line under it) */
+  readonly mode?: { readonly name: string; readonly title: string; readonly sub: string; readonly alert?: boolean };
 }
 
 const CLASS_ICON: Record<HeroClass, string> = {
@@ -41,6 +44,7 @@ export class Hud {
   private readonly portraits = new Map<string, HTMLButtonElement>();
   private readonly stageLabel: HTMLElement;
   private readonly levelLabel: HTMLElement;
+  private readonly stageName: HTMLElement;
   private readonly waveDots: HTMLElement;
   private readonly petalLabel: HTMLElement;
   private readonly autoButton: HTMLButtonElement;
@@ -66,7 +70,7 @@ export class Hud {
             <span>หมู่บ้าน</span><i class="bag-dot" hidden></i>
           </button>
         </div>
-        <div class="stage-card"><span class="stage-name">${STAGE_NAME}</span><strong class="stage-label"></strong><span class="level-label"></span><span class="wave-dots"></span></div>
+        <div class="stage-card"><span class="stage-name"></span><strong class="stage-label"></strong><span class="level-label"></span><span class="wave-dots"></span></div>
         <div class="top-right">
           <span class="petals" aria-label="Petal"><i></i><b class="petal-count">0</b></span>
           <button class="speed" type="button" aria-label="ความเร็วเกม">×1</button>
@@ -81,6 +85,7 @@ export class Hud {
       <div class="portrait-bar"></div>`;
     this.stageLabel = this.q('.stage-label');
     this.levelLabel = this.q('.level-label');
+    this.stageName = this.q('.stage-name');
     this.waveDots = this.q('.wave-dots');
     this.petalLabel = this.q('.petal-count');
     this.autoButton = this.q<HTMLButtonElement>('.auto');
@@ -142,12 +147,14 @@ export class Hud {
   }
 
   render(state: BattleState, status: HudStatus): void {
-    const { petals, auto, speed, teamLevel } = status;
+    const { petals, auto, speed, teamLevel, mode } = status;
     const stage = state.config.stage;
     const boss = isBossStage(stage) && state.wave === state.config.waves.length - 1;
-    this.stageLabel.textContent = boss ? `Stage 1-${stage} · ${isGiantStage(stage) ? 'GIANT' : 'BOSS'}` : `Stage 1-${stage}`;
-    this.levelLabel.textContent = `ทีม Lv.${teamLevel} · แนะนำ Lv.${recommendedLevel(stage)}`;
-    this.levelLabel.classList.toggle('under', teamLevel < recommendedLevel(stage));
+    this.stageName.textContent = mode ? mode.name : `${STAGE_NAME} · ${chapterName(stage)}`;
+    this.stageLabel.textContent = mode ? mode.title : boss ? `ด่าน ${stageLabel(stage)} · ${isGiantStage(stage) ? 'GIANT' : 'BOSS'}` : `ด่าน ${stageLabel(stage)}`;
+    this.levelLabel.textContent = mode ? mode.sub : `ทีม Lv.${teamLevel} · แนะนำ Lv.${recommendedLevel(stage)}`;
+    this.levelLabel.classList.toggle('under', mode ? !!mode.alert : teamLevel < recommendedLevel(stage));
+    this.waveDots.hidden = !!mode;
     this.renderBoss(state);
     this.waveDots.innerHTML = state.config.waves
       .map((_, i) => `<i class="${i < state.wave ? 'done' : i === state.wave ? 'now' : ''}"></i>`)
@@ -180,10 +187,16 @@ export class Hud {
   }
 
   /** Stage-clear rewards: item cards pop in one by one above the portraits. */
-  showLoot(items: readonly Item[], forage: readonly IngredientId[] = [], seeds: readonly SeedKind[] = []): void {
+  showLoot(items: readonly Item[], forage: readonly IngredientId[] = [], seeds: readonly SeedKind[] = [], notes: readonly string[] = []): void {
     const box = this.q('.loot');
     box.innerHTML = '';
-    if (!items.length && !forage.length && !seeds.length) return;
+    if (!items.length && !forage.length && !seeds.length && !notes.length) return;
+    if (notes.length) {
+      const line = document.createElement('p');
+      line.className = 'loot-notes';
+      line.textContent = notes.join(' · ');
+      box.appendChild(line);
+    }
     items.forEach((item, i) => {
       const card = document.createElement('div');
       card.className = `loot-card${item.relic ? ' relic' : ''}`;

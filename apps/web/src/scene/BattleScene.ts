@@ -137,8 +137,16 @@ export class BattleScene {
   }
 
   reset(): void {
+    // effects still playing from the last fight point at views that are about to go: stop them all
+    // (the game's own timers are created after reset, so they survive)
+    gsap.exportRoot({}, true).kill();
     for (const actor of this.actors.values()) actor.destroy();
     this.actors.clear();
+    for (const layer of [this.ground, this.fx, this.overlay]) for (const child of layer.removeChildren()) child.destroy({ children: true });
+    this.filters.clear();
+    this.dimmer.alpha = 0;
+    this.world.position.set(0, 0);
+    this.world.scale.set(1);
   }
 
   update(deltaSeconds: number): void {
@@ -226,7 +234,7 @@ export class BattleScene {
   private spawn(unit: Unit): void {
     const actor = new ActorView(unit, this.field);
     this.actors.set(unit.id, actor);
-    if (unit.side === 'hero') {
+    if (unit.heroClass) {
       actor.body.y = -260;
       gsap.to(actor.body, { y: 0, duration: 0.55, ease: 'bounce.out', delay: Math.random() * 0.3 });
     } else if (unit.isBoss) {
@@ -250,7 +258,7 @@ export class BattleScene {
     gsap.delayedCall(delay, () => {
       // a bonked unit is 'gone' but still shows its final hit until its view is destroyed
       const a = this.actors.get(id);
-      if (a && !a.root.destroyed) fn(a);
+      if (a && !a.removed) fn(a);
     });
   }
 
@@ -372,7 +380,7 @@ export class BattleScene {
     gsap.delayedCall(delay, () => {
       // a long combo can finish after the stage has already been cleared and the scene reset
       // (the Petals still count — only the animation is skipped)
-      if (actor.root.destroyed) return this.hooks.onPetals(petalCount);
+      if (actor.removed) return this.hooks.onPetals(petalCount);
       const c = actor.chest();
       playFx(this.fx, 'vfx/bonk-petals', c.x, c.y + actor.height * 0.3, { size: actor.unit.isBoss ? 200 : 80, anchor: 'center', frameTime: 0.08 });
       this.hooks.onPetals(petalCount);

@@ -21,10 +21,11 @@ body {
   overflow: hidden;
 }
 
-/* Fills the whole phone screen; on wide desktop windows it stays a tall frame. HUD sizes scale with it (cqw). */
+/* Fills the whole phone screen; on wide desktop windows it stays a 9:16 frame (side panels fill the rest).
+   HUD sizes scale with it (cqw). */
 #app {
   position: relative;
-  width: min(100vw, calc(100dvh * 0.68));
+  width: min(100vw, calc(100dvh * 0.5625));
   height: 100dvh;
   margin: 0 auto;
   container-type: inline-size;
@@ -618,6 +619,21 @@ body {
   justify-content: center;
   gap: 1.6cqw;
   pointer-events: none;
+}
+
+.loot-notes {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  translate: -50% -1.4cqw;
+  margin: 0;
+  padding: 0.8cqw 3cqw;
+  border-radius: 99cqw;
+  background: var(--panel);
+  color: #ffe9a8;
+  font-size: 3cqw;
+  white-space: nowrap;
+  animation: loot-in 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both;
 }
 
 .loot-card,

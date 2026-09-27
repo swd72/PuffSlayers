@@ -8,7 +8,7 @@ import type { SceneApi } from './api';
 /** Per target: the moments (seconds after the skill fires) its hits land. The last one is the finisher. */
 export type ImpactTimes = Map<string, number[]>;
 
-export const alive = (...actors: readonly ActorView[]): boolean => actors.every((a) => !a.root.destroyed);
+export const alive = (...actors: readonly ActorView[]): boolean => actors.every((a) => !a.removed);
 
 /**
  * Runs a step of a combo later — only if every actor it touches still exists

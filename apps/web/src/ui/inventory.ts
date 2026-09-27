@@ -2,7 +2,8 @@
 import { SLOTS, createHero, fitsClass, itemScore, levelUpCost, type Slot } from '@puff/sim';
 import { ROSTER, TEAM_SIZE, portraitClass, portraitUrl } from '../assets';
 import { SKINS, SLOT_LABEL, skinPortrait } from '../meta/itemInfo';
-import { equip, equipBest, heroGear, heroLevel, itemById, unequip, wornBy, type SaveData } from '../meta/save';
+import { equip, equipBest, heroLevel, itemById, ownedRoster, unequip, wornBy, type SaveData } from '../meta/save';
+import { heroPower } from '../meta/power';
 import { autoMerge, levelUp, levelUpTeam, merge, reroll, salvage, toggleTeam, transfer, upgrade, type ActionResult } from '../meta/workshop';
 import { itemDetail, tile } from './itemDetail';
 import { lunchRow, pantryGrid } from './lunchbox';
@@ -68,7 +69,8 @@ export class InventoryPanel {
   }
 
   private get hero() {
-    return ROSTER.find((h) => h.id === this.heroId) ?? ROSTER[0]!;
+    const owned = ownedRoster(this.deps.getSave());
+    return owned.find((h) => h.id === this.heroId) ?? owned[0]!;
   }
 
   private update(save: SaveData): void {
@@ -114,7 +116,7 @@ export class InventoryPanel {
       case 'best':
         return this.update(equipBest(save, this.heroId, this.hero.heroClass));
       case 'best-all':
-        return this.update(ROSTER.reduce((s, h) => equipBest(s, h.id, h.heroClass), save));
+        return this.update(ownedRoster(save).reduce((s, h) => equipBest(s, h.id, h.heroClass), save));
       case 'level':
         return this.apply(levelUp(save, this.heroId));
       case 'pantry':
@@ -161,7 +163,7 @@ export class InventoryPanel {
     const hero = this.hero;
     const skin = save.skins[hero.id] ?? null;
     const level = heroLevel(save, hero.id);
-    const unit = createHero({ ...hero, level, gear: heroGear(save, hero.id) });
+    const unit = createHero({ ...hero, level, gear: heroPower(save, hero.id) });
     const levelCost = levelUpCost(level);
     const inTeam = save.team.includes(hero.id);
     const worn = save.equipped[hero.id] ?? {};
@@ -178,7 +180,7 @@ export class InventoryPanel {
           <button type="button" class="bag-close" data-act="close" aria-label="ปิด">✕</button>
         </header>
         <nav class="bag-heroes" aria-label="เลือกพัฟ">
-          ${ROSTER.map((h) => {
+          ${ownedRoster(save).map((h) => {
             const s = save.skins[h.id];
             const bench = !save.team.includes(h.id);
             return `<button type="button" data-act="hero" data-id="${h.id}" class="${h.id === hero.id ? 'on' : ''} ${bench ? 'bench' : ''}" aria-label="${h.name}${bench ? ' (พัก)' : ''}">

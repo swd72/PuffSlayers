@@ -1,6 +1,7 @@
 // World-Waking Garden on the save: planting, watering, picking blooms, and seeds from battle.
 import { SEEDS, canWater, isBloomed, plant, water, type SeedKind } from '@puff/sim';
 import type { SaveData } from './save';
+import { bump } from './daily';
 import type { ActionResult } from './workshop';
 
 export const SEED_NAME: Record<SeedKind, string> = {
@@ -31,7 +32,7 @@ export function plantSeed(save: SaveData, index: number, seed: SeedKind, now = D
 export function waterPlot(save: SaveData, index: number, now = Date.now()): ActionResult {
   const plot = save.plots[index];
   if (!plot || !canWater(plot, now)) return fail(save, 'รดน้ำไปแล้ว — รอให้โตอีกขั้น');
-  return { save: replacePlot(save, index, water(plot, now)), ok: true, message: 'รดน้ำแล้ว โตไวขึ้น!' };
+  return { save: bump(replacePlot(save, index, water(plot, now)), 'garden'), ok: true, message: 'รดน้ำแล้ว โตไวขึ้น!' };
 }
 
 export function harvest(save: SaveData, index: number, now = Date.now()): ActionResult {
@@ -44,7 +45,7 @@ export function harvest(save: SaveData, index: number, now = Date.now()): Action
     index,
     null,
   );
-  return { save: next, ok: true, message: `${SEED_NAME[kind]}บานแล้ว! +${petals} Petal` };
+  return { save: bump(next, 'garden'), ok: true, message: `${SEED_NAME[kind]}บานแล้ว! +${petals} Petal` };
 }
 
 /** Picks every bloom at once. */

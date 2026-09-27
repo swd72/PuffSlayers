@@ -330,6 +330,15 @@ export class ScreenFilters {
     });
   }
 
+  /** Turns every screen filter off at once (the battle was reset mid-effect). */
+  clear(): void {
+    gsap.killTweensOf(this.shock);
+    gsap.killTweensOf(this.zoom);
+    this.shockOn = false;
+    this.zoomOn = false;
+    this.apply();
+  }
+
   private apply(): void {
     const list = [...(this.shockOn ? [this.shock] : []), ...(this.zoomOn ? [this.zoom] : [])];
     this.target.filters = list.length ? list : null;

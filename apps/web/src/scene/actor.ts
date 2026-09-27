@@ -56,7 +56,8 @@ export class ActorView {
     public unit: Unit,
     layer: Container,
   ) {
-    const isHero = unit.side === 'hero';
+    // any puff (the player's team or an Arena rival) is drawn from the puff sheets
+    const isHero = !!unit.heroClass;
     this.height = isHero ? HERO_HEIGHT : unit.isGiant ? GIANT_HEIGHT : unit.isBoss ? BOSS_HEIGHT : ENEMY_HEIGHT;
     this.nativeFacing = isHero ? 1 : -1;
     const skinSheet = unit.skin ? `skin/${unit.skin}` : undefined;
@@ -81,6 +82,8 @@ export class ActorView {
     this.sprite.anchor.set(0.5, 1);
     this.sprite.scale.set(first.scale);
     const shadow = new Graphics().ellipse(0, 0, this.height * 0.3, this.height * 0.08).fill({ color: 0x2a1633, alpha: 0.28 });
+    // Arena rivals stand on a red ring so the two puff teams read apart
+    if (isHero && unit.side === 'enemy') shadow.ellipse(0, 0, this.height * 0.36, this.height * 0.11).stroke({ color: 0xff4d5e, width: 3, alpha: 0.85 });
     this.body.addChild(this.sprite);
     if (bare && unit.heroClass) {
       const icons = frames(weaponSheet(unit.heroClass));
@@ -138,8 +141,13 @@ export class ActorView {
   }
 
   chest(): { x: number; y: number } {
-    return { x: this.root.x, y: this.root.y - this.height * 0.45 * this.root.scale.y };
+    // a skill queued before the scene was reset (going home, a new mode) may still ask where we were
+    if (this.removed) return this.lastChest;
+    this.lastChest = { x: this.root.x, y: this.root.y - this.height * 0.45 * this.root.scale.y };
+    return this.lastChest;
   }
+
+  private lastChest = { x: 0, y: 0 };
 
   update(dt: number, time: number): void {
     if (this.gone) return;
@@ -152,7 +160,7 @@ export class ActorView {
     this.root.zIndex = this.root.y;
     this.root.scale.set(depthScale(this.root.y));
 
-    const isHero = u.side === 'hero';
+    const isHero = !!u.heroClass;
     const defaultIndex = u.hp <= 0 ? (isHero ? 5 : 3) : u.moving ? 1 : 0;
     const f = this.override ? this.frame(this.override.set, this.override.index) : this.frame('pose', defaultIndex);
     this.sprite.texture = f.texture;
@@ -212,8 +220,8 @@ export class ActorView {
     const push = -this.unit.facing * strength;
     this.flinchTl?.kill();
     this.flinchTl = gsap.timeline().to(this.body, { x: push, duration: 0.05 }).to(this.body, { x: 0, duration: 0.25, ease: 'bounce.out' });
-    if (this.unit.side === 'enemy' && !this.override) this.pose('pose', this.unit.isBoss ? 4 : 3, 0.18);
-    else if (this.unit.side === 'hero' && !this.override) this.pose('pose', 5, 0.15);
+    if (this.unit.heroClass && !this.override) this.pose('pose', 5, 0.15);
+    else if (!this.override) this.pose('pose', this.unit.isBoss ? 4 : 3, 0.18);
   }
 
   /** Trap inside a bubble (stays until the sim's stun ends). */
@@ -304,17 +312,24 @@ export class ActorView {
     statusLoop(this.root, 'vfx/status-sleepy', -this.height * 0.75, 34);
   }
 
+  /** taken off the field (its display objects are freed a little later) */
+  removed = false;
+
   destroy(): void {
     this.gone = true;
     this.overrideTween?.kill();
     // killTweensOf misses timeline steps that haven't started yet, so the knockback is killed by hand
     this.flinchTl?.kill();
-    if (this.root.destroyed) return;
+    if (this.removed) return;
+    this.removed = true;
     // stop anything still animating this unit (leaps, knockbacks, bonk flights) before its display objects go away
     // one call per target: gsap.killTweensOf([...]) with Pixi objects in an array silently kills nothing
     const targets = [this.root, this.root.scale, this.body, this.body.scale, this.sprite, this.sprite.scale, this.weapon, this.weapon?.scale, this.rooted, this.rooted?.scale];
     for (const t of targets) if (t) gsap.killTweensOf(t);
-    this.root.destroy({ children: true });
+    // a combo step queued in a timeline may still touch this view: detach it now, free it once those are over
+    this.root.removeFromParent();
+    this.root.visible = false;
+    window.setTimeout(() => this.root.destroy({ children: true }), 5000);
   }
 }
 

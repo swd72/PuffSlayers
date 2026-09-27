@@ -10,7 +10,7 @@ import {
   recommendedLevel,
 } from './data';
 import { clampToArena } from './movement';
-import type { EnemySpec, HeroSpec, Point, Stats, Unit } from './types';
+import type { EnemySpec, HeroSpec, Point, Side, Stats, Unit } from './types';
 
 /** Stat multiplier for a level; heroes and monsters grow on the same curve. */
 export const levelGrowth = (level: number): number => 1 + TUNING.levelGrowth * (level - 1);
@@ -32,7 +32,8 @@ const blank = {
   moving: false,
 } as const;
 
-export function createHero(spec: HeroSpec): Unit {
+/** A puff; `side: 'enemy'` makes an Arena rival that lines up mirrored on the far side of the field. */
+export function createHero(spec: HeroSpec, side: Side = 'hero'): Unit {
   const passive = SPECIES_PASSIVE[spec.species];
   const growth = levelGrowth(spec.level);
   const base = CLASS_STATS[spec.heroClass];
@@ -47,11 +48,14 @@ export function createHero(spec: HeroSpec): Unit {
     dodge: base.dodge + passive.dodge + (g.dodge ?? 0),
   };
   const offset = FORMATION[spec.heroClass];
-  const home = clampToArena({ x: ARENA_CENTER.x + offset.x, y: ARENA_CENTER.y + offset.y });
+  const home =
+    side === 'hero'
+      ? clampToArena({ x: ARENA_CENTER.x + offset.x, y: ARENA_CENTER.y + offset.y })
+      : clampToArena({ x: ARENA_CENTER.x - offset.x, y: ARENA_CENTER.y - offset.y - TUNING.rivalGap });
   return {
     ...blank,
     id: spec.id,
-    side: 'hero',
+    side,
     name: spec.name,
     level: spec.level,
     species: spec.species,
@@ -70,7 +74,7 @@ export function createHero(spec: HeroSpec): Unit {
     // stagger Cheek Cannons so two hamsters don't always fire together
     skillMs: spec.species === 'hamham' ? TUNING.cheek.everyMs * (0.5 + (spec.id.length % 3) * 0.15) : 0,
     ...home,
-    facing: 1,
+    facing: side === 'hero' ? 1 : -1,
     home,
   };
 }
@@ -83,7 +87,8 @@ export function createEnemy(spec: EnemySpec, id: string, stage: number, at: Poin
   const base = isBoss ? BOSS_STATS[spec.boss] : ENEMY_STATS[spec.kind];
   const isGiant = isBoss && spec.giant === true;
   const giant = isGiant ? TUNING.giant : { hp: 1, atk: 1 };
-  const stats = scaleStats(base, growth * giant.hp, growth * giant.atk);
+  const raid = isBoss ? { mult: spec.hpMult ?? 1, left: Math.min(1, Math.max(0.001, spec.hpLeft ?? 1)) } : { mult: 1, left: 1 };
+  const stats = scaleStats(base, growth * giant.hp * raid.mult, growth * giant.atk);
   const pos = clampToArena(at);
   return {
     ...blank,
@@ -96,7 +101,7 @@ export function createEnemy(spec: EnemySpec, id: string, stage: number, at: Poin
     isGiant,
     enraged: false,
     stats,
-    hp: stats.maxHp,
+    hp: Math.max(1, Math.round(stats.maxHp * raid.left)),
     cooldown: stats.attackInterval * 0.6,
     skillMs: isBoss ? TUNING.boss.summonEveryMs * 0.5 : 0,
     slamMs: isBoss ? TUNING.boss.slamEveryMs * 0.6 : 0,

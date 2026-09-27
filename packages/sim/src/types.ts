@@ -91,13 +91,26 @@ export interface HeroSpec {
   readonly weaponTier?: number;
 }
 
-export type EnemySpec = { readonly kind: EnemyKind } | { readonly boss: BossKind; readonly giant?: boolean };
+export type EnemySpec =
+  | { readonly kind: EnemyKind }
+  | {
+      readonly boss: BossKind;
+      readonly giant?: boolean;
+      /** raid: many times the normal HP (the pool shared by a week of attempts) */
+      readonly hpMult?: number;
+      /** raid: share of that HP still left from earlier attempts (0..1] */
+      readonly hpLeft?: number;
+    };
 
 export interface BattleConfig {
   readonly stage: number;
   readonly heroes: readonly HeroSpec[];
   readonly waves: readonly (readonly EnemySpec[])[];
   readonly autoUltimate: boolean;
+  /** Arena: a rival puff team that fights on the enemy side (their ultimates always fire on their own) */
+  readonly rivals?: readonly HeroSpec[];
+  /** Arena: every puff has this many times its HP (pillow fights last long enough for ultimates) */
+  readonly puffHpScale?: number;
 }
 
 /** A telegraphed boss attack: the circle shows first, damage lands when the timer runs out. */

@@ -45,7 +45,7 @@ function shoot(
 export function basicAttack(api: SceneApi, src: ActorView, tgt: ActorView): number {
   const u = src.unit;
   api.sound(u.stats.range < 80 ? 'swing' : 'pew');
-  if (u.side === 'hero') {
+  if (u.heroClass) {
     src.pose('pose', 2, 0.1);
     gsap.delayedCall(0.1, () => src.pose('pose', 3, 0.22));
   } else {

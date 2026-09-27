@@ -9,12 +9,24 @@ import { NapPanel } from './ui/nap';
 import { HubScreen } from './ui/hub';
 import { PrepPanel } from './ui/prep';
 import { GardenPanel } from './ui/garden';
+import { AlbumPanel } from './ui/album';
+import { BoardPanel } from './ui/board';
+import { PondPanel } from './ui/pond';
+import { ArenaPanel } from './ui/arena';
+import { RaidPanel } from './ui/raid';
+import { StoryOverlay } from './ui/story';
+import { ResultOverlay } from './ui/result';
+import { SidePanels } from './ui/side';
+import type { GoalAction } from './meta/guide';
+import type { Feature } from './meta/unlocks';
+import { freePullReady } from './meta/album';
 import { WEAPON_POSE } from './scene/weaponHold';
 import { Sfx } from './audio/sfx';
 import './style.css';
 import './ui/workshop.css';
 import './ui/hub.css';
 import './ui/garden.css';
+import './ui/village.css';
 
 /** how often the nap clock is stamped while the game is on screen */
 const HEARTBEAT_MS = 20000;
@@ -85,16 +97,68 @@ async function boot(): Promise<void> {
     onAdventure: () => prep.open(),
     onOpenBag: () => bag.open(),
     onOpenTeam: () => prep.open(),
-    onBuilding: (id) => {
-      if (id === 'garden') garden.open();
-    },
+    onBuilding: (id) => openBuilding(id),
+    onGoal: (action) => onGoal(action),
+    onStory: () => story.open(),
     onClick: () => sfx.play('click'),
   });
-  const garden = new GardenPanel(appEl, {
+  const refreshAll = () => {
+    hub.refresh();
+    side.render();
+  };
+  const sheetDeps = {
     getSave: () => game!.currentSave,
-    setSave: (save) => game?.updateSave(save),
+    setSave: (save: Parameters<NonNullable<typeof game>['updateSave']>[0]) => game?.updateSave(save),
     onClick: () => sfx.play('click'),
-    onClose: () => hub.refresh(),
+    onClose: () => refreshAll(),
+  };
+  const garden = new GardenPanel(appEl, sheetDeps);
+  const album = new AlbumPanel(appEl, sheetDeps);
+  const board = new BoardPanel(appEl, sheetDeps);
+  const pond = new PondPanel(appEl, sheetDeps);
+  const arena = new ArenaPanel(appEl, {
+    ...sheetDeps,
+    onFight: (rival) => {
+      hub.hide();
+      game?.startArena(rival);
+    },
+  });
+  const raid = new RaidPanel(appEl, {
+    ...sheetDeps,
+    onRaid: (boss, stage) => {
+      hub.hide();
+      game?.startRaid(boss, stage);
+    },
+  });
+  const story = new StoryOverlay(appEl, () => sfx.play('click'));
+  const result = new ResultOverlay(appEl, () => sfx.play('click'));
+  const openBuilding = (id: Feature) => {
+    if (id === 'garden') garden.open();
+    else if (id === 'album') album.openOn('album');
+    else if (id === 'board') board.open();
+    else if (id === 'pond') pond.open();
+    else if (id === 'arena') arena.open();
+    else if (id === 'raid') raid.open();
+  };
+  const onGoal = (action: GoalAction) => {
+    if (!hub.visible) goHome();
+    switch (action) {
+      case 'adventure':
+        return prep.open();
+      case 'bag':
+        return bag.open();
+      case 'nap':
+        return game?.checkNap();
+      case 'album':
+        return album.openOn(game && freePullReady(game.currentSave) ? 'capsule' : 'album');
+      default:
+        return openBuilding(action);
+    }
+  };
+  const side = new SidePanels(document.querySelector<HTMLElement>('#side-left')!, document.querySelector<HTMLElement>('#side-right')!, {
+    getSave: () => game!.currentSave,
+    onGoal: (action) => onGoal(action),
+    onClick: () => sfx.play('click'),
   });
   const prep = new PrepPanel(appEl, {
     getSave: () => game!.currentSave,
@@ -110,6 +174,7 @@ async function boot(): Promise<void> {
   const goHome = () => {
     game?.enterHub();
     hub.show();
+    side.render();
   };
   const nap = new NapPanel(hudEl.parentElement ?? hudEl, {
     getSave: () => game!.currentSave,
@@ -123,16 +188,31 @@ async function boot(): Promise<void> {
     scene.resize(next.width, next.height);
   }).observe(appEl);
   game = new Game(scene, hud, {
-    onLoot: (items, forage, seeds) => hud.showLoot(items, forage, seeds),
+    onLoot: (items, forage, seeds, notes) => hud.showLoot(items, forage, seeds, notes),
     onSave: () => {
       hub.refresh();
       prep.refresh();
+      side.render();
+      for (const panel of [album, board, arena, raid]) panel.refresh();
     },
     onNap: (reward) => nap.show(reward),
+    onArenaEnd: (outcome, rival) => result.arena(outcome, rival, () => {
+      goHome();
+      arena.open();
+    }),
+    onRaidEnd: (outcome, boss) => result.raid(outcome, boss, () => {
+      goHome();
+      raid.open();
+    }),
   });
   game.start();
   hub.show();
-  game.checkNap();
+  side.render();
+  if (!game.currentSave.intro) {
+    story.open(() => game?.updateSave({ ...game.currentSave, intro: true }));
+  } else {
+    game.checkNap();
+  }
   // the battle stops while the tab is hidden, so time away counts as a nap
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') game?.checkNap();

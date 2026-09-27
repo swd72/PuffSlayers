@@ -11,18 +11,18 @@ Idle RPG บนเว็บ (มือถือเป็นหลัก) — ส
 ## โครงสร้างโค้ด (npm workspaces)
 | Path | หน้าที่ |
 |---|---|
-| `packages/sim` | ระบบต่อสู้ **deterministic** (seed เดิม = ผลเดิม), pure step(), tick 100ms · `data.ts` ค่าทั้งหมด/TUNING · `combat.ts` TickContext (AI, สกิล, บอส, ของแรร์) · `battle.ts` step/cast/wave · `units.ts` สร้างยูนิต+เลเวล/เกียร์ · `gear.ts` ไอเทม/ดรอป/ของแรร์ · `forge.ts` ตีบวก/รวม/แยก/สุ่ม substat/ย้าย +N · `progression.ts` ค่าเลเวล Petal, Petal ต่อด่าน, Nap Bank · `stages.ts` คลื่น/บอส/Giant |
+| `packages/sim` | ระบบต่อสู้ **deterministic** (seed เดิม = ผลเดิม), pure step(), tick 100ms · `data.ts` ค่าทั้งหมด/TUNING · `combat.ts` TickContext (AI, สกิล, บอส, ของแรร์) · `battle.ts` step/cast/wave · `units.ts` สร้างยูนิต+เลเวล/เกียร์ · `gear.ts` ไอเทม/ดรอป/ของแรร์ · `forge.ts` ตีบวก/รวม/แยก/สุ่ม substat/ย้าย +N · `progression.ts` ค่าเลเวล Petal, Petal ต่อด่าน, Nap Bank · `stages.ts` คลื่น/บอส/Giant · `puffs.ts` แคตตาล็อกพัฟ 13 ตัว + กาชา/ดาว/ชิ้นส่วน · `quests.ts` ภารกิจรายวัน+ปฏิทิน local · `fishing.ts` ปลา/สมุดปลา/ตกอัตโนมัติ · `arena.ts` คู่แข่ง Arena (`PVP`) + Raid |
 | `apps/web` | Vite + TS + PixiJS v8 + GSAP + pixi-filters; UI เป็น HTML/CSS (cqw units) |
 | `apps/web/src/scene` | `BattleScene` (ตัวคุม+จับคู่ event→เวลา impact) · `actor.ts` (ท่า/สถานะ/HP) · `skills.ts` (ตีปกติ, Cheek Cannon, บอส) · `ultimates.ts`/`ultimateSupport.ts` (ท่าไม้ตาย 6 แบบ เป็นคอมโบ 1.5–2 วิ หลายฮิต — ดาเมจเดียวจาก sim ถูกแบ่งแสดงตามจังหวะฮิต, finisher ใหญ่สุด) · `choreo.ts` (at/dash/hop/script — ทุกสเต็ปเช็กว่า actor ยังไม่ถูก destroy) · `projectiles.ts` · `fx.ts` (playFx/decal/statusLoop) · `anime.ts` (shockwave/zoom/speedlines/glow) |
-| `apps/web/src/meta` | `save.ts` (localStorage key `puff.save.v1` แต่ข้อมูล `v: 3`: stage, team, levels ต่อตัว, petals, stardust, lastSeen, pendingNap, items, equipped, skins — migrate จาก v1/v2 + `withRoster()` เติมพัฟที่เพิ่มเข้ามาใหม่ให้เซฟเก่าเอง) · `workshop.ts` (อัปเลเวล/ตีบวก/รวม/แยก บนเซฟ + ข้อความ toast) · `itemInfo.ts` (ชื่อไทย/ไอคอน) |
-| `apps/web/src/ui` | `hud.ts` (แถบบน, portrait, บอสบาร์, cut-in, loot) · `inventory.ts` (หน้ากระเป๋า+อัปเลเวล) · `itemDetail.ts` (การ์ดไอเทม+ปุ่มตีบวก/รวม/แยก) · `nap.ts` (หน้า "ขณะที่คุณหลับ…") · `workshop.css` |
+| `apps/web/src/meta` | `save.ts` (localStorage key `puff.save.v1` แต่ข้อมูล `v: 4` — v4 เพิ่ม owned/stars/shards/dew/pity/daily/pond/arena/raid/intro; `ownedRoster()`, `welcomePuff()`) · `album.ts` `daily.ts` `pond.ts` `pvp.ts` (Arena/Raid) `power.ts` (เกียร์+ดาว+สวน+สมุดปลา = พลังที่ใช้สู้) `guide.ts` (เป้าหมายถัดไป, ชื่อบท, `stageLabel` แบบ บท-ด่าน) `unlocks.ts` (ตึกปลดล็อกตามด่าน, `?dev` เปิดทั้งหมด) · เดิม: (ข้อมูลเดิม `v: 3`: stage, team, levels ต่อตัว, petals, stardust, lastSeen, pendingNap, items, equipped, skins — migrate จาก v1/v2 + `withRoster()` เติมพัฟที่เพิ่มเข้ามาใหม่ให้เซฟเก่าเอง) · `workshop.ts` (อัปเลเวล/ตีบวก/รวม/แยก บนเซฟ + ข้อความ toast) · `itemInfo.ts` (ชื่อไทย/ไอคอน) |
+| `apps/web/src/ui` | `sheet.ts` (ฐานหน้าต่างตึก) · `album.ts` `board.ts` `pond.ts` (มินิเกมตกปลา DOM+rAF) `arena.ts` `raid.ts` `result.ts` `story.ts` `side.ts` (แผงข้างบน PC กว้าง ≥1000px) · `village.css` · `hud.ts` (แถบบน, portrait, บอสบาร์, cut-in, loot) · `inventory.ts` (หน้ากระเป๋า+อัปเลเวล) · `itemDetail.ts` (การ์ดไอเทม+ปุ่มตีบวก/รวม/แยก) · `nap.ts` (หน้า "ขณะที่คุณหลับ…") · `workshop.css` |
 | `apps/web/src/audio/sfx.ts` | เล่นไฟล์จาก `public/audio/sfx/<name>.mp3|ogg|wav` — **ห้ามกลับไปใช้เสียงสังเคราะห์** (ผู้ใช้บอกว่าป๋องแป๋ง) |
 | `tools/extract-v2.mjs` | ตัดภาพ `assets/generated/{v2,vfx2}` → `apps/web/public/sprites/v2/*` + `manifest.json` (หาจุดตัดจากช่องว่าง, ลบพื้นเทา, key ควันดำ→additive, portrait อัตโนมัติ, ไอคอนแบบกริด) |
 
 ## คำสั่ง
 ```bash
 npm run dev       # http://localhost:5173 (host:true → Wi-Fi 192.168.1.107, Tailscale 100.79.30.74)
-npm test          # vitest (86 tests, coverage ~98% ของ sim)
+npm test          # vitest (108 tests)
 npm run sprites   # รัน extract-v2 หลังเพิ่ม/แก้ภาพ
 npm run build
 ```
@@ -44,11 +44,16 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - **สวนปลุกโลก (เฟส 2 ✅)** `sim/garden.ts` · `meta/garden.ts` · `ui/garden.ts`+`garden.css`: Bonk ดอกไม้มีโอกาสได้เมล็ด (บอสได้แน่นอน, นับทั้งชนะ/แพ้), ปลูก 6 แปลงโตตามเวลาจริง (ออฟไลน์ก็โต), รดน้ำได้ครั้งละขั้น, เก็บดอก → บัฟถาวรทั้งทีม (ทุก 5 ดอก, มีเพดาน) + % ฟื้นฟูโลก · ภาพต้นไม้แต่ละขั้นยังไม่มี (ใช้สไปรต์ดอกไม้ศัตรูย่อขนาดแทน; รองรับแผ่น `garden/<seed>` 4 เฟรม)
 - **อาวุธในมือ (ชั้นแยก)** `scene/weaponHold.ts`: ถ้ามีแผ่น `hero-bare/*` เกมใช้ตัวละครมือเปล่า + วางไอคอนอาวุธ Tier ที่ใส่ตามท่า (ตาราง `WEAPON_POSE` ปรับสดได้ที่ `window.__puff.weaponPose`) · ยังไม่มีภาพมือเปล่า → prompt art-prompts ข้อ 10 · **ห้ามใช้ `gsap.killTweensOf([...])` กับ array ของ Pixi object — ไม่ kill อะไรเลย ให้เรียกทีละตัว**
 
-## ยังไม่ได้ทำ (แผนเฟสที่ตกลงแล้ว — ดู GDD 0.6)
-3. สมุดพัฟ + กาชา Puff Capsule (Dew Drop, pity) + ชิ้นส่วนพัฟจากบอส
-4. ภารกิจรายวัน + ตกปลา
-5. Raid + Arena แบบ local ก่อน แล้วต่อเซิร์ฟเวอร์ · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal, เสียงจริงที่ยังขาด
-- Git: branch `master`, ยังไม่มี remote — ถามผู้ใช้ก่อน commit/push ทุกครั้ง
+- **เฟส 3–5 (local) ✅:** สมุดพัฟ 13 ตัว (7 เริ่มต้น + Latte/Senbei/Nugget/Sakura ★5, Daifuku/Kuma-Shiba ★6 — ยังใช้ภาพยืมอาชีพเดียวกัน, prompt art-prompts ข้อ 11) · Puff Capsule (Dew Drop, ฟรีวันละครั้ง, pity ★4/10 ★5/60, spark 150) · ชิ้นส่วนพัฟประจำบทจากทุกด่าน (บอสมากกว่า) · ภารกิจรายวัน · Puff Pond · Arena พัฟ vs พัฟ (`BattleConfig.rivals` + `puffHpScale`, คู่แข่งยิงอัลติเอง, 90 วิ) · Raid (EnemySpec `hpMult`/`hpLeft`, 60 วิ/รอบ, Game mode `'raid'`) · ด่านแสดงเป็น "บท-ด่าน" (10 ด่าน/บท)
+- **เลย์เอาต์:** `#app` เป็นกรอบ 9:16; จอกว้างมีแผงข้างซ้าย/ขวา + พื้นหลังเบลอ · หมู่บ้านวางตึกบน `.hub-world` ที่สัดส่วนเท่าภาพ (941×1672) จึงไม่เพี้ยนทุกจอ
+- **ห้ามใช้ class `.ready` ใน UI ใหม่** — ชนกับป้าย ULT ของ HUD (style.css) ใช้ `.hot` แทน
+- `BattleScene.reset()` kill ทุก tween (`gsap.exportRoot().kill()`) + ล้างเลเยอร์ fx; `ActorView.destroy()` ถอดออกทันทีแต่ free ทีหลัง 5 วิ (`actor.removed` แทน `root.destroyed`)
+
+- Git: remote `origin` = GitHub swd72/PuffSlayers
+
+## ยังไม่ได้ทำ
+- ต่อเซิร์ฟเวอร์ (Arena ของผู้เล่นจริง, Raid pool ร่วม), Co-op Burrow Run, ร้าน Honor, ทำอาหารจากปลา
+- ภาพพัฟใหม่ 6 ตัว, ภาพปลา/ไอคอนวัตถุดิบ · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal/Raid, เสียงจริงที่ยังขาด
 
 ## วิธีตรวจงานในเบราว์เซอร์ (สำคัญ)
 - Browser pane มักถูกซ่อน → rAF แทบไม่เดิน. ใช้ dev handle `window.__puff = { app, game, gsap, sfx }` แล้ว pump เฟรมเอง:

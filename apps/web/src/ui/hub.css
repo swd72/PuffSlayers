@@ -24,22 +24,27 @@
   display: none;
 }
 
-.hub-sky {
+.hub-world {
+  /* sized exactly like the village art (941×1672) and scaled to cover the screen, so every building
+     stays on its own plateau whatever the screen shape */
   position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center 30%;
-  /* stand-in until the village art exists: the meadow, softened */
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: max(100%, calc(100dvh * 941 / 1672));
+  aspect-ratio: 941 / 1672;
+  background-size: 100% 100%, cover;
+  background-position: center;
   filter: saturate(1.1) brightness(1.04);
 }
 
-.hub-sky::after {
-  content: '';
+.hub-shade {
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background:
-    radial-gradient(ellipse at 50% 42%, transparent 35%, rgba(42, 22, 51, 0.28) 100%),
-    linear-gradient(180deg, rgba(255, 244, 214, 0.35), transparent 25%, transparent 70%, rgba(42, 22, 51, 0.45));
+    radial-gradient(ellipse at 50% 38%, transparent 40%, rgba(42, 22, 51, 0.22) 100%),
+    linear-gradient(180deg, rgba(42, 22, 51, 0.35), transparent 14%, transparent 58%, rgba(42, 22, 51, 0.55));
 }
 
 .hub-top {
@@ -53,6 +58,12 @@
 .hub-title {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
   padding: 1.6cqw 4cqw 1.8cqw;
   border-radius: 3cqw 3cqw 3cqw 1cqw;
   background: var(--paper);
@@ -87,12 +98,6 @@
   border-radius: 99cqw;
   background: rgba(42, 22, 51, 0.72);
   color: #fff;
-}
-
-/* the village map: buildings float over the scene */
-.hub-map {
-  position: relative;
-  flex: 1;
 }
 
 .spot {
@@ -199,8 +204,9 @@
 .hub-toast {
   position: absolute;
   left: 50%;
-  top: 62%;
+  top: 56%;
   translate: -50% 0;
+  z-index: 2;
   margin: 0;
   padding: 1.6cqw 3.6cqw;
   border-radius: 99cqw;
@@ -218,13 +224,21 @@
   translate: -50% -1.5cqw;
 }
 
-/* adventure call-to-action */
+/* guide + adventure call-to-action, pinned above the nav */
+.hub-bottom {
+  position: relative;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2cqw;
+  padding: 0 3.4cqw 2.6cqw;
+}
+
 .hub-go {
   position: relative;
   display: flex;
   align-items: stretch;
   gap: 2.4cqw;
-  margin: 0 3.4cqw 2.6cqw;
   padding: 2.4cqw;
   border-radius: 5cqw;
   background: var(--paper);
@@ -321,8 +335,8 @@
 .hub-nav {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  padding: 1.4cqw 3cqw calc(2cqw + env(safe-area-inset-bottom));
+  grid-template-columns: repeat(5, 1fr);
+  padding: 1.4cqw 2cqw calc(2cqw + env(safe-area-inset-bottom));
   background: rgba(42, 22, 51, 0.88);
 }
 
@@ -638,8 +652,9 @@
 
 /* real building art: no round plaque, the building stands on its own base */
 .spot-badge.art {
-  width: 24cqw;
-  height: 24cqw;
+  width: 21cqw;
+  height: 21cqw;
+  margin-bottom: -2.4cqw;
   border: none;
   border-radius: 0;
   background: none;

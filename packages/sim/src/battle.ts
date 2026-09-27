@@ -30,7 +30,9 @@ export function createBattle(config: BattleConfig, seed: number): BattleState {
     time: 0,
     rngState: rng.seed,
     wave: 0,
-    units: [...config.heroes.map(createHero), ...enemies],
+    units: [...config.heroes.map((h) => createHero(h)), ...(config.rivals ?? []).map((h) => createHero(h, 'enemy')), ...enemies].map((u) =>
+      u.heroClass && config.puffHpScale ? { ...u, hp: Math.round(u.hp * config.puffHpScale), stats: { ...u.stats, maxHp: Math.round(u.stats.maxHp * config.puffHpScale) } } : u,
+    ),
     phase: 'fighting',
     pendingUltimates: [],
     casting: null,

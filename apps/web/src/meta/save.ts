@@ -2,6 +2,11 @@
 import {
   GARDEN,
   SLOTS,
+  STARTER_PUFFS,
+  freshPity,
+  type CapsulePity,
+  type DailyState,
+  type FishLog,
   createRng,
   fitsClass,
   gearBonus,
@@ -18,13 +23,48 @@ import {
   type SeedKind,
   type Slot,
 } from '@puff/sim';
-import { DEFAULT_TEAM, ROSTER, TEAM_SIZE, type HeroDef } from '../assets';
+import { DEFAULT_TEAM, ROSTER, TEAM_SIZE, heroDef, type HeroDef } from '../assets';
 import { SKINS } from './itemInfo';
 
 const SAVE_KEY = 'puff.save.v1';
 
+export interface PondSave {
+  /** Fishdex: fish id → how many caught, biggest size */
+  readonly log: FishLog;
+  readonly scales: number;
+  /** bench puffs fishing on their own */
+  readonly anglers: readonly string[];
+  /** when auto-fish was last collected */
+  readonly autoSince: number;
+  /** pond-shop week and what was bought from it this week (item id → count) */
+  readonly shopWeek: number;
+  readonly bought: Readonly<Record<string, number>>;
+}
+
+export interface ArenaSave {
+  readonly points: number;
+  readonly honor: number;
+  /** day index the tickets belong to, and fights used that day */
+  readonly day: number;
+  readonly used: number;
+  readonly wins: number;
+  readonly losses: number;
+  /** seed of the rivals on offer (a new trio after every fight) */
+  readonly seed: number;
+}
+
+export interface RaidSave {
+  readonly week: number;
+  /** share (0..1) of this week's boss pool already knocked off */
+  readonly dealt: number;
+  readonly day: number;
+  readonly used: number;
+  /** milestone chests already paid out this week */
+  readonly claimed: number;
+}
+
 export interface SaveData {
-  readonly v: 3;
+  readonly v: 4;
   readonly stage: number;
   /** ids of the puffs that fight (up to TEAM_SIZE, in roster order); the rest sit on the bench */
   readonly team: readonly string[];
@@ -55,16 +95,49 @@ export interface SaveData {
   readonly seeds: Readonly<Partial<Record<SeedKind, number>>>;
   readonly plots: readonly (Plot | null)[];
   readonly blooms: Readonly<Partial<Record<SeedKind, number>>>;
+  /** Puff Album: which puffs are yours, their star-ups and spare shards */
+  readonly owned: readonly string[];
+  readonly stars: Readonly<Record<string, number>>;
+  readonly shards: Readonly<Record<string, number>>;
+  /** Dew Drops (Puff Capsule currency) and the capsule's pity counters */
+  readonly dew: number;
+  readonly pity: CapsulePity;
+  /** day index of the last free daily capsule */
+  readonly freePullDay: number;
+  readonly daily: DailyState | null;
+  readonly pond: PondSave;
+  readonly arena: ArenaSave;
+  readonly raid: RaidSave;
+  /** the story intro has been shown */
+  readonly intro: boolean;
 }
 
 export const foodKey = (species: string, id: IngredientId): string => `${species}:${id}`;
+
+/** Fields added in save v4 (phases 3–5), for new saves and migrations. */
+function v4Fields(): Pick<SaveData, 'owned' | 'stars' | 'shards' | 'dew' | 'pity' | 'freePullDay' | 'daily' | 'pond' | 'arena' | 'raid' | 'intro'> {
+  return {
+    owned: STARTER_PUFFS,
+    stars: {},
+    shards: {},
+    // enough for a first 3 capsules, so the machine can be tried right away
+    dew: 300,
+    pity: freshPity(),
+    freePullDay: -1,
+    daily: null,
+    pond: { log: {}, scales: 0, anglers: [], autoSince: Date.now(), shopWeek: -1, bought: {} },
+    arena: { points: 0, honor: 0, day: -1, used: 0, wins: 0, losses: 0, seed: Date.now() >>> 0 },
+    raid: { week: -1, dealt: 0, day: -1, used: 0, claimed: 0 },
+    intro: false,
+  };
+}
 
 function starterSave(): SaveData {
   const rng = createRng(Date.now() >>> 0);
   let n = 0;
   const items: Item[] = [];
   const equipped: Record<string, Partial<Record<Slot, string>>> = {};
-  for (const hero of ROSTER) {
+  for (const hero of ROSTER.filter((h) => STARTER_PUFFS.includes(h.id))) {
     const weapon = rollItem(rng, `i${n++}`, { tier: 0, slot: 'weapon', heroClass: hero.heroClass });
     items.push(weapon);
     equipped[hero.id] = { weapon: weapon.id };
@@ -72,10 +145,11 @@ function starterSave(): SaveData {
   // a few spares so the bag isn't empty on day one
   for (const slot of ['hat', 'outfit', 'charm', 'trinket', 'hat', 'outfit'] as const) items.push(rollItem(rng, `i${n++}`, { tier: rng.next() < 0.5 ? 0 : 1, slot }));
   return {
-    v: 3,
+    ...v4Fields(),
+    v: 4,
     stage: 1,
     team: DEFAULT_TEAM,
-    levels: Object.fromEntries(ROSTER.map((h) => [h.id, recommendedLevel(1)])),
+    levels: Object.fromEntries(STARTER_PUFFS.map((id) => [id, recommendedLevel(1)])),
     petals: 0,
     stardust: 0,
     lastSeen: Date.now(),
@@ -104,12 +178,14 @@ export function loadSave(): SaveData {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
-      const data = JSON.parse(raw) as SaveData | SaveV2 | SaveV1;
+      const data = JSON.parse(raw) as SaveData | SaveV3 | SaveV2 | SaveV1;
       if (data && Array.isArray(data.items)) {
-        if (data.v === 3) return withRoster(data);
+        if (data.v === 4) return withRoster({ ...v4Fields(), ...data });
+        // older saves already met the story, so they skip the intro
+        if (data.v === 3) return withRoster({ ...v4Fields(), ...data, v: 4, intro: true });
         const fresh = { team: DEFAULT_TEAM, pantry: {}, lunch: {}, foodLog: {}, seeds: {}, plots: emptyPlots(), blooms: {} };
-        if (data.v === 2) return withRoster({ ...data, v: 3, ...fresh });
-        if (data.v === 1) return withRoster({ ...migrateV1(data), v: 3, ...fresh });
+        if (data.v === 2) return withRoster({ ...v4Fields(), ...data, v: 4, ...fresh, intro: true });
+        if (data.v === 1) return withRoster({ ...v4Fields(), ...migrateV1(data), v: 4, ...fresh, intro: true });
       }
     }
   } catch {
@@ -118,8 +194,10 @@ export function loadSave(): SaveData {
   return starterSave();
 }
 
+/** Third format: every puff was owned; no album, capsule, quests, pond, arena or raid. */
+type SaveV3 = Omit<SaveData, 'v' | keyof ReturnType<typeof v4Fields>> & { readonly v: 3 };
 /** Second format: no roster (the same six always fought). */
-type SaveV2 = Omit<SaveData, 'v' | 'team' | 'pantry' | 'lunch' | 'foodLog' | 'seeds' | 'plots' | 'blooms'> & { readonly v: 2 };
+type SaveV2 = Omit<SaveV3, 'v' | 'team' | 'pantry' | 'lunch' | 'foodLog' | 'seeds' | 'plots' | 'blooms'> & { readonly v: 2 };
 /** First format: one shared team level, no Stardust or nap clock. */
 type SaveV1 = Omit<SaveV2, 'v' | 'levels' | 'stardust' | 'lastSeen' | 'pendingNap'> & { readonly v: 1; readonly teamLevel: number };
 
@@ -129,24 +207,44 @@ function migrateV1(old: SaveV1): SaveV2 {
 }
 
 /**
- * Makes sure every roster puff exists in the save: a puff that joined after this save was made
- * starts at the team's level with a Crumb weapon, and the team list only holds known ids.
+ * Makes sure every owned puff exists in the save: a puff that joined after this save was made
+ * starts at the team's level with a Crumb weapon, and the team list only holds owned ids.
  */
 function withRoster(save: SaveData): SaveData {
   const known = new Set(ROSTER.map((h) => h.id));
-  const team = save.team.filter((id) => known.has(id)).slice(0, TEAM_SIZE);
-  let next: SaveData = { ...save, team: team.length ? team : DEFAULT_TEAM, pantry: save.pantry ?? {}, lunch: save.lunch ?? {}, foodLog: save.foodLog ?? {}, seeds: save.seeds ?? {}, plots: save.plots ?? emptyPlots(), blooms: save.blooms ?? {} };
-  const joinLevel = teamLevel(next);
-  const rng = createRng(Date.now() >>> 0);
-  for (const hero of ROSTER) {
-    if (next.levels[hero.id] === undefined) next = { ...next, levels: { ...next.levels, [hero.id]: joinLevel } };
-    if (!next.equipped[hero.id]?.weapon && !next.items.some((i) => i.slot === 'weapon' && i.heroClass === hero.heroClass)) {
-      const weapon = rollItem(rng, `i${next.nextId}`, { tier: 0, slot: 'weapon', heroClass: hero.heroClass });
-      next = { ...next, items: [...next.items, weapon], nextId: next.nextId + 1, equipped: { ...next.equipped, [hero.id]: { ...next.equipped[hero.id], weapon: weapon.id } } };
-    }
+  const owned = [...new Set([...STARTER_PUFFS, ...(save.owned ?? [])])].filter((id) => known.has(id));
+  const team = save.team.filter((id) => owned.includes(id)).slice(0, TEAM_SIZE);
+  let next: SaveData = {
+    ...save,
+    owned,
+    team: team.length ? team : DEFAULT_TEAM,
+    pantry: save.pantry ?? {},
+    lunch: save.lunch ?? {},
+    foodLog: save.foodLog ?? {},
+    seeds: save.seeds ?? {},
+    plots: save.plots ?? emptyPlots(),
+    blooms: save.blooms ?? {},
+  };
+  for (const id of owned) next = welcomePuff(next, id);
+  return next;
+}
+
+/** A newly owned puff joins at the team's level with a Crumb weapon for its class (if the bag has none). */
+export function welcomePuff(save: SaveData, heroId: string): SaveData {
+  const hero = heroDef(heroId);
+  if (!hero) return save;
+  let next: SaveData = save.owned.includes(heroId) ? save : { ...save, owned: [...save.owned, heroId] };
+  if (next.levels[heroId] === undefined) next = { ...next, levels: { ...next.levels, [heroId]: teamLevel(next) } };
+  if (!next.equipped[heroId]?.weapon && !next.items.some((i) => i.slot === 'weapon' && i.heroClass === hero.heroClass && !wornBy(next, i.id))) {
+    const rng = createRng((Date.now() ^ next.nextId * 0x9e3779b1) >>> 0);
+    const weapon = rollItem(rng, `i${next.nextId}`, { tier: 0, slot: 'weapon', heroClass: hero.heroClass });
+    next = { ...next, items: [...next.items, weapon], nextId: next.nextId + 1, equipped: { ...next.equipped, [heroId]: { ...next.equipped[heroId], weapon: weapon.id } } };
   }
   return next;
 }
+
+/** Every puff the player has, in album order. */
+export const ownedRoster = (save: SaveData): HeroDef[] => ROSTER.filter((h) => save.owned.includes(h.id));
 
 /** The puffs that fight, in roster order. */
 export const activeTeam = (save: SaveData): HeroDef[] => ROSTER.filter((h) => save.team.includes(h.id));
@@ -212,7 +310,7 @@ export function equipBest(save: SaveData, heroId: string, heroClass: HeroClass):
 /** New loot fills empty slots automatically so fresh drops are felt right away (fighters first, then the bench). */
 export function autoEquipEmpty(save: SaveData, items: readonly Item[]): SaveData {
   let next = save;
-  const order = [...activeTeam(save), ...ROSTER.filter((h) => !save.team.includes(h.id))];
+  const order = [...activeTeam(save), ...ownedRoster(save).filter((h) => !save.team.includes(h.id))];
   for (const item of items) {
     const hero = order.find((h) => fitsClass(item, h.heroClass) && !next.equipped[h.id]?.[item.slot]);
     if (hero) next = equip(next, hero.id, item);

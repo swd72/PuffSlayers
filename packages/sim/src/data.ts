@@ -130,6 +130,8 @@ export const TUNING = {
   /** ranged units back off when a foe gets closer than this share of their range */
   kiteRatio: 0.4,
   spawnRadius: 320,
+  /** Arena: how far behind the center line the rival team lines up */
+  rivalGap: 60,
   /** enemies come from the far side of the map (upward), fanning out to the flanks */
   spawnArc: { from: -Math.PI * 0.95, to: -Math.PI * 0.05 },
   /** Hamham Cheek Cannon */

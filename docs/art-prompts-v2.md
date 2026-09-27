@@ -553,3 +553,21 @@ Plain flat light gray background, no floor shadow. [STYLE] [SHEET]
 | `molemo-root-druid-poses-bare.png` | `root-druid-signature-bare.png` |
 
 > ทำทีละตัวได้ — แนะนำเริ่มที่ **Tofu (carrot-knight)** ก่อน ผมจะตั้งจุดจับ/มุมอาวุธทุกท่าให้ แล้วค่อยทำตัวอื่นตาม
+
+---
+
+## 11. พัฟใหม่ในสมุดพัฟ (เฟส 3) — 6 ตัว
+
+> ตอนนี้ในเกมใช้ภาพชั่วคราว: **ยืมแผ่นของอาชีพเดียวกัน** (ท่า/อาวุธเข้ากัน) แล้วย้อมสีตามเผ่า + ฟิลเตอร์ `.stand-in-<species>` ที่ portrait
+> ทำภาพตามนี้ (Template 2.3 Model Sheet → 2.4 Pose Set 6 ท่า) แล้ว `npm run sprites` เกมจะสลับไปใช้ภาพจริง + ตัด portrait ให้เอง
+
+| ไฟล์ Pose Set (`assets/generated/v2/characters/`) | ตัว | ★ | `<SPECIES>` + `<OUTFIT & WEAPON>` |
+|---|---|---|---|
+| `bunbun-carrot-knight-poses.png` | **Latte** | 5 | coffee-brown fluffy bunny, one ear flopped, latte-art heart on the chest fur · `a cream knight tabard with a coffee-bean crest, a long carrot greatsword held two-pawed` · ท่า 5 = `leaping high with the carrot sword raised for a downward slash` |
+| `shibu-pillow-guard-poses.png` | **Senbei** | 5 | toasted-orange shiba, confident grin · `samurai armour made of rice crackers with nori lacing, a round rice-cracker shield and a cushion on the back` · ท่า 5 = `slamming the cracker shield down, crumbs flying` |
+| `hamham-leaf-archer-poses.png` | **Nugget** | 5 | golden hamster with huge cheeks · `sporty sunglasses, a leaf vest with seed-shell bandolier, a rapid-fire slingshot crossbow loaded with sunflower seeds` · ท่า 5 = `spraying seeds from the crossbow in a wide fan` |
+| `hamham-mochi-cleric-poses.png` | **Sakura** | 5 | pale-pink hamster · `a sakura-petal priest robe, cherry-blossom hairpin, a dango staff with pink-white-green mochi` · ท่า 5 = `raising the dango staff as sakura petals swirl around` |
+| `hamham-bubble-mage-poses.png` | **Daifuku** | 6 | snow-white round hamster · `a starry wizard cape shaped like a daifuku wrapper, a bubble wand as tall as the body blowing a giant bubble` · ท่า 5 = `blowing an enormous glowing bubble overhead` |
+| `shibu-bell-bard-poses.png` | **Kuma-Shiba** | 6 | cream shiba **wearing a brown bear onesie hood** (cute on cute) · `pancake drum on a strap, a golden bell mallet` · ท่า 5 = `drumming the pancake drum with shockwave rings of music notes` |
+
+> พัฟ ★5/★6 ควรดูพิเศษขึ้น: ขอบเสื้อผ้ามีดิ้นทอง/แสงเล็กน้อย แต่ **ทรงกลม chibi เท่าเดิม** (ห้ามสูงกว่าพัฟตัวอื่น)

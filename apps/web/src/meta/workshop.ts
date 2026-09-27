@@ -21,6 +21,7 @@ import {
 } from '@puff/sim';
 import { TEAM_SIZE, heroDef } from '../assets';
 import { activeTeam, heroLevel, itemById, wornBy, type SaveData } from './save';
+import { bump } from './daily';
 
 export interface ActionResult {
   readonly save: SaveData;
@@ -49,7 +50,7 @@ export function levelUp(save: SaveData, heroId: string): ActionResult {
   if (save.petals < cost) return fail(save, `Petal ไม่พอ (ต้องใช้ ${cost.toLocaleString('en-US')})`);
   const name = heroDef(heroId)?.name ?? heroId;
   return {
-    save: { ...save, petals: save.petals - cost, levels: { ...save.levels, [heroId]: level + 1 } },
+    save: bump({ ...save, petals: save.petals - cost, levels: { ...save.levels, [heroId]: level + 1 } }, 'levelup'),
     ok: true,
     message: `${name} Lv.${level + 1}!`,
   };
@@ -90,7 +91,7 @@ export function upgrade(save: SaveData, itemId: string, rng: Rng = freshRng()): 
   if (save.stardust < cost.stardust) return fail(save, 'Stardust ไม่พอ — แยกของที่ไม่ใช้ก่อน');
   const result = upgradeItem(rng, item);
   const paid = { ...save, petals: save.petals - cost.petals, stardust: save.stardust - cost.stardust };
-  const next = replaceItems(paid, [result.item]);
+  const next = bump(replaceItems(paid, [result.item]), 'forge');
   if (result.success) return { save: next, ok: true, message: `ตีบวกสำเร็จ! +${plusOf(result.item)}` };
   const left = pityNeeded(result.item) - (result.item.forgePity ?? 0);
   return { save: next, ok: false, message: left <= 0 ? 'พลาด… ครั้งหน้าสำเร็จแน่นอน!' : `พลาด… ของไม่เสียหาย (การันตีในอีก ${left + 1} ครั้ง)` };

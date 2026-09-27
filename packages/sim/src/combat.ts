@@ -85,7 +85,7 @@ export class TickContext {
     const raw = source.stats.atk * buff * multiplier * spread * mitigation * this.levelFactor(source, target) * (crit ? TUNING.critMultiplier : 1);
     const amount = Math.max(1, Math.round(raw));
     target.hp = Math.max(0, target.hp - amount);
-    if (target.side === 'hero') target.energy = Math.min(100, target.energy + TUNING.energyPerHit);
+    if (target.heroClass) target.energy = Math.min(100, target.energy + TUNING.energyPerHit);
     this.events.push({ type: 'damage', source: source.id, target: target.id, amount, crit, ultimate });
     if (target.hp > 0) return;
     if (target.reviveLeft > 0) {
@@ -147,7 +147,8 @@ export class TickContext {
       unit.moving = unit.side === 'hero' && !rooted && moveToward(unit, unit.home, 4, DT_SEC, slow);
       return;
     }
-    if (unit.heroClass && unit.energy >= 100 && !this.castStarted && (autoUltimate || pending.has(unit.id))) {
+    // Arena rivals always fire their ultimates on their own
+    if (unit.heroClass && unit.energy >= 100 && !this.castStarted && (autoUltimate || unit.side === 'enemy' || pending.has(unit.id))) {
       pending.delete(unit.id);
       this.startCast(unit, unit.heroClass);
       return;
@@ -186,7 +187,7 @@ export class TickContext {
     } else {
       return;
     }
-    if (unit.side === 'hero') unit.energy = Math.min(100, unit.energy + TUNING.energyPerAttack);
+    if (unit.heroClass) unit.energy = Math.min(100, unit.energy + TUNING.energyPerAttack);
   }
 
   /** Hamham species skill: spit a fan of seeds at the nearest foes in range. */
