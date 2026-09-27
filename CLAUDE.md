@@ -49,7 +49,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - **ห้ามใช้ class `.ready` ใน UI ใหม่** — ชนกับป้าย ULT ของ HUD (style.css) ใช้ `.hot` แทน
 - `BattleScene.reset()` kill ทุก tween (`gsap.exportRoot().kill()`) + ล้างเลเยอร์ fx; `ActorView.destroy()` ถอดออกทันทีแต่ free ทีหลัง 5 วิ (`actor.removed` แทน `root.destroyed`)
 
-- Git: remote `origin` = GitHub swd72/PuffSlayers
+- Git: remote `origin` = GitHub swd72/PuffSlayers · **ทำงานเสร็จแต่ละรอบ: commit + push ทันที แล้ว merge เข้า `master` แล้ว push `master` ด้วย (ผู้ใช้สั่งไว้ ไม่ต้องถามซ้ำ)** · ผู้ใช้ push ภาพเข้า master เองได้ → `git fetch` + merge master ก่อนเริ่มงาน
 
 ## ยังไม่ได้ทำ
 - ต่อเซิร์ฟเวอร์ (Arena ของผู้เล่นจริง, Raid pool ร่วม), Co-op Burrow Run, ร้าน Honor, ทำอาหารจากปลา
