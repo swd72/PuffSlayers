@@ -14,6 +14,10 @@ type Phase = 'idle' | 'charge' | 'wait' | 'bite' | 'reel' | 'caught' | 'lost';
 const GOLD = { from: 0.8, to: 0.93 } as const;
 /** window to tap after a real bite */
 const BITE_MS = 900;
+const fishIcon = (id: string, big = false): string => {
+  const index = FISH.findIndex((fish) => fish.id === id);
+  return `<img class="fish-ico${big ? ' big' : ''}" src="/sprites/v2/item/fish-${index}.png" alt="">`;
+};
 
 let serial = 0;
 const rng = () => createRng((Date.now() ^ (++serial * 0x85ebca6b)) >>> 0);
@@ -110,7 +114,7 @@ export class PondPanel extends Sheet {
         <span class="leaf"></span>
         ${
           caught
-            ? `<div class="catch-card" style="--rc:${RARITY_COLOR[caught.fish.rarity]}"><span class="fish-ico big" style="--rc:${RARITY_COLOR[caught.fish.rarity]}"></span>
+            ? `<div class="catch-card" style="--rc:${RARITY_COLOR[caught.fish.rarity]}">${fishIcon(caught.fish.id, true)}
                 <b>${FISH_NAME[caught.fish.id]}</b><small>${RARITY_TEXT[caught.fish.rarity]} · ${caught.size} ซม. · +${caught.fish.scales} เกล็ด</small></div>`
             : ''
         }
@@ -321,7 +325,7 @@ export class PondPanel extends Sheet {
           const got = log[f.id];
           const time = f.time === 'day' ? '☀️' : f.time === 'night' ? '🌙' : '';
           return `<div class="dex-card ${got ? 'got' : ''}" style="--rc:${RARITY_COLOR[f.rarity]}">
-            <span class="fish-ico" style="--rc:${RARITY_COLOR[f.rarity]}"></span>
+            ${fishIcon(f.id)}
             <b>${got ? FISH_NAME[f.id] : '???'}</b>
             <small>${RARITY_TEXT[f.rarity]} ${time}</small>
             <small>${got ? `×${got.count} · ใหญ่สุด ${got.best} ซม.` : 'ยังไม่เคยตกได้'}</small>

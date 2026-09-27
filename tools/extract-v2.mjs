@@ -99,6 +99,8 @@ const ICONS = [
   { src: 'v2/items/village-buildings.png', name: 'item/building', cols: 3, rows: 2, optional: true },
   // forage ingredients, 4x4 in the order of INGREDIENT_IDS (packages/sim/src/pantry.ts)
   { src: 'v2/items/ingredients-sixteen-icons.png', name: 'item/ingredient', cols: 4, rows: 4, optional: true },
+  // Puff Pond fish, in FISH order (packages/sim/src/fishing.ts)
+  { src: 'v2/items/fish-twelve-icons.png', name: 'item/fish', cols: 4, rows: 3 },
   { src: 'items/rarity-frames.png', name: 'item/frame', cols: 7, rows: 1 },
   ...['carrot-excalibur', 'bottomless-cheek-pouch', 'grandmas-knitted-scarf', 'moonlit-lullaby-bell', 'sunflower-crown', 'lucky-clover-pin'].map((r) => ({
     src: `v2/items/relic-${r}.png`,
@@ -344,7 +346,11 @@ async function extractIcons(job) {
         .composite([{ input: piece, left: Math.round((side - (box.r - box.l + 1)) / 2), top: Math.round((side - (box.b - box.t + 1)) / 2) }])
         .png()
         .toBuffer();
-      await sharp(square).resize(ICON_SIZE, ICON_SIZE).png({ compressionLevel: 9 }).toFile(path.join(OUT, `${job.name}-${index++}.png`));
+      const target = path.join(OUT, `${job.name}-${index++}.png`);
+      // Tier icons replace cells from the row sheet; libvips can fail to open an existing
+      // target for overwrite on Windows, so remove that cell before writing it.
+      if (job.first !== undefined) await rm(target, { force: true });
+      await sharp(square).resize(ICON_SIZE, ICON_SIZE).png({ compressionLevel: 9 }).toFile(target);
     }
   }
   return [job.name, { frames: index, width: ICON_SIZE, height: ICON_SIZE, refHeight: ICON_SIZE, additive: false }];

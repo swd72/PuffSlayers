@@ -545,6 +545,48 @@
   "refHeight": 220,
   "additive": false
  },
+ "hero/bunbun-carrot-knight": {
+  "frames": 6,
+  "width": 281,
+  "height": 290,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/shibu-pillow-guard": {
+  "frames": 6,
+  "width": 235,
+  "height": 262,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/hamham-leaf-archer": {
+  "frames": 6,
+  "width": 308,
+  "height": 228,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/hamham-mochi-cleric": {
+  "frames": 6,
+  "width": 541,
+  "height": 305,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/hamham-bubble-mage": {
+  "frames": 6,
+  "width": 257,
+  "height": 289,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero/shibu-bell-bard": {
+  "frames": 6,
+  "width": 258,
+  "height": 264,
+  "refHeight": 220,
+  "additive": false
+ },
  "sig/root-druid": {
   "frames": 4,
   "width": 220,
@@ -708,6 +750,13 @@
  },
  "item/ingredient": {
   "frames": 16,
+  "width": 128,
+  "height": 128,
+  "refHeight": 128,
+  "additive": false
+ },
+ "item/fish": {
+  "frames": 12,
   "width": 128,
   "height": 128,
   "refHeight": 128,

@@ -571,3 +571,30 @@ Plain flat light gray background, no floor shadow. [STYLE] [SHEET]
 | `shibu-bell-bard-poses.png` | **Kuma-Shiba** | 6 | cream shiba **wearing a brown bear onesie hood** (cute on cute) · `pancake drum on a strap, a golden bell mallet` · ท่า 5 = `drumming the pancake drum with shockwave rings of music notes` |
 
 > พัฟ ★5/★6 ควรดูพิเศษขึ้น: ขอบเสื้อผ้ามีดิ้นทอง/แสงเล็กน้อย แต่ **ทรงกลม chibi เท่าเดิม** (ห้ามสูงกว่าพัฟตัวอื่น)
+
+---
+
+## 12. ปลาใน Puff Pond — ไอคอน 12 ชนิด
+
+> ไฟล์ `assets/generated/v2/items/fish-twelve-icons.png` เป็นตาราง **4 คอลัมน์ × 3 แถว** เรียงตาม `FISH` ใน `packages/sim/src/fishing.ts` · `npm run sprites` ตัดเป็น `item/fish-0.png` ถึง `item/fish-11.png` สำหรับหน้าจับปลาและสมุดปลา
+
+```
+Twelve separate cute fantasy fish icons for a mobile RPG, exact 4-column by 3-row grid,
+one centered creature in each equal cell, ample empty space between cells, same 3/4 side-view
+angle and readable size. Row-major order:
+1 bread-carp: warm tan plump carp like a loaf;
+2 bubble-guppy: tiny turquoise guppy with iridescent bubble tail;
+3 pebble-loach: brown spotted bottom-dweller with pebble markings;
+4 moon-minnow: tiny silvery-blue crescent-moon minnow;
+5 pudding-puffer: round custard-yellow pufferfish with cute soft spikes;
+6 petal-betta: pink and violet betta with flower-petal fins;
+7 lantern-catfish: deep indigo whiskered catfish with a glowing lantern lure;
+8 mochi-ray: flat white-pink stingray shaped like soft mochi;
+9 sakura-koi: white-and-rose koi with cherry blossom marks;
+10 star-jelly: translucent blue jellyfish with tiny star lights;
+11 golden-koi: regal gleaming gold koi with ornate tail;
+12 rainbow-whale: tiny round magical whale with rainbow back and star sparkles.
+Premium 2.5D anime mobile RPG art, bold clean dark outlines, glossy cel shading,
+strong silhouette at 64px. Plain uniform light gray #E8E8E8 background, no floor shadow,
+no scenery, labels, numbers, text, grid lines, borders, overlap, or merged creatures.
+```
