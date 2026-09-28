@@ -17,8 +17,8 @@ const CARDS: readonly Card[] = [
     art: () => (hasSheet(bossSheet('queen-rafflesia')) ? img(frameUrl(bossSheet('queen-rafflesia'), 0), 'boss') : ''),
   },
   {
-    title: 'ออกไป Bonk ให้หายงอน',
-    text: 'เหล่าพัฟตัวกลมออกเดินทาง <b>Bonk</b> ดอกไม้ด้วยหมอน แครอท และฟองสบู่ — ไม่มีใครเจ็บ ใครแพ้ก็แค่ "งีบ"',
+    title: 'ออกไป Bop ให้หายงอน',
+    text: 'เหล่าพัฟตัวกลมออกเดินทาง <b>Bop</b> ดอกไม้ด้วยหมอน แครอท และฟองสบู่ — ไม่มีใครเจ็บ ใครแพ้ก็แค่ "งีบ"',
     art: () => ['hamham-pillow-guard', 'shibu-carrot-knight', 'bunbun-leaf-archer'].map((k) => img(portraitUrl(k.split('-')[0] as never, k.split('-').slice(1).join('-') as never), 'puff')).join(''),
   },
   {

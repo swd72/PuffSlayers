@@ -35,7 +35,7 @@ export class SidePanels {
     const world = Math.round(restoration(save.blooms) * 100);
     this.left.innerHTML = `
       <h2>เส้นทางพัฟ</h2>
-      <p class="side-story">ราชินี Rafflesia สาปดอกไม้ให้ขี้งอน — พัฟออกไป <b>Bonk</b> ให้หายงอน เก็บเมล็ดกลับมาปลูก ปลุกโลกให้สดใสอีกครั้ง</p>
+      <p class="side-story">ราชินี Rafflesia สาปดอกไม้ให้ขี้งอน — พัฟออกไป <b>Bop</b> ให้หายงอน เก็บเมล็ดกลับมาปลูก ปลุกโลกให้สดใสอีกครั้ง</p>
       <div class="side-block">
         <b>บทที่ ${chapter} · ${chapterName(save.stage)}</b>
         <span class="side-bar" style="--p:${(inChapter / CHAPTER_LEN) * 100}%"><i></i></span>

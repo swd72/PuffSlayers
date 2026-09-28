@@ -44,7 +44,7 @@ interface Building {
 }
 
 const BUILDINGS: readonly Building[] = [
-  { id: 'garden', name: 'สวนปลุกโลก', note: 'ปลูกเมล็ดจากการ Bonk', x: 21, y: 29, frame: 0, icon: '<path d="M12 21 V11"/><path d="M12 13 C8 13 6 10 6 6 C10 6 12 9 12 13 Z"/><path d="M12 11 C12 7 14 4 18 4 C18 8 16 11 12 11 Z"/><path d="M6 21 H18"/>' },
+  { id: 'garden', name: 'สวนปลุกโลก', note: 'ปลูกเมล็ดจากการ Bop', x: 21, y: 29, frame: 0, icon: '<path d="M12 21 V11"/><path d="M12 13 C8 13 6 10 6 6 C10 6 12 9 12 13 Z"/><path d="M12 11 C12 7 14 4 18 4 C18 8 16 11 12 11 Z"/><path d="M6 21 H18"/>' },
   { id: 'album', name: 'สมุดพัฟ', note: 'สะสม & ตู้แคปซูล', x: 78, y: 29, frame: 1, icon: '<path d="M5 4 H17 A2 2 0 0 1 19 6 V20 H7 A2 2 0 0 1 5 18 Z"/><path d="M5 18 A2 2 0 0 1 7 16 H19"/><circle cx="12" cy="10" r="2.5"/>' },
   { id: 'board', name: 'กระดานภารกิจ', note: 'ภารกิจรายวัน', x: 50, y: 38.5, frame: 2, icon: '<rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9 H15 M9 13 H15 M9 17 H12"/>' },
   { id: 'pond', name: 'บ่อตกปลา', note: 'Puff Pond', x: 20, y: 48.5, frame: 3, icon: '<path d="M4 15 C7 12 10 12 12 15 C14 18 17 18 20 15"/><path d="M14 9 C16 7 19 8 20 10 C19 12 16 13 14 11 L12 12 L12 8 Z"/>' },

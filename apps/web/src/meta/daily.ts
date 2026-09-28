@@ -9,7 +9,7 @@ export const today = (now = Date.now()): number => dayIndex(now, tzOffset());
 
 export const QUEST_TEXT: Record<QuestKind, { title: string; icon: string }> = {
   clear: { title: 'ผ่านด่าน', icon: '🚩' },
-  bonk: { title: 'Bonk ดอกไม้ให้หายงอน', icon: '🌼' },
+  bonk: { title: 'Bop ดอกไม้ให้หายงอน', icon: '🌼' },
   ultimate: { title: 'ใช้ท่าไม้ตาย', icon: '✨' },
   levelup: { title: 'อัปเลเวลพัฟ', icon: '⬆️' },
   garden: { title: 'รดน้ำหรือเก็บดอกในสวน', icon: '🌱' },

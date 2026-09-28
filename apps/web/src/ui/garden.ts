@@ -177,7 +177,7 @@ export class GardenPanel {
         </div>
         <p class="garden-toast ${this.toast?.ok ? 'ok' : 'bad'}" aria-live="polite">${this.toast?.text ?? ''}</p>
         <div class="plots">${save.plots.map((p, i) => this.plotCard(p, i, now)).join('')}</div>
-        <h3 class="garden-sub">ถุงเมล็ด <small>ได้จากการ Bonk ดอกไม้ในด่าน</small></h3>
+        <h3 class="garden-sub">ถุงเมล็ด <small>ได้จากการ Bop ดอกไม้ในด่าน</small></h3>
         <div class="pouch">
           ${
             pouch.length
@@ -188,7 +188,7 @@ export class GardenPanel {
                       <small>${formatStats(SEEDS[k].perStep)} / ${SEEDS[k].rare ? 'ดอก' : `${GARDEN.bloomsPerStep} ดอก`}</small></button>`,
                   )
                   .join('')
-              : '<p class="empty">ยังไม่มีเมล็ด — ออกผจญภัยแล้ว Bonk ดอกไม้เพื่อเก็บเมล็ด</p>'
+              : '<p class="empty">ยังไม่มีเมล็ด — ออกผจญภัยแล้ว Bop ดอกไม้เพื่อเก็บเมล็ด</p>'
           }
         </div>
         <h3 class="garden-sub">พลังจากสวน <small>ถาวร ทั้งทีม</small></h3>

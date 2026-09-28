@@ -500,7 +500,7 @@ No characters, no text, evenly spaced, nothing overlapping. [ICON]
 > ไฟล์: `assets/generated/v2/garden/<seed>-growth.png` · อัตราส่วน **4:1** (แถวเดียว 4 ช่อง)
 > seed = `daisy` `tulip` `sunflower` `lavender` `cactus` `honey-bud` `queen-rafflesia` `sunflower-colossus` `lotus-moon-sage`
 
-**เรื่องราว:** ดอกไม้ที่พัฟ Bonk หายงอนแล้ว กลับมาเกิดใหม่ในสวนบ้านเรา — ขั้นสุดท้ายคือดอกไม้ตัวเดิม **ยิ้มแย้มเป็นเพื่อน** (ไม่ใช่มอนสเตอร์)
+**เรื่องราว:** ดอกไม้ที่พัฟ Bop หายงอนแล้ว กลับมาเกิดใหม่ในสวนบ้านเรา — ขั้นสุดท้ายคือดอกไม้ตัวเดิม **ยิ้มแย้มเป็นเพื่อน** (ไม่ใช่มอนสเตอร์)
 ```
 Sprite sheet, single horizontal row of four growth stages of a cute <FLOWER> plant growing in a small round
 soil mound, same size soil mound and same baseline in every frame, top-down 55 degree view:
