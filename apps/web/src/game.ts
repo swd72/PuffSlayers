@@ -108,7 +108,9 @@ export class Game {
 
   /** Leave the village: pay out any nap, then start the next stage fresh with the current team and meals. */
   deploy(): void {
-    this.checkNap();
+    // a nap still waiting is collected quietly on the way out, not shown as another pop-up
+    this.checkNap(false);
+    if (this.save.pendingNap) this.claimNap();
     this.mode = 'battle';
     this.rival = null;
     this.raid = null;
@@ -179,7 +181,7 @@ export class Game {
   }
 
   /** Turns time since the game was last on screen into Nap Bank rewards, waiting to be collected. */
-  checkNap(now = Date.now()): void {
+  checkNap(show = true, now = Date.now()): void {
     if (!this.save.pendingNap) {
       let n = this.save.nextId;
       const reward = napReward(createRng(now >>> 0), {
@@ -192,7 +194,7 @@ export class Game {
       if (reward.ms > 0) this.save = { ...this.save, pendingNap: reward, nextId: n };
     }
     this.persist();
-    if (this.save.pendingNap) this.hooks.onNap(this.save.pendingNap);
+    if (show && this.save.pendingNap) this.hooks.onNap(this.save.pendingNap);
   }
 
   /** One tap collects everything from the nap; new items fill empty slots. */

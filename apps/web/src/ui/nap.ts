@@ -41,6 +41,10 @@ export class NapPanel {
     });
   }
 
+  get visible(): boolean {
+    return !this.el.hidden;
+  }
+
   show(reward: NapReward): void {
     const save = this.deps.getSave();
     const skins = save.skins;

@@ -78,7 +78,12 @@ export class GardenPanel {
     this.timer = window.setInterval(() => this.tick(), 1000);
   }
 
+  get visible(): boolean {
+    return !this.el.hidden;
+  }
+
   close(): void {
+    if (this.el.hidden) return;
     this.el.hidden = true;
     window.clearInterval(this.timer);
     this.deps.onClose();

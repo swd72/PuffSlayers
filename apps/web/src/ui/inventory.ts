@@ -16,6 +16,8 @@ export interface InventoryDeps {
   getSave(): SaveData;
   setSave(save: SaveData): void;
   onClick(): void;
+  /** the bag closed */
+  onClose?(): void;
 }
 
 const SLOT_ICON: Record<Slot, string> = {
@@ -64,8 +66,14 @@ export class InventoryPanel {
     this.render();
   }
 
+  get visible(): boolean {
+    return !this.el.hidden;
+  }
+
   close(): void {
+    if (this.el.hidden) return;
     this.el.hidden = true;
+    this.deps.onClose?.();
   }
 
   private get hero() {

@@ -91,19 +91,26 @@ async function boot(): Promise<void> {
     // in battle, the top-left button goes home to the village
     onOpenBag: () => goHome(),
   });
+  /** the bag was opened from the deploy screen: closing it goes back there */
+  let bagReturnsToPrep = false;
   const bag = new InventoryPanel(hudEl.parentElement ?? hudEl, {
     getSave: () => game!.currentSave,
     setSave: (save) => game?.updateSave(save),
     onClick: () => sfx.play('click'),
+    onClose: () => {
+      if (!bagReturnsToPrep) return;
+      bagReturnsToPrep = false;
+      prep.open();
+    },
   });
   const hub = new HubScreen(appEl, {
     getSave: () => game!.currentSave,
-    onAdventure: () => prep.open(),
-    onOpenBag: () => bag.open(),
-    onOpenTeam: () => prep.open(),
+    onAdventure: () => only(prep).open(),
+    onOpenBag: () => only(bag).open(),
+    onOpenTeam: () => only(prep).open(),
     onBuilding: (id) => openBuilding(id),
     onGoal: (action) => onGoal(action),
-    onStory: () => story.open(),
+    onStory: () => (closeAll(), story.open()),
     onClick: () => sfx.play('click'),
   });
   const refreshAll = () => {
@@ -136,25 +143,36 @@ async function boot(): Promise<void> {
   });
   const story = new StoryOverlay(appEl, () => sfx.play('click'));
   const result = new ResultOverlay(appEl, () => sfx.play('click'));
+  // one window at a time: opening a panel closes whatever else is open, so they never pile up
+  const panels = (): { visible: boolean; close(): void }[] => [garden, album, board, pond, arena, raid, prep, bag];
+  const closeAll = (keep?: object) => {
+    bagReturnsToPrep = false;
+    for (const p of panels()) if (p !== keep && p.visible) p.close();
+  };
+  const only = <T extends object>(panel: T): T => {
+    closeAll(panel);
+    return panel;
+  };
   const openBuilding = (id: Feature) => {
-    if (id === 'garden') garden.open();
-    else if (id === 'album') album.openOn('album');
-    else if (id === 'board') board.open();
-    else if (id === 'pond') pond.open();
-    else if (id === 'arena') arena.open();
-    else if (id === 'raid') raid.open();
+    if (id === 'garden') only(garden).open();
+    else if (id === 'album') only(album).openOn('album');
+    else if (id === 'board') only(board).open();
+    else if (id === 'pond') only(pond).open();
+    else if (id === 'arena') only(arena).open();
+    else if (id === 'raid') only(raid).open();
   };
   const onGoal = (action: GoalAction) => {
     if (!hub.visible) goHome();
     switch (action) {
       case 'adventure':
-        return prep.open();
+        return only(prep).open();
       case 'bag':
-        return bag.open();
+        return only(bag).open();
       case 'nap':
+        closeAll();
         return game?.checkNap();
       case 'album':
-        return album.openOn(game && freePullReady(game.currentSave) ? 'capsule' : 'album');
+        return only(album).openOn(game && freePullReady(game.currentSave) ? 'capsule' : 'album');
       default:
         return openBuilding(action);
     }
@@ -172,10 +190,15 @@ async function boot(): Promise<void> {
       game?.deploy();
     },
     onBack: () => hub.refresh(),
-    onEditHero: (heroId) => bag.open(heroId),
+    onEditHero: (heroId) => {
+      // the bag replaces the deploy screen for a moment, and hands back to it when closed
+      only(bag).open(heroId);
+      bagReturnsToPrep = true;
+    },
     onClick: () => sfx.play('click'),
   });
   const goHome = () => {
+    closeAll();
     game?.enterHub();
     hub.show();
     side.render();
@@ -199,14 +222,18 @@ async function boot(): Promise<void> {
       side.render();
       for (const panel of [album, board, arena, raid]) panel.refresh();
     },
-    onNap: (reward) => nap.show(reward),
+    // the nap card only pops up on the village with nothing else open; otherwise the goal button keeps it waiting
+    onNap: (reward) => {
+      if (!hub.visible || nap.visible || panels().some((p) => p.visible)) return;
+      nap.show(reward);
+    },
     onArenaEnd: (outcome, rival) => result.arena(outcome, rival, () => {
       goHome();
-      arena.open();
+      only(arena).open();
     }),
     onRaidEnd: (outcome, boss) => result.raid(outcome, boss, () => {
       goHome();
-      raid.open();
+      only(raid).open();
     }),
   });
   game.start();
