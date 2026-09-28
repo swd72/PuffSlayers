@@ -46,8 +46,11 @@ export function basicAttack(api: SceneApi, src: ActorView, tgt: ActorView): numb
   const u = src.unit;
   api.sound(u.stats.range < 80 ? 'swing' : 'pew');
   if (u.heroClass) {
-    src.pose('pose', 2, 0.1);
-    gsap.delayedCall(0.1, () => src.pose('pose', 3, 0.22));
+    // a painted attack move sheet (6 frames, frame 2 = impact) if there is one, else the wind-up / release poses
+    if (!src.playMove(`move/${u.heroClass}-attack`, 0.45, { 2: 1 })) {
+      src.pose('pose', 2, 0.1);
+      gsap.delayedCall(0.1, () => src.pose('pose', 3, 0.22));
+    }
   } else {
     src.pose('pose', u.isBoss ? 3 : 2, 0.3);
   }

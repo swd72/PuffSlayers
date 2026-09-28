@@ -127,11 +127,43 @@ export class ActorView {
 
   /** Shows a pose for a while, then returns to idle/run. */
   pose(set: PoseSet, index: number, seconds: number): void {
+    // a skill move sheet owns the sprite while it plays
+    if (this.move) return;
     this.override = { set, index };
     this.overrideTween?.kill();
     this.overrideTween = gsap.delayedCall(seconds, () => {
       this.override = null;
     });
+  }
+
+  /** skill move sheet being played (art-prompts §14): character + effect painted together, frame by frame */
+  private move: { frames: PoseFrame[]; index: number; anchor: { x: number; y: number } } | null = null;
+  private moveTl: gsap.core.Timeline | null = null;
+
+  /**
+   * Plays a move sheet over `seconds` if it exists (returns false otherwise, so callers keep the drawn fallback).
+   * `holds` stretches chosen frames (e.g. the impact frame) by that many extra frame lengths.
+   */
+  playMove(sheet: string, seconds: number, holds: Readonly<Record<number, number>> = {}): boolean {
+    if (this.gone || !hasSheet(sheet)) return false;
+    const meta = sheetMeta(sheet);
+    const scale = this.height / meta.refHeight;
+    const list = frames(sheet).map((texture) => ({ texture, scale }));
+    if (!list.length) return false;
+    const weights = list.map((_, i) => 1 + (holds[i] ?? 0));
+    const unit = seconds / weights.reduce((a, b) => a + b, 0);
+    this.move = { frames: list, index: 0, anchor: { x: meta.anchorX ?? 0.5, y: meta.anchorY ?? 1 } };
+    this.override = null;
+    this.moveTl?.kill();
+    const tl = gsap.timeline({ onComplete: () => void (this.move = null) });
+    let t = 0;
+    list.forEach((_, i) => {
+      tl.call(() => void (this.move && (this.move.index = i)), undefined, t);
+      t += weights[i]! * unit;
+    });
+    tl.call(() => undefined, undefined, t);
+    this.moveTl = tl;
+    return true;
   }
 
   /** Mouth / weapon tip in world coordinates (for spit puffs, arrows, wand bubbles). */
@@ -162,10 +194,19 @@ export class ActorView {
 
     const isHero = !!u.heroClass;
     const defaultIndex = u.hp <= 0 ? (isHero ? 5 : 3) : u.moving ? 1 : 0;
-    const f = this.override ? this.frame(this.override.set, this.override.index) : this.frame('pose', defaultIndex);
+    const move = this.move;
+    const f = move ? move.frames[move.index]! : this.override ? this.frame(this.override.set, this.override.index) : this.frame('pose', defaultIndex);
     this.sprite.texture = f.texture;
     this.sprite.scale.set(f.scale * u.facing * this.nativeFacing, f.scale);
-    this.holdWeapon(this.override ?? { set: 'pose', index: defaultIndex });
+    if (move) {
+      // the weapon is painted into the move frames; a mirrored sprite flips around its anchor, so the feet stay put
+      this.sprite.anchor.set(move.anchor.x, move.anchor.y);
+      if (this.weapon) this.weapon.visible = false;
+    } else {
+      this.sprite.anchor.set(0.5, 1);
+      if (this.weapon) this.weapon.visible = true;
+      this.holdWeapon(this.override ?? { set: 'pose', index: defaultIndex });
+    }
 
     if (u.hp <= 0) return;
     const t = time * 12 + this.phase;
@@ -326,6 +367,7 @@ export class ActorView {
     this.overrideTween?.kill();
     // killTweensOf misses timeline steps that haven't started yet, so the knockback is killed by hand
     this.flinchTl?.kill();
+    this.moveTl?.kill();
     if (this.removed) return;
     this.removed = true;
     // stop anything still animating this unit (leaps, knockbacks, bonk flights) before its display objects go away

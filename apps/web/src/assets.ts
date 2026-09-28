@@ -28,6 +28,9 @@ export interface SheetMeta {
   readonly refHeight: number;
   /** painted on black: draw with additive blending */
   readonly additive: boolean;
+  /** skill move sheets: where the puff's feet are in every frame (share of width / height) */
+  readonly anchorX?: number;
+  readonly anchorY?: number;
 }
 
 let manifest: Record<string, SheetMeta> = {};
