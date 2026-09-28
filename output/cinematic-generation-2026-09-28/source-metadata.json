@@ -1,0 +1,87 @@
+[
+  {
+    "name": "druid-ground-burst",
+    "width": 2179,
+    "height": 722
+  },
+  {
+    "name": "druid-vine-emerge",
+    "width": 2048,
+    "height": 768
+  },
+  {
+    "name": "druid-vine-coil",
+    "width": 1976,
+    "height": 796
+  },
+  {
+    "name": "druid-root-erupt",
+    "width": 2172,
+    "height": 724
+  },
+  {
+    "name": "01-meadow-of-naps",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "02-carrot-forest",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "03-lotus-lagoon",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "04-sunflower-valley",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "05-milk-sea-shore",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "06-star-pond",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "01-meadow-of-naps-boss",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "02-carrot-forest-boss",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "03-lotus-lagoon-boss",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "04-sunflower-valley-boss",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "05-milk-sea-shore-boss",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "06-star-pond-boss",
+    "width": 941,
+    "height": 1672
+  },
+  {
+    "name": "village-hub",
+    "width": 941,
+    "height": 1672
+  }
+]

@@ -1,0 +1,137 @@
+[
+  {
+    "name": "druid-ground-burst",
+    "frame": 0,
+    "width": 478,
+    "height": 331,
+    "transparent": 81773,
+    "opaque": 76098,
+    "darkOpaque": 19703
+  },
+  {
+    "name": "druid-ground-burst",
+    "frame": 1,
+    "width": 478,
+    "height": 331,
+    "transparent": 69071,
+    "opaque": 88361,
+    "darkOpaque": 26247
+  },
+  {
+    "name": "druid-ground-burst",
+    "frame": 2,
+    "width": 478,
+    "height": 331,
+    "transparent": 62070,
+    "opaque": 95064,
+    "darkOpaque": 27037
+  },
+  {
+    "name": "druid-ground-burst",
+    "frame": 3,
+    "width": 478,
+    "height": 331,
+    "transparent": 73418,
+    "opaque": 83829,
+    "darkOpaque": 23103
+  },
+  {
+    "name": "druid-vine-emerge",
+    "frame": 0,
+    "width": 224,
+    "height": 362,
+    "transparent": 68417,
+    "opaque": 9290,
+    "darkOpaque": 4200
+  },
+  {
+    "name": "druid-vine-emerge",
+    "frame": 1,
+    "width": 224,
+    "height": 362,
+    "transparent": 52693,
+    "opaque": 23169,
+    "darkOpaque": 10623
+  },
+  {
+    "name": "druid-vine-emerge",
+    "frame": 2,
+    "width": 224,
+    "height": 362,
+    "transparent": 49147,
+    "opaque": 26809,
+    "darkOpaque": 12297
+  },
+  {
+    "name": "druid-vine-emerge",
+    "frame": 3,
+    "width": 224,
+    "height": 362,
+    "transparent": 52737,
+    "opaque": 23784,
+    "darkOpaque": 11165
+  },
+  {
+    "name": "druid-vine-coil",
+    "frame": 0,
+    "width": 390,
+    "height": 382,
+    "transparent": 74121,
+    "opaque": 64477,
+    "darkOpaque": 16085
+  },
+  {
+    "name": "druid-vine-coil",
+    "frame": 1,
+    "width": 390,
+    "height": 382,
+    "transparent": 82307,
+    "opaque": 56765,
+    "darkOpaque": 20604
+  },
+  {
+    "name": "druid-vine-coil",
+    "frame": 2,
+    "width": 390,
+    "height": 382,
+    "transparent": 92385,
+    "opaque": 47910,
+    "darkOpaque": 18713
+  },
+  {
+    "name": "druid-root-erupt",
+    "frame": 0,
+    "width": 428,
+    "height": 473,
+    "transparent": 150127,
+    "opaque": 45561,
+    "darkOpaque": 7437
+  },
+  {
+    "name": "druid-root-erupt",
+    "frame": 1,
+    "width": 428,
+    "height": 473,
+    "transparent": 129876,
+    "opaque": 62973,
+    "darkOpaque": 16451
+  },
+  {
+    "name": "druid-root-erupt",
+    "frame": 2,
+    "width": 428,
+    "height": 473,
+    "transparent": 113412,
+    "opaque": 75597,
+    "darkOpaque": 21052
+  },
+  {
+    "name": "druid-root-erupt",
+    "frame": 3,
+    "width": 428,
+    "height": 473,
+    "transparent": 100783,
+    "opaque": 92396,
+    "darkOpaque": 20263
+  }
+]

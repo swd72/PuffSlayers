@@ -11,9 +11,9 @@ const OUT = 'apps/web/public/sprites/v2';
 const ALPHA_VISIBLE = 24;
 const GRAY_BG = { tolerance: 26, softness: 16 };
 const DARK_KEY = { floor: 26, ramp: 85 };
-const TARGET = { actor: 220, vfx: 360 }; // output content height (px) of the reference frame
+const TARGET = { actor: 220, vfx: 360, 'painted-vfx': 360 }; // output content height (px) of the reference frame
 
-/** kind: 'actor' = flat gray background; 'vfx' = black (additive) or already transparent */
+/** kind: 'actor' = gray; 'painted-vfx' = gray/solid; 'vfx' = black/additive */
 const HEROES = ['bunbun-leaf-archer', 'bunbun-mochi-cleric', 'hamham-bell-bard', 'hamham-pillow-guard', 'shibu-bubble-mage', 'shibu-carrot-knight'];
 const JOBS = [
   ...HEROES.map((h) => ({ src: `v2/characters/${h}-poses.png`, name: `hero/${h}`, frames: 6, kind: 'actor' })),
@@ -76,9 +76,9 @@ JOBS.push(
     optional: true,
   })),
   { src: 'v2/characters/root-druid-signature.png', name: 'sig/root-druid', frames: 4, kind: 'actor', optional: true },
-  ...Object.entries({ 'druid-root-spike': 4, 'druid-root-erupt': 4, 'druid-root-bind': 3 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
+  ...Object.entries({ 'druid-root-spike': 4, 'druid-root-bind': 3 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
   // painted (solid) effects on a gray background — art-prompts §13
-  ...Object.entries({ 'druid-ground-burst': 4, 'druid-vine-emerge': 4, 'druid-vine-coil': 3 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'actor', optional: true })),
+  ...Object.entries({ 'druid-ground-burst': 4, 'druid-vine-emerge': 4, 'druid-vine-coil': 3, 'druid-root-erupt': 4 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'painted-vfx', optional: true })),
 );
 const SKINS = ['pajama-pudding', 'sakura-festival-momo', 'pumpkin-knight-tofu', 'rainbow-ranger-usagi', 'snow-globe-kinako', 'bear-king-mimi'];
 JOBS.push(...SKINS.map((k) => ({ src: `v2/items/skins/${k}-poses.png`, name: `skin/${k}`, frames: 6, kind: 'actor' })));
@@ -113,8 +113,10 @@ const ICONS = [
 ];
 
 const BACKGROUNDS = [
-  { src: 'backgrounds/01-meadow-of-naps.png', name: 'bg/01-meadow-of-naps' },
-  { src: 'v2/backgrounds/01-meadow-of-naps-boss-arena.png', name: 'bg/01-meadow-of-naps-boss' },
+  ...['01-meadow-of-naps', '02-carrot-forest', '03-lotus-lagoon', '04-sunflower-valley', '05-milk-sea-shore', '06-star-pond'].flatMap((chapter) => [
+    { src: `v2/backgrounds/${chapter}.png`, name: `bg/${chapter}` },
+    { src: `v2/backgrounds/${chapter}-boss.png`, name: `bg/${chapter}-boss` },
+  ]),
   { src: 'v2/backgrounds/village-hub.png', name: 'bg/village-hub', optional: true },
 ];
 
@@ -263,7 +265,13 @@ async function extract(job) {
   const { width: w, height: h } = info;
   let additive = false;
   // some sheets arrive already cut out (transparent corners): leave those alone
-  if (job.kind === 'actor' && data[3] > 200) removeFlatBackground(data, w, h);
+  if (job.kind === 'painted-vfx') {
+    if (data[3] > 200) {
+      const bg = borderColor(data, w, h);
+      removeFlatBackground(data, w, h);
+      removeEnclosedBackground(data, w, h, bg);
+    }
+  } else if (job.kind === 'actor' && data[3] > 200) removeFlatBackground(data, w, h);
   else {
     // painted on black → glow effect (additive); pre-cut transparent sheets still carry dark smoke, so key both
     additive = data[3] > 200;
