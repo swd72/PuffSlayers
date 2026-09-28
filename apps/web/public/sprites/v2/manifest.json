@@ -1012,12 +1012,12 @@
  },
  "move/leaf-archer-ult": {
   "frames": 12,
-  "width": 303,
-  "height": 321,
+  "width": 359,
+  "height": 359,
   "refHeight": 220,
   "additive": false,
-  "anchorX": 0.5206489675516224,
-  "anchorY": 0.9331476323119777
+  "anchorX": 0.4861878453038674,
+  "anchorY": 0.93646408839779
  },
  "move/bubble-mage-attack": {
   "frames": 6,
@@ -1030,12 +1030,12 @@
  },
  "move/bubble-mage-ult": {
   "frames": 12,
-  "width": 292,
-  "height": 320,
-  "refHeight": 208,
+  "width": 313,
+  "height": 284,
+  "refHeight": 221,
   "additive": false,
-  "anchorX": 0.5222602739726028,
-  "anchorY": 0.94375
+  "anchorX": 0.5211480362537765,
+  "anchorY": 0.9633333333333334
  },
  "move/mochi-cleric-attack": {
   "frames": 6,
@@ -1075,20 +1075,20 @@
  },
  "move/root-druid-attack": {
   "frames": 6,
-  "width": 241,
-  "height": 236,
+  "width": 282,
+  "height": 228,
   "refHeight": 220,
   "additive": false,
-  "anchorX": 0.5262008733624454,
-  "anchorY": 0.9309576837416481
+  "anchorX": 0.484375,
+  "anchorY": 0.9710144927536232
  },
  "move/root-druid-ult": {
   "frames": 12,
-  "width": 297,
-  "height": 316,
-  "refHeight": 214,
+  "width": 340,
+  "height": 311,
+  "refHeight": 220,
   "additive": false,
-  "anchorX": 0.531986531986532,
-  "anchorY": 0.8987341772151899
+  "anchorX": 0.5082872928176796,
+  "anchorY": 0.918429003021148
  }
 }
