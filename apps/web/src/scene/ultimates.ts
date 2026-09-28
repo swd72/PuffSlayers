@@ -37,8 +37,8 @@ const ULT_MOVE_SECONDS: Record<HeroClass, number> = {
   'root-druid': 2.8,
 };
 const ULT_MOVE_HOLDS: Readonly<Record<number, number>> = { 8: 2, 11: 1 };
-/** Taro plays only its caster frames (see MOVE_FRAMES in actor.ts): arms up (frame 6) holds while the vines squeeze */
-const ULT_MOVE_HOLDS_BY_CLASS: Partial<Record<HeroClass, Readonly<Record<number, number>>>> = { 'root-druid': { 6: 5, 11: 1 } };
+/** Taro's combo is longer: arms up with swirling leaves (frame 6) holds while the vines coil and squeeze */
+const ULT_MOVE_HOLDS_BY_CLASS: Partial<Record<HeroClass, Readonly<Record<number, number>>>> = { 'root-druid': { 6: 4, 8: 1, 11: 1 } };
 
 /** How long the field stays dimmed while a combo plays. */
 const COMBO_DIM = 1.8;

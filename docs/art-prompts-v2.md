@@ -829,7 +829,7 @@ staff catching breath, leaves falling, 12 patting the sprout on the head with a 
 
 ### 14.4b กฎสำคัญสำหรับอาชีพระยะไกล (Taro, Usagi, Kinako)
 > **ในแผ่นท่า วาดเฉพาะ "ต้นทาง" ของเอฟเฟกต์ที่ตัวละคร** (ไม้เท้าเรืองแสง, รอยแตกเริ่มจากเท้า, ธนูปล่อยลูก, เป่าฟอง) — **ห้ามวาดผลที่ปลายทาง** (รากปะทุ, ฝนธนูตก, ฟองระเบิด) ไว้รอบตัวละคร เพราะในเกมศัตรูอยู่ไกล ผลปลายทางเกมวาดเองที่ตัวศัตรู
-> แผ่นชุดแรกที่วาดผลปลายทางไว้ที่ตัว เกมข้ามเฟรมพวกนั้น (`MOVE_FRAMES` ใน `scene/actor.ts`): Taro ตีปกติใช้เฟรม 1,2,6 · Taro อัลติใช้ 1,2,3,7,11,12 · Usagi อัลติข้ามเฟรม 8–9 · Kinako อัลติข้ามเฟรม 9–10 (นับจาก 1) — ถ้าวาดใหม่ตามกฎนี้แล้วลบรายการออกได้
+> ✅ วาดใหม่ตามกฎนี้แล้วครบ 4 แผ่น (Taro ตีปกติ/อัลติ, Usagi อัลติ, Kinako อัลติ) — เกมเล่นครบทุกเฟรม, `MOVE_FRAMES` ว่าง · ภาพเดิมสำรองที่ `output/imagegen/moves-14.4b-20260928/originals/`
 > เติมท้าย prompt: `the effect only starts at the character (glowing staff, a crack starting at its feet); do not draw the impact, roots, rain or explosions around the character — they happen far away at the enemy`
 
 ### 14.5 วิธีตรวจภาพก่อนใส่เกม (เช็กลิสต์)

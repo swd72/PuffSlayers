@@ -36,10 +36,7 @@ interface PoseFrame {
  * caster just does its moves, and the drawn effect happens on the foes. Sheets not listed play every frame.
  */
 const MOVE_FRAMES: Readonly<Record<string, readonly number[]>> = {
-  'move/root-druid-attack': [0, 1, 5],
-  'move/root-druid-ult': [0, 1, 2, 6, 10, 11],
-  'move/leaf-archer-ult': [0, 1, 2, 3, 4, 5, 6, 9, 10, 11],
-  'move/bubble-mage-ult': [0, 1, 2, 3, 4, 5, 6, 7, 10, 11],
+  // empty: Taro, Usagi and Kinako were repainted under art-prompts 14.4b (origin only), so every frame plays
 };
 
 /** size of painted move frames relative to the idle puff */
