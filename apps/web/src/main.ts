@@ -22,6 +22,7 @@ import type { Feature } from './meta/unlocks';
 import { freePullReady } from './meta/album';
 import { WEAPON_POSE } from './scene/weaponHold';
 import { Sfx } from './audio/sfx';
+import { keepScreenAwake } from './screenAwake';
 import './style.css';
 import './ui/workshop.css';
 import './ui/hub.css';
@@ -41,7 +42,9 @@ async function boot(): Promise<void> {
   // the canvas is stretched to #app with CSS; render at enough pixels to stay crisp
   const measure = () => {
     const view = fitView(appEl.clientWidth, appEl.clientHeight);
-    const resolution = Math.min(2.5, (window.devicePixelRatio || 1) * (appEl.clientWidth / view.width));
+    // phones: 2× is plenty sharp and keeps GPU memory low (a lost WebGL context turns the game black)
+    const maxRes = window.matchMedia('(pointer: coarse)').matches ? 2 : 2.5;
+    const resolution = Math.min(maxRes, (window.devicePixelRatio || 1) * (appEl.clientWidth / view.width));
     return { ...view, resolution: Math.max(1, resolution) };
   };
   const initial = measure();
@@ -56,6 +59,7 @@ async function boot(): Promise<void> {
     autoDensity: false,
   });
   stageEl.appendChild(app.canvas);
+  keepScreenAwake();
 
   await Promise.all([loadAssets(), document.fonts.load('40px "Lilita One"').catch(() => undefined)]);
 
@@ -219,6 +223,14 @@ async function boot(): Promise<void> {
     else game?.persist();
   });
   window.addEventListener('pagehide', () => game?.persist());
+  // the phone dropped the GPU context (memory pressure, long sleep): save and reload instead of staying black
+  app.canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    game?.persist();
+    const reload = () => location.reload();
+    if (document.visibilityState === 'visible') window.setTimeout(reload, 300);
+    else document.addEventListener('visibilitychange', reload, { once: true });
+  });
   window.setInterval(() => {
     if (document.visibilityState === 'visible') game?.persist();
   }, HEARTBEAT_MS);
