@@ -58,8 +58,8 @@ export const SPECIES_PASSIVE: Record<Species, { hp: number; crit: number; dodge:
  */
 export const ARENA = { minX: 30, maxX: 510, minY: 270, maxY: 730 } as const;
 export const ARENA_CENTER: Point = { x: (ARENA.minX + ARENA.maxX) / 2, y: (ARENA.minY + ARENA.maxY) / 2 };
-/** bosses hold the far side of the field */
-export const BOSS_SPOT: Point = { x: ARENA_CENTER.x, y: ARENA.minY + 50 };
+/** bosses stand a little above the middle, so the fight fills the centre of the screen (not the top edge) */
+export const BOSS_SPOT: Point = { x: ARENA_CENTER.x, y: ARENA_CENTER.y - 70 };
 
 /** Loose hero formation, offsets from the arena center. */
 export const FORMATION: Record<HeroClass, Point> = {
@@ -129,11 +129,11 @@ export const TUNING = {
   personalSpace: 24,
   /** ranged units back off when a foe gets closer than this share of their range */
   kiteRatio: 0.4,
-  spawnRadius: 320,
+  spawnRadius: 260,
   /** Arena: how far behind the center line the rival team lines up */
   rivalGap: 60,
-  /** enemies come from the far side of the map (upward), fanning out to the flanks */
-  spawnArc: { from: -Math.PI * 0.95, to: -Math.PI * 0.05 },
+  /** enemies come from the far side and both flanks (a little below the middle too), so fights fill the whole field */
+  spawnArc: { from: -Math.PI * 1.25, to: Math.PI * 0.25 },
   /** Hamham Cheek Cannon */
   cheek: { everyMs: 6000, seeds: 3, damage: 0.7, range: 170 },
   /** Pillow Guard Ultimate Roll */

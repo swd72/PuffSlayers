@@ -48,6 +48,8 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - **เลย์เอาต์:** `#app` เป็นกรอบ 9:16; จอกว้างมีแผงข้างซ้าย/ขวา + พื้นหลังเบลอ · หมู่บ้านวางตึกบน `.hub-world` ที่สัดส่วนเท่าภาพ (941×1672) จึงไม่เพี้ยนทุกจอ
 - **คำในเกม: ใช้ "Bop" ห้ามใช้ "Bonk"** ในข้อความที่ผู้เล่นเห็น (Bonk เป็นสแลงทางเพศ) — ชื่อในโค้ด (`bonk` event, `bonkPetals`, `vfx/bonk-petals`, `sfx bonk.mp3`) คงเดิมได้
 - **ห้ามใช้ class `.ready` ใน UI ใหม่** — ชนกับป้าย ULT ของ HUD (style.css) ใช้ `.hot` แทน
+- **ตำแหน่งการต่อสู้:** `BOSS_SPOT` = กลางสนามขึ้นไป 70 · ศัตรูเกิดรอบๆ ด้านบน+สองข้าง (`spawnArc` −1.25π…0.25π, radius 260) → ค่าเฉลี่ย y การต่อสู้ ~473 (กลาง 500) ไม่กองอยู่ขอบบน
+- **Root Awakening (Taro) แบบหลายจังหวะ ~2.5 วิ:** เถาวัลย์ `crawlingVine` เลื้อยจากขอบล่างจอ → `coilAround` พันขึ้นตัว (วาดครึ่งหลัง/ครึ่งหน้าบน `actor.body`) + ยกลอย → รัด 3 จังหวะ (ฮิต) → รากยักษ์ปะทุ กระชากลง (finisher) → เถาหดกลับ · ท่าอื่นควรทำสไตล์เดียวกัน (หลายบีต แบบการ์ตูน ไม่ใช่ตู้มเดียว)
 - **สเกล fx:** sprite จาก `fxSprite/statusLoop` ถูกย่อ scale ไว้แล้ว — tween scale ต้องคูณจาก scale เดิม ห้าม tween ไปที่ 1 (เคยทำให้วงรากของ Taro ใหญ่เต็มสนาม)
 - `BattleScene.reset()` kill ทุก tween (`gsap.exportRoot().kill()`) + ล้างเลเยอร์ fx; `ActorView.destroy()` ถอดออกทันทีแต่ free ทีหลัง 5 วิ (`actor.removed` แทน `root.destroyed`)
 
