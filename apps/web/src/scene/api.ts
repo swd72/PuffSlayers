@@ -17,6 +17,8 @@ export interface SceneApi {
   /** the visible screen, in world coordinates */
   readonly screen: ScreenRect;
   actor(id: string): ActorView | undefined;
+  /** every standing unit on one side */
+  team(side: 'hero' | 'enemy'): ActorView[];
   dim(seconds: number): void;
   shake(strength: number): void;
   hitstop(ms: number): void;

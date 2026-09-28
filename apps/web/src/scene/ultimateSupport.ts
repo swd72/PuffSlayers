@@ -6,6 +6,7 @@ import type { SceneApi } from './api';
 import { addHit, alive, at, hop, type ImpactTimes } from './choreo';
 import { decal, playFx } from './fx';
 import { PROJECTILES, launch } from './projectiles';
+import { halo, musicNotes, petalStorm, spiritBear } from './signature';
 
 /** A pillar of light lifts the cleric, a halo opens in the sky, and three waves of glowing mochi fall on every ally. */
 export function mochiRain(api: SceneApi, cleric: ActorView, allies: ActorView[]): ImpactTimes {
@@ -31,12 +32,18 @@ export function mochiRain(api: SceneApi, cleric: ActorView, allies: ActorView[])
         launch(api.fx, PROJECTILES.mochiRain, to, to, () => {
           if (!alive(a)) return;
           playFx(api.fx, 'vfx/mochi-splat', to.x, to.y, { size: last ? 70 : 50, anchor: 'center', frameTime: 0.07 });
-          if (last) playFx(api.fx, 'vfx/heal-pillar', a.root.x, a.root.y + 6, { size: 130, frameTime: 0.1 });
+          if (last) {
+            playFx(api.fx, 'vfx/heal-pillar', a.root.x, a.root.y + 6, { size: 130, frameTime: 0.1 });
+            // signature: a pillar of light and a halo on every ally
+            lightPillar(api.fx, a.root.x, a.root.y, 0xfff0b0, 44, 300, 0.7);
+            halo(api, a, color);
+          }
           else risingMotes(api.fx, a.root.x, a.root.y, 0xfff0b0, 5);
         });
       });
     });
   });
+  at(1.2, [], () => petalStorm(api, 1.4));
   at(1.65, [], () => {
     glowFlare(api.fx, sky.x, sky.y + 200, 0xfff0b0, 260, 0.5, 0.6);
     api.shake(5);
@@ -53,6 +60,10 @@ export function bearHugFestival(api: SceneApi, bard: ActorView, allies: ActorVie
   magicCircle(api.ground, bard.root.x, bard.root.y, 70, color, 1.6);
 
   const rings = [0.3, 0.8, 1.3];
+  // signature: a giant spirit bear rises behind the team and hugs everyone on the last ring
+  const team = allies.length ? allies : [bard];
+  const mid = { x: team.reduce((s, a) => s + a.root.x, 0) / team.length, y: team.reduce((s, a) => s + a.root.y, 0) / team.length };
+  spiritBear(api, mid, color, rings[2]! + 0.1);
   rings.forEach((when, r) => {
     const last = r === rings.length - 1;
     at(when, [bard], () => {
@@ -75,6 +86,7 @@ export function bearHugFestival(api: SceneApi, bard: ActorView, allies: ActorVie
         glowFlare(api.fx, a.root.x, a.root.y - a.height * 0.4, color, 70 + r * 20, 0.4);
         if (last) decal(api.ground, 'vfx/bard-aura', a.root.x, a.root.y, { width: 95, hold: 1.2 });
         risingMotes(api.fx, a.root.x, a.root.y, color, 4);
+        musicNotes(api, a, color);
       });
     }
   });

@@ -9,6 +9,7 @@ import { ScreenFilters, afterglow, converge, glowFlare, risingMotes, screenFlash
 import type { SceneApi } from './api';
 import { floatNumber, playFx, ring, shake } from './fx';
 import { basicAttack, bossSlam, bossSummon, bossTelegraph, cheekCannon, healToss } from './skills';
+import { castFlourish } from './signature';
 import { playUltimate } from './ultimates';
 
 /** Design space: the battlefield is laid out in 540×960; extra screen area just shows more background. */
@@ -119,6 +120,7 @@ export class BattleScene {
         const a = this.actors.get(id);
         return a && !a.gone ? a : undefined;
       },
+      team: (side) => [...this.actors.values()].filter((a) => !a.gone && a.unit.side === side),
       dim: (seconds) => {
         gsap.killTweensOf(this.dimmer);
         gsap.timeline().to(this.dimmer, { alpha: 0.55, duration: 0.12 }).to(this.dimmer, { alpha: 0, duration: 0.35 }, seconds);
@@ -417,6 +419,7 @@ export class BattleScene {
     ring(this.ground, color, src.root.x, src.root.y, src.height * 0.7);
     risingMotes(this.fx, src.root.x, src.root.y, color, 12);
     converge(this.fx, src.root.x, src.root.y - src.height * 0.45, color, seconds * 0.6);
+    castFlourish(this.api, src, heroClass, color, seconds);
     // 2 a white flash as it peaks (the HUD then swipes the class emblem across the screen)
     gsap.delayedCall(seconds * 0.45, () => screenFlash(this.overlay, this.screen, 0xffffff, 0.55));
   }

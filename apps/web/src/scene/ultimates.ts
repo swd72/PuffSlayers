@@ -4,12 +4,13 @@ import gsap from 'gsap';
 import type { HeroClass, Point } from '@puff/sim';
 import { CLASS_COLOR } from '../assets';
 import type { ActorView } from './actor';
-import { glowFlare, magicCircle, screenFlash, slashArc, sparks, speedLines } from './anime';
+import { glowFlare, lightPillar, magicCircle, screenFlash, slashArc, sparks, speedLines } from './anime';
 import type { SceneApi } from './api';
 import { addHit, alive, at, dash, hitAll, hop, nearestFirst, script, type ImpactTimes } from './choreo';
 import { decal, fxSprite, playFx } from './fx';
 import { PROJECTILES, launch } from './projectiles';
 import { rootAwakening } from './rootDruid';
+import { bladeRing, pillowFort, spiralArrow, starBurst, targetMark, tauntMarks, vortex } from './signature';
 import { bearHugFestival, mochiRain } from './ultimateSupport';
 
 export type { ImpactTimes } from './choreo';
@@ -79,6 +80,8 @@ function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, tar
   knight.root.position.set(ev.from.x, ev.from.y);
   knight.pose('sig', 0, 0.12);
   playFx(api.ground, 'vfx/knight-leap-dust', ev.from.x, ev.from.y + 6, { size: 70, frameTime: 0.2 });
+  // signature: spirit carrot-blades rise in a ring around the pack while the knight slashes, and fall with the slam
+  at(0.3, [], () => bladeRing(api, ev.at, color, slam - 0.3));
 
   slashes.forEach((when, i) => {
     const stop = stops[i]!;
@@ -123,6 +126,7 @@ function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, tar
     gsap.timeline({ onComplete: () => wave.destroy() }).to(wave, { x: ev.at.x + knight.unit.facing * 170, duration: 0.5, ease: 'power2.out' }).to(wave, { alpha: 0, duration: 0.2 }, 0.35);
     decal(api.ground, 'vfx/knight-scorch', ev.at.x + knight.unit.facing * 40, ev.at.y, { width: 150, hold: 1.4 });
     glowFlare(api.fx, t.x, t.y, 0xff8a2a, 170, 0.5);
+    lightPillar(api.fx, ev.at.x, ev.at.y, 0xffc680, 90, 420, 0.6);
     api.filters.shockwave(t.x, t.y, 26);
     api.filters.zoomBurst(t.x, t.y, 0.18);
     screenFlash(api.overlay, api.screen, 0xffc680, 0.4);
@@ -137,7 +141,7 @@ function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, tar
 function leafStorm(api: SceneApi, archer: ActorView, ev: UltimateEvent, targets: ActorView[]): ImpactTimes {
   const color = CLASS_COLOR['leaf-archer'];
   const hits: ImpactTimes = new Map();
-  script(archer, 1.75);
+  script(archer, 1.95);
   const back = { x: archer.root.x - archer.unit.facing * 40, y: archer.root.y };
   archer.pose('sig', 2, 0.3);
   gsap.to(archer.root, { x: back.x, y: back.y, duration: 0.3, ease: 'power2.out' });
@@ -171,8 +175,18 @@ function leafStorm(api: SceneApi, archer: ActorView, ev: UltimateEvent, targets:
     launch(api.fx, PROJECTILES.skyArrow, bow, { x: bow.x, y: bow.y - 360 });
     decal(api.ground, 'vfx/archer-target-zone', ev.at.x, ev.at.y, { width: 230, hold: 1 });
     magicCircle(api.ground, ev.at.x, ev.at.y, 110, color, 1);
+    for (const t of targets) if (alive(t)) targetMark(api, t, color, 1.05);
     api.sound('pew');
   });
+  // signature: one giant wind-spiral arrow dives onto the marked pack after the rain
+  const finisher = 1.82;
+  spiralArrow(api, ev.at, color, finisher);
+  at(finisher, [], () => {
+    api.shake(12);
+    api.hitstop(80);
+    api.filters.shockwave(ev.at.x, ev.at.y - 10, 24);
+  });
+  for (const t of targets) addHit(hits, t.unit.id, finisher);
   const rain = [1.2, 1.38, 1.56];
   at(1.1, [archer], () => {
     playFx(api.fx, 'vfx/archer-rain', ev.at.x, ev.at.y + 20, { size: 250, byWidth: true, frameTime: 0.12, zIndex: ev.at.y + 40 });
@@ -204,6 +218,8 @@ function bubblePrison(api: SceneApi, mage: ActorView, ev: UltimateEvent, targets
   magicCircle(api.ground, mage.root.x, mage.root.y, 60, color, 1.6);
   decal(api.ground, 'vfx/bubble-circle', ev.at.x, ev.at.y, { width: 230, hold: 1.5 });
   api.sound('ult-bubble-mage');
+  // signature: a galaxy whirlpool opens under the pack and drags everyone toward its eye
+  vortex(api, ev.at, targets, color, 1.75);
 
   // orbiting bubbles around the mage
   const orbs = Array.from({ length: 6 }, () => fxSprite('vfx/bubble-orb', { size: 30, anchor: 'center' }));
@@ -256,6 +272,7 @@ function bubblePrison(api: SceneApi, mage: ActorView, ev: UltimateEvent, targets
       // the prison squeezes (big splash); it pops for real with bubble-prison-burst when the stun ends
       playFx(api.fx, 'vfx/bubble-splash', c.x, c.y, { size: 100, anchor: 'center', frameTime: 0.06 });
       playFx(api.fx, 'vfx/status-stun', t.root.x, t.root.y - t.height * 1.05, { size: 44, anchor: 'center', frameTime: 0.1 });
+      starBurst(api, c, color);
       addHit(hits, t.unit.id, burst);
     }
     glowFlare(api.fx, ev.at.x, ev.at.y - 20, color, 220, 0.5);
@@ -330,6 +347,9 @@ function ultimateRoll(api: SceneApi, guard: ActorView, ev: UltimateEvent, target
     api.filters.shockwave(b.x, b.y, 30);
     api.filters.zoomBurst(b.x, b.y - 20, 0.14);
     api.sound('ult-pillow-guard');
+    // signature: the slam raises a pillow-fort dome over every ally, and the pack turns to glare at the guard
+    pillowFort(api, api.team(guard.unit.side), color, 1.1);
+    tauntMarks(api, targets);
     api.shake(16);
     api.hitstop(100);
   });
