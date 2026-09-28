@@ -833,3 +833,54 @@ staff catching breath, leaves falling, 12 patting the sprout on the head with a 
 - [ ] เอฟเฟกต์ไม่ล้นข้ามช่อง · พื้นเทาเรียบ ไม่มีเงาพื้น
 - [ ] เฟรม 9 (อัลติ) / เฟรม 3 (ตีปกติ) เป็นเฟรมที่ "ใหญ่ที่สุด" ของท่า
 - [ ] ย่อภาพให้ตัวสูง ~72px แล้วยังอ่านท่าออก
+
+### 14.6 Cinematic Ultimate — โครงของทุกอัลติ (ตามคลิปตัวอย่าง Raiden + คลิปดาบมุมบน)
+> เกมทำโครงนี้ให้ **ทุกอาชีพแล้วในโค้ด** ด้วยเอฟเฟกต์ที่วาดสด · ภาพด้านล่างจะทำให้แต่ละจังหวะสวยขึ้น
+
+| จังหวะ | เวลา | เกมทำอะไร (ทำแล้ว) | ภาพที่เพิ่มได้ |
+|---|---|---|---|
+| ① Push-in | 0–0.3 วิ | กล้องซูมเข้าตัวที่ร่าย ×1.45 · เส้นพลังวิ่ง **เข้า** หาตัว · แบนเนอร์ชื่อท่า + ภาพโคลสอัป | `cutin-<class>.png` ภาพโคลสอัป |
+| ② Flash | ~0.4 วิ | แฟลชขาวทั้งจอ | — |
+| ③ Emblem slash | 0.45–0.9 วิ | แถบมืดเฉียง + เส้นฟันสีอาชีพพาดจอ + **สัญลักษณ์อาชีพหมุนขยายกลางจอ** | `class-emblems.png` สัญลักษณ์ 7 อาชีพ |
+| ④ Release | 0.9 วิ | กล้องดีดกลับพร้อม overshoot · ท่า/move sheet ปล่อย | move sheet ข้อ 14.3 |
+| ⑤ Afterglow | หลังฮิตสุดท้าย | รอยไหม้เรืองบนพื้น + ประกายลอยขึ้นช้าๆ ค้างหลังท่าจบ | — |
+| ⑥ Empowered | 5 วิหลังอัลติ | ลูกแสงสีอาชีพโคจรรอบตัว · **ตีปกติมีเส้นฟันยาวทะลุเป้า** | — |
+
+**`class-emblems.png`** → `assets/generated/v2/ui/class-emblems.png` (แถวเดียว 7 ช่อง เรียง: pillow-guard, carrot-knight, leaf-archer, bubble-mage, mochi-cleric, bell-bard, root-druid)
+```
+seven circular magic emblems in one row, evenly spaced, each a glowing sigil for a fantasy class:
+1 a pillow shield crest with a paw print (blue), 2 a crescent moon crossed by a carrot sword (orange-gold),
+3 a leaf-shaped arrowhead inside a wind spiral (green), 4 a bubble inside a star circle (blue-violet),
+5 a dango skewer with sakura petals and a halo (gold-pink), 6 a bell and music notes inside a heart ring (pink),
+7 a seed crystal with roots spreading like a mandala (moss green); each emblem like the eye sigil in an anime
+ultimate cut-in: bold clean shapes, white-hot core lines, colored glow edge, symmetrical, readable at small size,
+Japanese anime movie quality, hand-painted cinematic look, visible brush texture, rich controlled color palette,
+isolated on a plain flat light gray #E8E8E8 background, no text, not photorealistic, not 3D
+```
+
+**`cutin-<class>.png`** → `assets/generated/v2/ui/cutin-<class>.png` (ภาพเดี่ยว 1 ตัว/อาชีพ — ใช้ตัวหลัก: Pudding, Tofu, Usagi, Kinako, Momo, Mimi, Taro)
+```
+dramatic anime ultimate cut-in close-up of this exact puff character (upload the model sheet as reference),
+head and shoulders filling the frame, determined sparkling eyes, <WEAPON MOMENT>, class-colored energy
+crackling around it, strong rim light, speed lines behind, Japanese anime movie quality, hand-painted
+cinematic look, semi-realistic painterly anime style, subtle clean linework, soft cel-painted shapes,
+visible brush texture, warm golden-hour highlights with cool teal-blue shadows, illustrated, not
+photorealistic, not 3D, isolated on a plain flat light gray #E8E8E8 background, square image
+```
+| อาชีพ | `<WEAPON MOMENT>` |
+|---|---|
+| pillow-guard | `peeking over the pillow shield as it glows blue` |
+| carrot-knight | `drawing the carrot sword from its sheath, blade flaring orange` |
+| leaf-archer | `drawing the bow back to the cheek, a glowing leaf arrow` |
+| bubble-mage | `holding the bubble wand up as a giant bubble swells` |
+| mochi-cleric | `raising the dango staff with a warm golden halo` |
+| bell-bard | `ringing the bell beside the face, pink music notes bursting` |
+| root-druid | `gripping the root staff as the seed crystal blazes green` |
+
+### 14.7 หลักจากคลิปตัวอย่างที่ใช้กับทุกท่า (สรุปให้ทีมอาร์ต + โค้ด)
+1. **ทุกท่ามีทาง** — เอฟเฟกต์เดินทางตามตัวละคร (รอยเสี้ยวตามทางพุ่ง) ไม่เกิดกับที่
+2. **วงบนพื้น** — วงหมุน/วงเวทแบนบนพื้นในมุม 55° ช่วยให้รู้ว่าโดนตรงไหน
+3. **เรียกของจากพื้น/ฟ้า** — ดาบปักขึ้นเป็นวง, ลำแสงลงจากฟ้า, รากทะลุดิน → ความสูงทำให้อลังการ
+4. **ค้างจังหวะกระทบ** — เฟรมใหญ่สุดค้างนานกว่า + hit-stop + จอสั่น
+5. **เศษค้างหลังท่าจบ** — ประกาย/รอยไหม้ค่อยๆ จาง ไม่หายทันที
+6. **ออร่าหลังอัลติ** — ตัวละครยังเรืองพลังอยู่สักพัก ตีปกติแรงขึ้นทางภาพ

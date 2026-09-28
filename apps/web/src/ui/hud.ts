@@ -1,7 +1,7 @@
 import { isBossStage, isGiantStage, recommendedLevel, type BattleState, type HeroClass, type IngredientId, type Item, type SeedKind } from '@puff/sim';
 import { SEED_NAME } from '../meta/garden';
 import { chapterName, stageLabel } from '../meta/guide';
-import { CLASS_COLOR, STAGE_NAME, ULTIMATE_NAME, portraitClass, portraitUrl } from '../assets';
+import { CLASS_COLOR, STAGE_NAME, ULTIMATE_NAME, frameUrl, hasSheet, portraitClass, portraitUrl } from '../assets';
 import { INGREDIENT_INFO, TIER_COLOR, frameIcon, ingredientIcon, itemIcon, itemName, skinPortrait } from '../meta/itemInfo';
 
 export interface HudStatus {
@@ -29,6 +29,10 @@ const CUTIN_EXIT_MS = 180;
 const CUTIN_FALLBACK_MS = 400;
 
 const hex = (n: number): string => `#${n.toString(16).padStart(6, '0')}`;
+
+const EMBLEM_SHEET = 'ui/emblem';
+/** column order of v2/ui/class-emblems.png */
+const EMBLEM_ORDER: readonly HeroClass[] = ['pillow-guard', 'carrot-knight', 'leaf-archer', 'bubble-mage', 'mochi-cleric', 'bell-bard', 'root-druid'];
 
 export interface HudHandlers {
   /** returns the new muted state */
@@ -234,7 +238,9 @@ export class Hud {
     // the timer is only a fallback: endUltimate() closes the banner when the skill really fires
     const cutin = this.flash('cutin', ULTIMATE_NAME[heroClass], hex(CLASS_COLOR[heroClass]), durationMs + CUTIN_FALLBACK_MS);
     this.cutin = cutin;
-    cutin.style.setProperty('--dur', `${durationMs}ms`);
+    // the banner owns the first half; then the class emblem is slashed across the whole screen (Raiden-style)
+    cutin.style.setProperty('--dur', `${durationMs * 0.55}ms`);
+    this.emblem(heroClass, durationMs);
     if (portraitUrl) {
       const face = document.createElement('span');
       face.className = 'cutin-hero';
@@ -244,8 +250,24 @@ export class Hud {
     if (this.comboCount >= 2) this.flash('combo', `FLUFFY ×${this.comboCount}!`, '#ffc93c', 1200);
   }
 
+  /** Full-screen emblem swipe: a dark band, a slash of class color and the class symbol spinning in the middle. */
+  private emblem(heroClass: HeroClass, durationMs: number): void {
+    this.overlay.querySelector('.emblem')?.remove();
+    const el = document.createElement('div');
+    el.className = 'emblem';
+    el.style.setProperty('--accent', hex(CLASS_COLOR[heroClass]));
+    el.style.setProperty('--dur', `${durationMs * 0.5}ms`);
+    el.style.setProperty('--delay', `${durationMs * 0.48}ms`);
+    // painted emblem once it exists (art-prompts §14.6), the class line icon until then
+    const painted = hasSheet(EMBLEM_SHEET) ? `<img class="emblem-mark painted" src="${frameUrl(EMBLEM_SHEET, EMBLEM_ORDER.indexOf(heroClass))}" alt="">` : '';
+    el.innerHTML = `<span class="emblem-band"></span><span class="emblem-slash"></span>${painted || `<svg class="emblem-mark" viewBox="0 0 24 24" aria-hidden="true">${CLASS_ICON[heroClass]}</svg>`}`;
+    this.overlay.appendChild(el);
+    window.setTimeout(() => el.remove(), durationMs + CUTIN_FALLBACK_MS);
+  }
+
   /** The ultimate has fired: the cut-in slides away right now, whatever its timer says. */
   endUltimate(): void {
+    this.overlay.querySelector('.emblem')?.remove();
     const cutin = this.cutin;
     this.cutin = null;
     if (!cutin?.isConnected) return;

@@ -101,6 +101,16 @@ const ICONS = [
   { src: 'v2/items/village-buildings.png', name: 'item/building', cols: 3, rows: 2, optional: true },
   // forage ingredients, 4x4 in the order of INGREDIENT_IDS (packages/sim/src/pantry.ts)
   { src: 'v2/items/ingredients-sixteen-icons.png', name: 'item/ingredient', cols: 4, rows: 4, optional: true },
+  // cinematic ultimate (art-prompts §14.6): 7 class emblems in one row, and a close-up cut-in per class
+  { src: 'v2/ui/class-emblems.png', name: 'ui/emblem', cols: 7, rows: 1, size: 384, optional: true },
+  ...['pillow-guard', 'carrot-knight', 'leaf-archer', 'bubble-mage', 'mochi-cleric', 'bell-bard', 'root-druid'].map((c) => ({
+    src: `v2/ui/cutin-${c}.png`,
+    name: `ui/cutin-${c}`,
+    cols: 1,
+    rows: 1,
+    size: 512,
+    optional: true,
+  })),
   // Puff Pond fish, in FISH order (packages/sim/src/fishing.ts)
   { src: 'v2/items/fish-twelve-icons.png', name: 'item/fish', cols: 4, rows: 3 },
   { src: 'items/rarity-frames.png', name: 'item/frame', cols: 7, rows: 1 },
@@ -425,10 +435,11 @@ async function extractIcons(job) {
       // Tier icons replace cells from the row sheet; libvips can fail to open an existing
       // target for overwrite on Windows, so remove that cell before writing it.
       if (job.first !== undefined) await rm(target, { force: true });
-      await sharp(square).resize(ICON_SIZE, ICON_SIZE).png({ compressionLevel: 9 }).toFile(target);
+      await sharp(square).resize(job.size ?? ICON_SIZE, job.size ?? ICON_SIZE).png({ compressionLevel: 9 }).toFile(target);
     }
   }
-  return [job.name, { frames: index, width: ICON_SIZE, height: ICON_SIZE, refHeight: ICON_SIZE, additive: false }];
+  const size = job.size ?? ICON_SIZE;
+  return [job.name, { frames: index, width: size, height: size, refHeight: size, additive: false }];
 }
 
 async function background(job) {

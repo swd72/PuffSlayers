@@ -136,6 +136,52 @@ export class ActorView {
     });
   }
 
+  /** after an ultimate: class-colored motes orbit the puff and basic attacks cut with long slashes */
+  empoweredColor: number | null = null;
+  private aura: Container | null = null;
+  private auraTl: gsap.core.Timeline | null = null;
+
+  empower(color: number, seconds: number): void {
+    if (this.gone) return;
+    this.empoweredColor = color;
+    this.auraTl?.kill();
+    this.aura?.destroy({ children: true });
+    const aura = new Container();
+    const motes = Array.from({ length: 6 }, (_, i) => {
+      const m = new Graphics().circle(0, 0, 2.2).fill({ color: 0xffffff, alpha: 0.95 }).circle(0, 0, 4.5).fill({ color, alpha: 0.45 });
+      m.blendMode = 'add';
+      aura.addChild(m);
+      return { m, phase: (i / 6) * Math.PI * 2, lift: 0.25 + (i % 3) * 0.2 };
+    });
+    this.root.addChild(aura);
+    this.aura = aura;
+    const h = this.height;
+    const spin = { t: 0 };
+    this.auraTl = gsap
+      .timeline({
+        onComplete: () => {
+          this.empoweredColor = null;
+          if (!aura.destroyed) aura.destroy({ children: true });
+          if (this.aura === aura) this.aura = null;
+        },
+      })
+      .to(spin, {
+        t: seconds,
+        duration: seconds,
+        ease: 'none',
+        onUpdate: () => {
+          if (aura.destroyed) return;
+          for (const { m, phase, lift } of motes) {
+            const a = phase + spin.t * 3;
+            m.position.set(Math.cos(a) * h * 0.42, -h * lift + Math.sin(a) * h * 0.12);
+            // motes behind the puff dim a little so the orbit reads as 3D
+            m.alpha = Math.sin(a) > 0 ? 1 : 0.45;
+          }
+        },
+      })
+      .to(aura, { alpha: 0, duration: 0.4 }, seconds - 0.4);
+  }
+
   /** skill move sheet being played (art-prompts §14): character + effect painted together, frame by frame */
   private move: { frames: PoseFrame[]; index: number; anchor: { x: number; y: number } } | null = null;
   private moveTl: gsap.core.Timeline | null = null;
@@ -368,6 +414,7 @@ export class ActorView {
     // killTweensOf misses timeline steps that haven't started yet, so the knockback is killed by hand
     this.flinchTl?.kill();
     this.moveTl?.kill();
+    this.auraTl?.kill();
     if (this.removed) return;
     this.removed = true;
     // stop anything still animating this unit (leaps, knockbacks, bonk flights) before its display objects go away

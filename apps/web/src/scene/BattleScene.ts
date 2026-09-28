@@ -5,7 +5,7 @@ import { REACTION_LABEL } from '../meta/itemInfo';
 import { BACKGROUND, CLASS_COLOR } from '../assets';
 import type { Sfx } from '../audio/sfx';
 import { ActorView } from './actor';
-import { ScreenFilters, glowFlare, risingMotes, type ScreenRect } from './anime';
+import { ScreenFilters, afterglow, converge, glowFlare, risingMotes, screenFlash, type ScreenRect } from './anime';
 import type { SceneApi } from './api';
 import { floatNumber, playFx, ring, shake } from './fx';
 import { basicAttack, bossSlam, bossSummon, bossTelegraph, cheekCannon, healToss } from './skills';
@@ -13,6 +13,8 @@ import { playUltimate } from './ultimates';
 
 /** Design space: the battlefield is laid out in 540×960; extra screen area just shows more background. */
 export const VIEW = { width: 540, height: 960 } as const;
+/** after an ultimate the caster glows and its basic attacks hit with long slashes for this long */
+const EMPOWER_SECONDS = 5;
 
 /** Renderer size that keeps the whole design space visible and fills any screen aspect. */
 export function fitView(screenWidth: number, screenHeight: number): { width: number; height: number } {
@@ -51,6 +53,8 @@ export class BattleScene {
   private readonly root = new Container();
   /** shaken and filtered as a whole */
   readonly world = new Container();
+  /** the cinematic camera: zooms in on a caster for the ultimate intro (shake stays on `world`) */
+  private readonly camera = new Container();
   private readonly bg = new Sprite(Texture.from(BACKGROUND));
   private screen: ScreenRect = { x: 0, y: 0, width: VIEW.width, height: VIEW.height };
   private readonly ground = new Container();
@@ -76,7 +80,8 @@ export class BattleScene {
     this.dimmer.alpha = 0;
     for (const layer of [this.ground, this.field, this.fx]) layer.sortableChildren = true;
     this.world.addChild(this.bg, this.ground, this.dimmer, this.field, this.fx);
-    this.root.addChild(this.world, this.overlay);
+    this.camera.addChild(this.world);
+    this.root.addChild(this.camera, this.overlay);
     stage.addChild(this.root);
     this.filters = new ScreenFilters(this.world);
     this.resize(VIEW.width, VIEW.height);
@@ -147,6 +152,50 @@ export class BattleScene {
     this.dimmer.alpha = 0;
     this.world.position.set(0, 0);
     this.world.scale.set(1);
+    this.cameraHome(0);
+  }
+
+  /** Camera push-in on a point (world coords), pulling it toward the middle of the screen. */
+  private cameraFocus(x: number, y: number, zoom: number, seconds: number): void {
+    const cam = this.camera;
+    gsap.killTweensOf(cam);
+    gsap.killTweensOf(cam.pivot);
+    gsap.killTweensOf(cam.position);
+    gsap.killTweensOf(cam.scale);
+    // keep the point where it is at zoom 1, then drift it 55% of the way to the centre
+    const cx = VIEW.width / 2;
+    const cy = VIEW.height / 2;
+    // never let the zoomed view slide past the backdrop's edges (the bare canvas would show)
+    const sc = this.screen;
+    const bgL = this.bg.x;
+    const bgT = this.bg.y;
+    const bgR = bgL + this.bg.width;
+    const bgB = bgT + this.bg.height;
+    const clamp = (v: number, lo: number, hi: number) => (lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v)));
+    const px = clamp(x + (cx - x) * 0.55, sc.x + sc.width - zoom * (bgR - x), sc.x + zoom * (x - bgL));
+    const py = clamp(y + (cy - y) * 0.55, sc.y + sc.height - zoom * (bgB - y), sc.y + zoom * (y - bgT));
+    const ease = 'power3.out';
+    gsap.to(cam.pivot, { x, y, duration: seconds, ease });
+    gsap.to(cam.position, { x: px, y: py, duration: seconds, ease });
+    gsap.to(cam.scale, { x: zoom, y: zoom, duration: seconds, ease });
+  }
+
+  /** Camera back to the whole field (0 = snap). */
+  private cameraHome(seconds: number): void {
+    const cam = this.camera;
+    gsap.killTweensOf(cam.pivot);
+    gsap.killTweensOf(cam.position);
+    gsap.killTweensOf(cam.scale);
+    if (seconds <= 0) {
+      cam.pivot.set(0, 0);
+      cam.position.set(0, 0);
+      cam.scale.set(1);
+      return;
+    }
+    const ease = 'back.out(1.6)';
+    gsap.to(cam.pivot, { x: 0, y: 0, duration: seconds, ease });
+    gsap.to(cam.position, { x: 0, y: 0, duration: seconds, ease });
+    gsap.to(cam.scale, { x: 1, y: 1, duration: seconds, ease });
   }
 
   update(deltaSeconds: number): void {
@@ -190,9 +239,18 @@ export class BattleScene {
         return this.showHeal(ev.source, ev.target, ev.amount);
       case 'ultimateCast':
         return this.animateCast(ev.source, ev.heroClass, ev.castMs);
-      case 'ultimate':
-        for (const [id, times] of playUltimate(api, ev)) this.impactAt.set(id, times);
+      case 'ultimate': {
+        // 3 the skill fires: the camera snaps back out with a little overshoot
+        this.cameraHome(0.28);
+        const hits = playUltimate(api, ev);
+        for (const [id, times] of hits) this.impactAt.set(id, times);
+        // 4 afterwards: embers linger on the ground, and the caster stays empowered for a while
+        const last = Math.max(0.3, ...[...hits.values()].flat());
+        const color = CLASS_COLOR[ev.heroClass];
+        gsap.delayedCall(last, () => afterglow(this.ground, this.fx, ev.at.x, ev.at.y, color));
+        this.actors.get(ev.source)?.empower(color, last + EMPOWER_SECONDS);
         return;
+      }
       case 'status':
         if (ev.status === 'sticky') this.later(ev.target, this.lastHit.get(ev.target) ?? HIT_DELAY, (a) => a.makeSticky());
         if (ev.status === 'rooted') this.later(ev.target, this.lastHit.get(ev.target) ?? HIT_DELAY, (a) => a.makeRooted());
@@ -353,9 +411,14 @@ export class BattleScene {
     this.api.dim(seconds - 0.1);
     src.pose('pose', 4, seconds);
     const color = CLASS_COLOR[heroClass];
+    // 1 the camera pushes in on the caster while power gathers into it
+    this.cameraFocus(src.root.x, src.root.y - src.height * 0.5, 1.45, seconds * 0.35);
     glowFlare(this.fx, src.root.x, src.root.y - src.height * 0.4, color, src.height * 2.4, seconds);
     ring(this.ground, color, src.root.x, src.root.y, src.height * 0.7);
     risingMotes(this.fx, src.root.x, src.root.y, color, 12);
+    converge(this.fx, src.root.x, src.root.y - src.height * 0.45, color, seconds * 0.6);
+    // 2 a white flash as it peaks (the HUD then swipes the class emblem across the screen)
+    gsap.delayedCall(seconds * 0.45, () => screenFlash(this.overlay, this.screen, 0xffffff, 0.55));
   }
 
   private animateEnrage(bossId: string): void {

@@ -7,6 +7,7 @@ import type { SceneApi } from './api';
 import { decal, playFx } from './fx';
 import { PROJECTILES, launch, type ProjectileSpec } from './projectiles';
 import { druidAttack } from './rootDruid';
+import { longSlash } from './anime';
 
 const MELEE_HIT = 0.1;
 
@@ -53,6 +54,11 @@ export function basicAttack(api: SceneApi, src: ActorView, tgt: ActorView): numb
     }
   } else {
     src.pose('pose', u.isBoss ? 3 : 2, 0.3);
+  }
+  // empowered after an ultimate: every basic attack also cuts a long slash through the target
+  if (src.empoweredColor !== null) {
+    const color = src.empoweredColor;
+    gsap.delayedCall(0.08, () => longSlash(api.fx, src.chest(), tgt.chest(), color));
   }
   switch (u.heroClass) {
     case 'carrot-knight':

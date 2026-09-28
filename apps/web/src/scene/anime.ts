@@ -344,3 +344,83 @@ export class ScreenFilters {
     this.target.filters = list.length ? list : null;
   }
 }
+
+/** Power gathering: streaks fly in from all around and vanish into a point (the ultimate's charge-up). */
+export function converge(layer: Layer, x: number, y: number, color: number, seconds: number, count = 16): void {
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const dist = 90 + Math.random() * 70;
+    const len = 14 + Math.random() * 16;
+    const g = new Graphics()
+      .moveTo(0, 0)
+      .lineTo(len, 0)
+      .stroke({ color, width: 3, alpha: 0.95, cap: 'round' })
+      .moveTo(0, 0)
+      .lineTo(len * 0.6, 0)
+      .stroke({ color: 0xffffff, width: 1.2, alpha: 0.9, cap: 'round' });
+    g.blendMode = 'add';
+    g.zIndex = 20_000;
+    g.position.set(x + Math.cos(a) * dist, y + Math.sin(a) * dist * 0.7);
+    // point the streak at the centre
+    g.rotation = a + Math.PI;
+    g.alpha = 0;
+    layer.addChild(g);
+    const delay = Math.random() * seconds * 0.5;
+    gsap
+      .timeline({ delay, onComplete: done(g) })
+      .to(g, { alpha: 1, duration: 0.05 })
+      .to(g, { x, y, duration: seconds * 0.5, ease: 'power2.in' }, 0)
+      .to(g.scale, { x: 0.3, duration: seconds * 0.5, ease: 'power2.in' }, 0);
+  }
+}
+
+/** What's left after the big hit: a glowing scorch on the ground that fades, with embers drifting up. */
+export function afterglow(ground: Layer, fx: Layer, x: number, y: number, color: number): void {
+  const g = new Graphics().ellipse(0, 0, 70, 26).fill({ color, alpha: 0.28 }).ellipse(0, 0, 40, 15).fill({ color: 0xffffff, alpha: 0.18 });
+  g.blendMode = 'add';
+  g.position.set(x, y);
+  g.zIndex = -900;
+  ground.addChild(g);
+  gsap
+    .timeline({ onComplete: done(g) })
+    .fromTo(g.scale, { x: 0.8, y: 0.8 }, { x: 1.3, y: 1.3, duration: 1.6, ease: 'power1.out' })
+    .to(g, { alpha: 0, duration: 1.2, ease: 'power1.in' }, 0.4);
+  // embers linger a beat longer than the action (like the reference clips)
+  for (let i = 0; i < 14; i++) {
+    const m = new Graphics().circle(0, 0, 1.5 + Math.random() * 2.5).fill({ color, alpha: 0.9 });
+    m.blendMode = 'add';
+    m.zIndex = 20_000;
+    m.position.set(x + (Math.random() - 0.5) * 120, y + (Math.random() - 0.5) * 40);
+    m.alpha = 0;
+    fx.addChild(m);
+    gsap
+      .timeline({ delay: Math.random() * 0.8, onComplete: done(m) })
+      .to(m, { alpha: 1, duration: 0.15 })
+      .to(m, { y: m.y - 40 - Math.random() * 50, x: m.x + (Math.random() - 0.5) * 20, duration: 1.4, ease: 'sine.out' }, 0)
+      .to(m, { alpha: 0, duration: 0.5 }, 0.9);
+  }
+}
+
+/** Empowered basic attack: a long thin slash line cutting through the target, far past it (Raiden-style reach). */
+export function longSlash(layer: Layer, from: { x: number; y: number }, to: { x: number; y: number }, color: number): void {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const reach = len + 140;
+  const g = new Graphics()
+    .poly([0, -4, reach, 0, 0, 4])
+    .fill({ color, alpha: 0.9 })
+    .poly([0, -1.5, reach * 0.9, 0, 0, 1.5])
+    .fill({ color: 0xffffff, alpha: 0.95 });
+  g.blendMode = 'add';
+  g.zIndex = 20_000;
+  g.position.set(from.x - (dx / len) * 20, from.y - (dy / len) * 20);
+  g.rotation = Math.atan2(dy, dx);
+  g.scale.set(0.1, 1);
+  layer.addChild(g);
+  gsap
+    .timeline({ onComplete: done(g) })
+    .to(g.scale, { x: 1, duration: 0.08, ease: 'power3.out' })
+    .to(g.scale, { y: 0.1, duration: 0.25, ease: 'power2.in' }, 0.1)
+    .to(g, { alpha: 0, duration: 0.25 }, 0.1);
+}

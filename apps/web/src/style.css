@@ -996,6 +996,87 @@ body {
   font-size: 3.2cqw;
 }
 
+/* ---------- ultimate emblem swipe (second half of the cast) ---------- */
+.emblem {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  animation: emblem-in var(--dur, 450ms) linear var(--delay, 400ms) forwards;
+}
+
+.emblem-band {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: 36%;
+  height: 28%;
+  background: linear-gradient(180deg, transparent, rgba(12, 6, 20, 0.92) 18%, rgba(12, 6, 20, 0.92) 82%, transparent);
+  transform: skewY(-8deg);
+}
+
+.emblem-slash {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: 49%;
+  height: 1.6cqw;
+  background: linear-gradient(90deg, transparent, var(--accent) 20%, #fff 50%, var(--accent) 80%, transparent);
+  box-shadow: 0 0 4cqw var(--accent), 0 0 1.4cqw #fff;
+  transform: rotate(-8deg) scaleX(0);
+  transform-origin: left center;
+  animation: emblem-slash var(--dur, 450ms) cubic-bezier(0.2, 0.9, 0.2, 1) var(--delay, 400ms) forwards;
+}
+
+.emblem-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30cqw;
+  height: 30cqw;
+  margin: -15cqw 0 0 -15cqw;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 2cqw var(--accent)) drop-shadow(0 0 0.6cqw #fff);
+  animation: emblem-mark var(--dur, 450ms) cubic-bezier(0.3, 1.4, 0.5, 1) var(--delay, 400ms) forwards;
+}
+
+.emblem-mark.painted {
+  width: 44cqw;
+  height: 44cqw;
+  margin: -22cqw 0 0 -22cqw;
+  object-fit: contain;
+}
+
+@keyframes emblem-in {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes emblem-slash {
+  0% { transform: rotate(-8deg) scaleX(0); }
+  35% { transform: rotate(-8deg) scaleX(1); }
+  100% { transform: rotate(-8deg) scaleX(1) scaleY(0.2); }
+}
+
+@keyframes emblem-mark {
+  0% { transform: scale(0.3) rotate(-90deg); opacity: 0; }
+  40% { transform: scale(1.1) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1.35) rotate(8deg); opacity: 0.85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emblem-slash,
+  .emblem-mark {
+    animation-name: fade-hold;
+  }
+}
+
 /* the skill fired: the cut-in leaves at once instead of waiting for its timer */
 .cutin.leaving {
   animation: cutin-leave 0.18s ease-in forwards;
