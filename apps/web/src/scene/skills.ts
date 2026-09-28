@@ -141,7 +141,6 @@ export function healToss(api: SceneApi, src: ActorView, tgt: ActorView): number 
 
 export function bossSummon(api: SceneApi, boss: ActorView | undefined, spawned: readonly ActorView[]): void {
   boss?.pose('pose', 2, 0.8);
-  api.sound('wave');
   for (const m of spawned) {
     playFx(api.ground, 'vfx/boss-summon', m.unit.x, m.unit.y + 6, { size: 80, frameTime: 0.12, zIndex: m.unit.y - 1 });
     m.body.scale.set(0);

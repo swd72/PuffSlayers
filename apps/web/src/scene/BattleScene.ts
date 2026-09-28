@@ -256,8 +256,6 @@ export class BattleScene {
       case 'faint':
         this.sfx.play('faint');
         return this.later(ev.target, this.lastHit.get(ev.target) ?? HIT_DELAY, (a) => a.faint());
-      case 'wave':
-        return this.sfx.play('wave');
       case 'victory':
         return this.sfx.play('victory');
       case 'defeat':
@@ -277,7 +275,6 @@ export class BattleScene {
       actor.pose('pose', 1, 1.2);
       gsap.to(actor.body.scale, { x: 1, y: 1, duration: 0.7, ease: 'back.out(2)' });
       gsap.delayedCall(0.5, () => {
-        this.sfx.play('wave');
         shake(this.world, 12);
         this.filters.shockwave(unit.x, unit.y, 22);
       });

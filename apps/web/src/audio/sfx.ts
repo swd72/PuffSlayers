@@ -13,7 +13,6 @@ export type SfxName =
   | 'faint'
   | 'cast'
   | 'buff'
-  | 'wave'
   | 'victory'
   | 'defeat'
   | 'click'
@@ -30,7 +29,6 @@ export const SFX_NAMES: readonly SfxName[] = [
   'faint',
   'cast',
   'buff',
-  'wave',
   'victory',
   'defeat',
   'click',
