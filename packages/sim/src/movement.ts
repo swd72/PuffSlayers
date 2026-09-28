@@ -43,23 +43,43 @@ export function moveAway(unit: WorkUnit, threat: Point, dtSec: number, speedFact
   return before.x !== unit.x || before.y !== unit.y;
 }
 
-/** Pushes same-side units apart so crowds spread out instead of stacking on one pixel. */
+/** How big a unit's body is on the field (bosses and giants take up much more room). */
+export function bodyRadius(unit: Unit): number {
+  if (unit.isGiant) return TUNING.body.giant;
+  return unit.isBoss ? TUNING.body.boss : TUNING.body.unit;
+}
+
+/** Attack reach against `target`: a big body can be hit from its edge, not only its center. */
+export function reach(unit: Unit, target: Unit): number {
+  return unit.stats.range + bodyRadius(target) - TUNING.body.unit;
+}
+
+/**
+ * Pushes same-side units apart so crowds spread out instead of stacking on one pixel.
+ * Units already standing and fighting are anchored: the one still walking in slides around them,
+ * so a front line holds where it met the foe instead of being shoved along.
+ */
 export function separate(units: readonly WorkUnit[]): void {
-  const space = TUNING.personalSpace;
   for (let i = 0; i < units.length; i++) {
     const a = units[i];
     if (!a || a.hp <= 0) continue;
     for (let j = i + 1; j < units.length; j++) {
       const b = units[j];
       if (!b || b.hp <= 0 || b.side !== a.side) continue;
+      const space = TUNING.personalSpace + bodyRadius(a) + bodyRadius(b) - 2 * TUNING.body.unit;
       const d = distance(a, b);
       if (d >= space) continue;
       // identical positions get a deterministic nudge based on index order
       const nx = d > 0 ? (a.x - b.x) / d : 1;
       const ny = d > 0 ? (a.y - b.y) / d : 0;
-      const push = (space - d) / 2;
-      place(a, { x: a.x + nx * push, y: a.y + ny * push });
-      place(b, { x: b.x - nx * push, y: b.y - ny * push });
+      const wa = a.moving ? 1 : TUNING.anchoredGive;
+      const wb = b.moving ? 1 : TUNING.anchoredGive;
+      // two anchored fighters only drift apart gently, so neither gets knocked out of reach
+      const overlap = (space - d) * Math.max(wa, wb);
+      const pa = (overlap * wa) / (wa + wb);
+      const pb = (overlap * wb) / (wa + wb);
+      place(a, { x: a.x + nx * pa, y: a.y + ny * pa });
+      place(b, { x: b.x - nx * pb, y: b.y - ny * pb });
     }
   }
 }
