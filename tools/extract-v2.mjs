@@ -308,6 +308,71 @@ async function extract(job) {
   return [job.name, { frames: job.frames, width: Math.round(canvasW * scale), height: Math.round(canvasH * scale), refHeight: Math.round(refH * scale), additive }];
 }
 
+/**
+ * Skill move sheet (character + effect painted together, art-prompts §14): a strict grid of equal cells on gray.
+ * Every frame is cropped with the SAME rectangle (the union of all cells' content), so the puff doesn't jitter;
+ * frame 0 (the anticipation pose) sets the body height and where the feet are (anchorX/anchorY in the manifest).
+ */
+async function extractMove(job) {
+  const { data, info } = await sharp(path.join(SRC, job.src)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  if (data[3] > 200) removeFlatBackground(data, w, h);
+  const cw = Math.floor(w / job.cols);
+  const ch = Math.floor(h / job.rows);
+  const cellBox = (i) => {
+    const cx = (i % job.cols) * cw;
+    const cy = Math.floor(i / job.cols) * ch;
+    let left = cw, top = ch, right = -1, bottom = -1;
+    for (let y = 0; y < ch; y++) {
+      for (let x = 0; x < cw; x++) {
+        if (data[((cy + y) * w + cx + x) * 4 + 3] < ALPHA_VISIBLE) continue;
+        if (x < left) left = x;
+        if (x > right) right = x;
+        if (y < top) top = y;
+        if (y > bottom) bottom = y;
+      }
+    }
+    return right < left ? null : { cx, cy, left, top, right, bottom };
+  };
+  const boxes = Array.from({ length: job.frames }, (_, i) => cellBox(i));
+  boxes.forEach((b, i) => {
+    if (!b) throw new Error(`${job.name}: cell ${i} is empty`);
+  });
+  const union = {
+    left: Math.min(...boxes.map((b) => b.left)),
+    top: Math.min(...boxes.map((b) => b.top)),
+    right: Math.max(...boxes.map((b) => b.right)),
+    bottom: Math.max(...boxes.map((b) => b.bottom)),
+  };
+  const uw = union.right - union.left + 1;
+  const uh = union.bottom - union.top + 1;
+  const first = boxes[0];
+  const bodyH = first.bottom - first.top + 1;
+  const scale = Math.min(1, TARGET.actor / bodyH);
+  const master = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+  await mkdir(path.join(OUT, path.dirname(job.name)), { recursive: true });
+  for (const [i, b] of boxes.entries()) {
+    await sharp(master)
+      .extract({ left: b.cx + union.left, top: b.cy + union.top, width: uw, height: uh })
+      .resize({ width: Math.max(1, Math.round(uw * scale)) })
+      .png({ compressionLevel: 9 })
+      .toFile(path.join(OUT, `${job.name}-${i}.png`));
+  }
+  return [
+    job.name,
+    {
+      frames: job.frames,
+      width: Math.round(uw * scale),
+      height: Math.round(uh * scale),
+      refHeight: Math.round(bodyH * scale),
+      additive: false,
+      // the anticipation pose's feet: bottom-centre of frame 0's own content, as a share of the shared crop
+      anchorX: ((first.left + first.right) / 2 - union.left) / uw,
+      anchorY: (first.bottom - union.top + 1) / uh,
+    },
+  ];
+}
+
 /** Square head-and-shoulders crop of the idle pose, for HUD portraits. */
 async function writePortrait(master, box, hero) {
   const side = Math.min(box.width, box.height);
@@ -378,12 +443,19 @@ const ready = async (jobs, label) => {
   if (waiting.length) console.log(label ? `${label}: ${jobs.length - waiting.length}/${jobs.length} files present` : `waiting for art (skipped): ${waiting.map((j) => j.name).join(', ')}`);
   return jobs.filter((_, i) => flags[i]);
 };
+// skill move sheets (character + effect in one grid, art-prompts §14): basic attack 6 frames (3×2), ultimate 12 (4×3)
+const MOVE_CLASSES = ['pillow-guard', 'carrot-knight', 'leaf-archer', 'bubble-mage', 'mochi-cleric', 'bell-bard', 'root-druid'];
+const MOVES = MOVE_CLASSES.flatMap((c) => [
+  { src: `v2/moves/${c}-attack.png`, name: `move/${c}-attack`, frames: 6, cols: 3, rows: 2, optional: true },
+  { src: `v2/moves/${c}-ult.png`, name: `move/${c}-ult`, frames: 12, cols: 4, rows: 3, optional: true },
+]);
 const jobs = await ready(JOBS);
+const moves = await ready(MOVES, 'skill move sheets');
 const icons = await ready(ICONS);
 const tierIcons = await ready(WEAPON_TIER_ICONS, 'redesigned weapon tiers');
 
 await rm(OUT, { recursive: true, force: true });
-const results = await Promise.allSettled([...jobs.map(extract), ...icons.map(extractIcons)]);
+const results = await Promise.allSettled([...jobs.map(extract), ...icons.map(extractIcons), ...moves.map(extractMove)]);
 const manifest = {};
 let failed = 0;
 for (const [i, r] of results.entries()) {
@@ -392,7 +464,7 @@ for (const [i, r] of results.entries()) {
     manifest[name] = meta;
   } else {
     failed++;
-    console.error('FAIL', [...jobs, ...icons][i].name, r.reason.message);
+    console.error('FAIL', [...jobs, ...icons, ...moves][i].name, r.reason.message);
   }
 }
 // per-tier weapon icons run after the row sheets so they overwrite those tiers

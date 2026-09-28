@@ -22,6 +22,21 @@ export interface UltimateEvent {
   readonly at: Point;
 }
 
+/**
+ * Skill move sheets (art-prompts §14): 12 frames of the puff + its effect painted together, stretched over the
+ * combo. Frame 8 is the big impact, held longer. Without a sheet the drawn choreography below plays as before.
+ */
+const ULT_MOVE_SECONDS: Record<HeroClass, number> = {
+  'pillow-guard': 1.7,
+  'carrot-knight': 1.65,
+  'leaf-archer': 1.6,
+  'bubble-mage': 1.8,
+  'mochi-cleric': 1.6,
+  'bell-bard': 1.7,
+  'root-druid': 2.8,
+};
+const ULT_MOVE_HOLDS = { 8: 2, 11: 1 } as const;
+
 /** How long the field stays dimmed while a combo plays. */
 const COMBO_DIM = 1.8;
 
@@ -30,6 +45,7 @@ export function playUltimate(api: SceneApi, ev: UltimateEvent): ImpactTimes {
   if (!caster) return new Map();
   const targets = ev.targets.map((id) => api.actor(id)).filter((a): a is ActorView => !!a && !a.gone);
   api.dim(COMBO_DIM);
+  caster.playMove(`move/${ev.heroClass}-ult`, ULT_MOVE_SECONDS[ev.heroClass], ULT_MOVE_HOLDS);
   switch (ev.heroClass) {
     case 'carrot-knight':
       return carrotCrescent(api, caster, ev, targets);

@@ -51,6 +51,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - **ห้ามใช้ class `.ready` ใน UI ใหม่** — ชนกับป้าย ULT ของ HUD (style.css) ใช้ `.hot` แทน
 - **ตำแหน่งการต่อสู้:** `BOSS_SPOT` = กลางสนามขึ้นไป 70 · ศัตรูเกิดรอบๆ ด้านบน+สองข้าง (`spawnArc` −1.25π…0.25π, radius 260) → ค่าเฉลี่ย y การต่อสู้ ~473 (กลาง 500) ไม่กองอยู่ขอบบน
 - **Root Awakening (Taro) แบบหลายจังหวะ ~2.8 วิ:** รอยแตก+เนินดิน (`burrow`) วิ่งใต้ดินไปหาศัตรู → พื้นแตกเป็นหลุม (`groundHole`) รอบตัว → เถา `growingVine` พุ่งขึ้นจากหลุมโค้งลงหาตัว (อยู่ใน `api.field` z ตามหลุม: หน้า/หลังตัว) → `coilAround` พันขึ้นตัว (วาดครึ่งหลัง/ครึ่งหน้าบน `actor.body`) + ยกลอย → รัด 3 จังหวะ (ฮิต) → รากยักษ์ปะทุ กระชากลง (finisher) → เถาหดกลับ · ท่าอื่นควรทำสไตล์เดียวกัน (หลายบีต แบบการ์ตูน ไม่ใช่ตู้มเดียว)
+- **Skill Move Sheets (art-prompts ข้อ 14):** แผ่นท่าที่วาดตัวละคร+เอฟเฟกต์รวมกันเป็นกริด — `v2/moves/<class>-ult.png` (4×3=12 เฟรม) / `<class>-attack.png` (3×2=6) → pipeline `extractMove` (ครอปทุกเฟรมด้วยกรอบเดียวกัน, เก็บ `anchorX/anchorY` = ตำแหน่งเท้าเฟรมแรก) → `ActorView.playMove(sheet, seconds, holds)` (ยึด sprite ระหว่างเล่น, `pose()` ถูกข้าม, ซ่อนอาวุธชั้นแยก) · เรียกอัตโนมัติใน `playUltimate` (เฟรม 9 ค้าง ×3) และ `basicAttack` (เฟรม 3 ค้าง ×2) ถ้ามีแผ่น
 - **สเกล fx:** sprite จาก `fxSprite/statusLoop` ถูกย่อ scale ไว้แล้ว — tween scale ต้องคูณจาก scale เดิม ห้าม tween ไปที่ 1 (เคยทำให้วงรากของ Taro ใหญ่เต็มสนาม)
 - `BattleScene.reset()` kill ทุก tween (`gsap.exportRoot().kill()`) + ล้างเลเยอร์ fx; `ActorView.destroy()` ถอดออกทันทีแต่ free ทีหลัง 5 วิ (`actor.removed` แทน `root.destroyed`)
 
@@ -72,6 +73,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - CSS animation ตรวจด้วย `el.getAnimations()[0].currentTime = t` (pane ซ่อน)
 
 ## ความชอบของผู้ใช้ (จากการคุยที่ผ่านมา)
+- **ทุก prompt ภาพต้องใช้สไตล์ "Japanese anime environment background, hand-painted cinematic scenery … illustrated, not photorealistic, not 3D"** (ข้อความเต็มใน art-prompts ข้อ 13 `[SCENE STYLE]`; ท่าสกิลใช้ `[MOVE STYLE]` ข้อ 14 ที่รวมไว้แล้ว)
 - ต้องการภาพสไตล์ anime fantasy อลังการ แต่ตัวละครน่ารัก, มุมแผนที่ top-down แบบภาพอ้างอิง
 - ไม่ต้องการ turn-based / ยืนประจำช่อง; เอฟเฟกต์ต้องเดินทางจากตัวละคร ไม่ใช่ก้อนระเบิดกับที่
 - สร้างภาพเองด้วย AI ตาม prompt แล้วบอก "ทำภาพแล้ว" → หาไฟล์ใหม่ใน `assets/generated/` แล้วรัน pipeline

@@ -34,6 +34,8 @@ v2 จึงแยกเอฟเฟกต์ทุกท่าเป็น **5 
 
 ## 1. Style Anchors
 
+> **ลุคหลักของเกม (ผู้ใช้กำหนด):** ทุกภาพใช้โทน **Japanese anime movie / hand-painted cinematic** — `[SCENE STYLE]` ข้อ 13 สำหรับฉาก, `[PAINTED VFX]` สำหรับเอฟเฟกต์ของทึบ, `[MOVE STYLE]` ข้อ 14 สำหรับท่าสกิล (ทั้งสามมีคำชุดเดียวกัน: painterly, visible brush texture, golden-hour peach-orange highlights, teal-blue shadows, not photorealistic, not 3D) · `[STYLE]`/`[VFX STYLE]` ด้านล่างเป็นชุดเดิม — ถ้าทำภาพใหม่ให้ต่อท้ายด้วยบรรทัดสไตล์ภาพยนตร์ด้วย
+
 ### `[STYLE]` — ใช้กับตัวละคร, ศัตรู, ฉาก
 ```
 2.5D anime mobile idle RPG art, high top-down camera at about 55 degrees, tiny chibi
@@ -683,3 +685,151 @@ plateaus in the same positions, the same dirt paths, bridge and stream, same top
 vertical 9:16, no buildings on the plateaus (they are placed by the game), no characters, no text.
 [SCENE STYLE] --ar 9:16
 ```
+
+---
+
+## 14. Skill Move Sheets — ท่าสกิลแบบแอนิเมชันเต็มท่า (ตามภาพอ้างอิง Raiden chibi / MLBB / VFX breakdown)
+
+> **ปัญหาเดิม:** ท่าเป็น "ตู้มเดียว" คือโพสค้าง 1 ภาพ แล้ววางเอฟเฟกต์ระเบิดทับ
+> **แบบใหม่:** ท่าหนึ่งแตกเป็น **12 เฟรม** โดยวาด **ตัวพัฟกับเอฟเฟกต์รวมกันในแต่ละเฟรม** (เส้นฟัน, smear, trail, ประกาย) เหมือนแผ่น Raiden ที่ส่งมา
+> เกมเล่นแผ่นนี้ทีละเฟรมบนตัวละครระหว่างที่ตัวละครเคลื่อนที่จริง แล้วเอฟเฟกต์ใหญ่ (คลื่น วง AoE ฝน) ยังวิ่งไปหาเป้าตามโค้ด
+> **ต่อสายไว้แล้ว:** วางไฟล์ตามชื่อด้านล่างแล้วรัน `npm run sprites` เกมจะใช้แทนท่าเดิมอัตโนมัติ (ไม่มีไฟล์ก็เล่นท่าเดิม)
+
+### 14.1 หลักการแอนิเมชัน (ใช้ตอนสั่งภาพ + ตรวจภาพ)
+| ช่วง | เฟรม (อัลติ 12) | หลักการ | สิ่งที่ต้องเห็นในภาพ |
+|---|---|---|---|
+| **Anticipation** เตรียม | 1–2 | ย่อตัวก่อนพุ่ง (squash) · ดึงอาวุธไปด้านหลัง | ตัวหดต่ำ, ประกายเล็กที่อาวุธ, ฝุ่นใต้เท้าเล็กน้อย |
+| **Charge** สะสมพลัง | 3 | พลังรวมเข้าหาตัว | เส้นพลังวิ่ง **เข้า** หาอาวุธ/ตัว, วงเวทบนพื้น |
+| **Startup / Burst** ปล่อยตัว | 4–5 | ยืดตัว (stretch) · speed lines | ตัวพุ่ง/กระโดด, afterimage, ฝุ่นระเบิดที่จุดออกตัว |
+| **Active** ช่วงตี | 6–8 | **smear frame**: เส้นโค้งหนาที่หัว บางที่หาง | เส้นฟัน/วงหมุนสีประจำอาชีพ ซ้อน 3 ชั้น (แกนขาว → สีหลัก → ขอบเข้ม) |
+| **Impact** กระทบ | 9 | **ค้างนานกว่าเฟรมอื่น 2–3 เท่า** (เกมยืดให้) · แฟลชขาว | เอฟเฟกต์ใหญ่สุดของท่า, เศษดิน/ประกายกระจายเป็นวง, พื้นแตก |
+| **Follow-through** ต่อเนื่อง | 10–11 | อาวุธ/ผ้า/หูยังเหวี่ยงตามแรง · particle ร่วงช้ากว่าตัว | เส้นพลังจางลง, ใบไม้/ประกายค่อยๆ ตก |
+| **Recovery** คืนท่า | 12 | overshoot เล็กน้อยแล้วนิ่ง | ท่าเท่ปิดท้าย (ยิ้ม/พักอาวุธบนไหล่) |
+
+**กฎรูปทรงเอฟเฟกต์:** smear กับเส้นฟันต้อง "หนาหัวบางหาง" (crescent) ห้ามหนาเท่ากันทั้งเส้น · ขอบต้องคม ไม่ฟุ้ง (เงาฟุ้งจะถูกตัดตอนลบพื้นเทา) · ต้องอ่านรูปทรงออกตอนตัวละครสูง 72px · ภาษารูปทรงต่างกันตามอาชีพ: อัศวิน = เสี้ยวพระจันทร์คม, นักธนู = ใบไม้/ลูกศรยาว, จอมเวท = ฟองกลม, แทงก์ = วงกลมหมุน+คลื่นกระแทก, นักบวช = โมจินุ่ม+ดอกซากุระ, กวี = วงคลื่นเสียง+โน้ต, ดรูอิด = รากไม้/เถาวัลย์
+
+### 14.2 Template
+
+**`[MOVE STYLE]`** — สไตล์ภาพยนตร์อนิเมะเดียวกับฉาก (ข้อ 13) แต่ปรับให้เป็นแผ่นท่าบนพื้นเทา
+```
+chibi anime web-game skill animation sheet, the exact same puff character as the reference (keep face,
+body, outfit and weapon identical), bold readable action poses with squash and stretch,
+Japanese anime movie quality, hand-painted cinematic look, semi-realistic painterly anime style,
+subtle clean linework, soft cel-painted shapes, visible brush texture, stylized natural forms,
+warm golden-hour key light with peach-orange highlights and cool teal-blue shadows,
+rich controlled color palette, illustrated, not photorealistic, not 3D,
+anime VFX painted together with the character: thick-to-thin crescent smear arcs, layered energy with a
+white-hot core, bright class-color middle and a deeper edge, sharp speed lines, sparkles and debris chunks,
+effect edges kept crisp (no haze spilling onto the background), top-down 55 degree view, the character faces right
+```
+
+**`[MOVE GRID 12]`** (อัลติ → `assets/generated/v2/moves/<class>-ult.png`)
+```
+a strict 4 columns by 3 rows grid of 12 equal square cells on a plain flat light gray #E8E8E8 background,
+read left-to-right, top-to-bottom as one continuous move; the character is the same size in every cell and
+its feet stay on the same spot (horizontal centre, lower third of each cell) unless the move lifts it into the
+air; effects may extend around the character but must stay inside their own cell; no grid lines, no numbers,
+no text, no labels, no floor shadow
+```
+
+**`[MOVE GRID 6]`** (ตีปกติ → `assets/generated/v2/moves/<class>-attack.png`) — เหมือนด้านบนแต่ `3 columns by 2 rows grid of 6 equal square cells` · เฟรม: 1 ง้าง, 2 smear ตอนเหวี่ยง, **3 กระทบ**, 4–5 ตามแรง, 6 คืนท่า
+
+> สั่งภาพ: อัปโหลด Model Sheet/Pose Set ของตัวนั้นเป็นภาพอ้างอิง แล้วใช้ `<การกระทำ 12 เฟรม>` + `[MOVE STYLE]` + `[MOVE GRID 12]`
+> 1 อาชีพใช้แผ่นเดียวกันทุกตัว (เช่น Tofu กับ Latte ใช้ `carrot-knight-ult`) ถ้าอยากให้ต่างกันค่อยแยกทีหลัง — เริ่มจากตัวหลักของแต่ละอาชีพ
+
+### 14.3 ท่าอัลติทีละอาชีพ (12 เฟรม) — ใส่ใน `<การกระทำ 12 เฟรม>`
+
+**Carrot Knight — Carrot Crescent** · `carrot-knight-ult.png` · สีส้มไฟ `#FF6A2B` + ทอง
+```
+twelve frames of a dash-and-leap sword ultimate: 1 crouching low gripping the carrot sword with a glint,
+2 sword pulled back, orange embers gathering along the blade, 3 lunging forward with speed lines and a dust
+burst behind, 4 a wide horizontal slash leaving a thick orange crescent smear, 5 spinning around for a rising
+backhand slash with a second crescent, 6 springing upward into the air in a full spin wrapped in a ring of
+flame, 7 at the top of the leap with the sword raised overhead blazing gold, 8 plunging down with a huge
+vertical crescent smear, 9 IMPACT: the sword slams into the ground and a giant flaming crescent wave bursts
+outward with cracked earth and flying rocks, 10 the fire wave rolling forward while embers rain, 11 kneeling
+in the follow-through with the sword still glowing, 12 standing up with the sword resting on the shoulder,
+proud grin
+```
+
+**Leaf Archer — Leaf Storm** · `leaf-archer-ult.png` · สีเขียว `#3CCB5A`
+```
+twelve frames of a leaping volley ultimate: 1 crouching with ears back, a leaf whirl starting at the feet,
+2 springing up with a spiral of leaves, 3 in the air drawing the bow, green light gathering on the arrow,
+4 full draw with a glowing leaf-shaped arrowhead and swirling leaves, 5 releasing: a thick green streak
+shooting up into the sky, 6 notching three arrows at once, 7 a fan of three green streaks with leaf trails,
+8 the arrows bursting in the sky into a shower of leaf blades, 9 IMPACT: a rain of glowing leaf arrows
+striking the ground below in a ring of green bursts, 10 landing with a leaf swirl around the feet, 11 leaves
+fluttering down as the bow lowers, 12 standing with the bow on the back, winking
+```
+
+**Bubble Mage — Bubble Prison** · `bubble-mage-ult.png` · สีฟ้าม่วง `#5B6CFF`
+```
+twelve frames of a bubble-spell ultimate: 1 twirling the wand, small bubbles popping around, 2 a glowing
+magic circle opens under the feet, 3 the wand raised as blue light spirals into its tip, 4 blowing a huge
+shimmering bubble that swells in front, 5 pushing the giant bubble forward with both paws, 6 the bubble
+flying off with a trail of small bubbles and sparkles, 7 conducting with the wand as rings of foam spread,
+8 clenching a paw as if squeezing: bubbles tighten into a glowing orb, 9 IMPACT: the orb bursting into a
+dazzling splash of foam, droplets and star sparkles, 10 soap droplets raining down with rainbow glints,
+11 bowing with the wand, bubbles drifting, 12 blowing a tiny bubble off the wand tip, smug smile
+```
+
+**Pillow Guard — Ultimate Roll** · `pillow-guard-ult.png` · สีน้ำเงิน `#3D8BFF`
+```
+twelve frames of a rolling-charge ultimate: 1 planting the feet behind the pillow shield, 2 tucking in, the
+body squashing round, 3 curled into a ball with the shield wrapped around, blue energy lines gathering,
+4 spinning in place with a circular blue smear ring and dust, 5 launching forward in a rolling blur with
+speed lines, 6 bouncing high off the ground with a spiral smear, 7 at the top of the bounce uncurling with
+the shield held out, 8 slamming down shield-first with motion arcs, 9 IMPACT: a heavy blue shockwave ring
+and feathers exploding out from the shield, cracked ground, 10 feathers floating down, 11 hopping up and
+brushing off the shield, 12 standing tall behind the shield, chest puffed out
+```
+
+**Mochi Cleric — Mochi Rain** · `mochi-cleric-ult.png` · สีทอง `#FFC93C` + ชมพูซากุระ
+```
+twelve frames of a healing ultimate: 1 hugging the dango staff with closed eyes, 2 raising the staff, soft
+gold light gathering, 3 spinning the staff overhead, a ring of sakura petals forming, 4 a warm golden pillar
+of light shooting into the sky, 5 the sky above filling with glowing mochi, 6 mochi falling like soft
+stars with trails of petals, 7 catching a mochi with a happy face, 8 throwing both arms wide as the rain
+peaks, 9 IMPACT: a burst of golden healing light and sakura petals bursting outward in a big soft ring,
+10 petals and sparkles settling, 11 nibbling a mochi happily, 12 bowing gently with the staff
+```
+
+**Bell Bard — Bear Hug Festival** · `bell-bard-ult.png` · สีชมพู `#FF6FB5`
+```
+twelve frames of a festival buff ultimate: 1 tapping the bell with a tiny music note, 2 raising the
+pancake drum, 3 the first big drum beat sending out a pink sound ring, 4 dancing while a second and third
+ring spread with musical notes, 5 spinning with the bell, notes swirling in a spiral, 6 a giant glowing
+spirit bear forming behind the puff, 7 the spirit bear opening its arms wide, 8 the bear hugging, pink
+hearts and notes bursting, 9 IMPACT: a huge pink shockwave of music notes, hearts and sparkles bursting in
+a ring, 10 confetti and notes raining down, 11 bowing to an invisible crowd, 12 posing with the bell raised
+```
+
+**Root Druid — Root Awakening** · `root-druid-ult.png` · สีเขียวมอส `#8FBF3A` + น้ำตาล (ใช้ร่วมกับเถาวัลย์ที่เกมวาด ข้อ 13.1)
+```
+twelve frames of an earth-magic ultimate: 1 closing the eyes with the root staff held upright, sprout on
+the head glowing, 2 a moss-green magic circle opening under the feet, 3 raising the staff high as the seed
+crystal blazes, 4 stamping the staff into the ground, dirt bursting, 5 cracks glowing green racing away
+from the staff, 6 small roots coiling up around the feet, 7 both paws raised commanding the earth, leaves
+spinning upward, 8 pulling the paws down as if yanking ropes, 9 IMPACT: a giant root bursting up beside the
+puff in a blast of turf, rocks and glowing sap, 10 the root crashing back down, dust ring, 11 leaning on the
+staff catching breath, leaves falling, 12 patting the sprout on the head with a sleepy smile
+```
+
+### 14.4 ตีปกติ (6 เฟรม) — ใส่ใน `<การกระทำ 6 เฟรม>` + `[MOVE STYLE]` + `[MOVE GRID 6]`
+| ไฟล์ | การกระทำ |
+|---|---|
+| `carrot-knight-attack.png` | `1 raising the carrot sword, 2 a fast diagonal slash with an orange crescent smear, 3 IMPACT spark burst at the blade tip, 4 the blade carried through, 5 small embers, 6 back to ready stance` |
+| `leaf-archer-attack.png` | `1 drawing the bow, 2 full draw with a green glint, 3 releasing with a green streak and a leaf puff, 4 bow string snapping back, 5 a leaf floating, 6 ready stance` |
+| `bubble-mage-attack.png` | `1 dipping the wand, 2 swirling it with a blue spiral, 3 blowing a bubble that pops out with sparkles, 4 wand follow-through, 5 tiny bubbles, 6 ready stance` |
+| `pillow-guard-attack.png` | `1 winding up the pillow shield, 2 a heavy horizontal swing with a blue arc smear, 3 IMPACT feathers bursting, 4 shield follow-through, 5 feathers drifting, 6 guard stance` |
+| `mochi-cleric-attack.png` | `1 raising the dango staff, 2 tossing a mochi with a soft arc trail, 3 a golden sparkle at the throw, 4 staff follow-through, 5 petals, 6 ready stance` |
+| `bell-bard-attack.png` | `1 lifting the bell, 2 ringing it with a pink sound ring smear, 3 IMPACT a burst of music notes, 4 swing back, 5 notes floating, 6 ready stance` |
+| `root-druid-attack.png` | `1 lifting the root staff, 2 tapping it down with a green crack spark, 3 dirt puffing up, 4 a small root sprouting at the feet, 5 leaves falling, 6 ready stance` |
+
+### 14.5 วิธีตรวจภาพก่อนใส่เกม (เช็กลิสต์)
+- [ ] ตาราง **ช่องเท่ากันเป๊ะ** (4×3 หรือ 3×2) ไม่มีเส้นตาราง ไม่มีตัวเลข
+- [ ] ตัวละครขนาดเท่ากันทุกช่อง เท้าอยู่ตำแหน่งเดิม (ยกเว้นเฟรมกระโดด)
+- [ ] เอฟเฟกต์ไม่ล้นข้ามช่อง · พื้นเทาเรียบ ไม่มีเงาพื้น
+- [ ] เฟรม 9 (อัลติ) / เฟรม 3 (ตีปกติ) เป็นเฟรมที่ "ใหญ่ที่สุด" ของท่า
+- [ ] ย่อภาพให้ตัวสูง ~72px แล้วยังอ่านท่าออก
