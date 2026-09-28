@@ -598,3 +598,88 @@ Premium 2.5D anime mobile RPG art, bold clean dark outlines, glossy cel shading,
 strong silhouette at 64px. Plain uniform light gray #E8E8E8 background, no floor shadow,
 no scenery, labels, numbers, text, grid lines, borders, overlap, or merged creatures.
 ```
+
+---
+
+## 13. สไตล์ "ภาพยนตร์อนิเมะ" (Cinematic painterly) — ฉากหลัง + เอฟเฟกต์ชุดใหม่
+
+> ใช้แทน `[STYLE]`/`[VFX STYLE]` เดิมสำหรับ **ฉาก** และ **เอฟเฟกต์ธรรมชาติ** (ราก เถาวัลย์ ดิน หิน น้ำ ใบไม้) เพื่อให้ดูเป็นภาพวาดมือแบบหนังอนิเมะ
+> ตัวละครยังใช้ `[STYLE]` เดิม (cel-shade ตัดเส้นชัด) — ตัวละครต้องเด่นกว่าฉาก จึงให้ฉากนุ่ม/ละเอียดกว่า
+
+### `[SCENE STYLE]` — ฉากหลังทุกภาพ
+```
+Japanese anime environment background, hand-painted cinematic scenery,
+premium JRPG game background, semi-realistic painterly anime style,
+subtle clean linework, soft cel-painted shapes, visible brush texture,
+stylized natural forms, detailed foliage and rocks,
+warm golden-hour lighting, peach-orange highlights,
+cool teal-blue shadows, atmospheric perspective,
+soft distant haze, beautiful hand-painted clouds,
+rich controlled color palette, anime movie background quality,
+illustrated, not photorealistic, not 3D
+```
+
+### `[PAINTED VFX]` — เอฟเฟกต์ที่เป็น "ของจริง" (ราก เถา ดิน หิน ใบไม้) — **พื้นเทา**
+```
+hand-painted anime movie effect element, same painterly style as a Japanese anime film background,
+subtle clean linework, soft cel-painted shapes, visible brush texture, warm golden-hour key light with
+peach-orange highlights and cool teal-blue shadows, dynamic motion, readable silhouette at small size,
+isolated on a plain flat light gray #E8E8E8 background, no ground plane, no scenery, no characters,
+no text, not photorealistic, not 3D
+```
+> **พื้นเทา ไม่ใช่พื้นดำ** — ของทึบ (เปลือกไม้ ดิน) ถ้าวาดบนดำ pipeline จะตัดสีเข้มทิ้งแล้วทำเป็นแสงเรือง (additive) ทำให้เถาดูโปร่งแสง
+> เอฟเฟกต์ที่เป็น "แสง/พลัง" (ประกาย วงเวท คลื่นพลัง) ยังใช้ `[VFX STYLE]` พื้นดำเหมือนเดิม
+
+### 13.1 Taro — Root Awakening ชุดใหม่ (เถาวัลย์โผล่จากพื้นดิน)
+
+**ลำดับท่าในเกม (ทำแล้วในโค้ด ภาพด้านล่างจะมาแทนส่วนที่วาดด้วยเส้น):**
+ชูไม้เท้า → กระทืบ → รอยแตก+เนินดินวิ่งใต้ดินไปหาศัตรู → **พื้นแตกเป็นหลุมรอบตัวศัตรู** → **เถาพุ่งขึ้นจากหลุม โค้งลงพันตัว** → รัด 3 จังหวะ → รากยักษ์ปะทุกลางวง กระชากลง → เถาหดกลับลงดิน
+
+| ไฟล์ (`assets/generated/vfx2/`) | ชิ้น | Prompt (ต่อท้าย `[PAINTED VFX]` + `[SHEET]`) |
+|---|---|---|
+| `druid-ground-burst.png` [4 เฟรม] | พื้นแตกตอนเถาโผล่ | `a patch of earth seen from a high 55 degree top-down angle tearing open from below: four frames — the soil bulging and cracking in a small mound, the crust splitting with clods and pebbles flying up, a dark round hole with a rim of broken turf and dust spraying outward, dust settling around the open hole` |
+| `druid-vine-emerge.png` [4 เฟรม] | เถาพุ่งจากหลุม | `a thick twisting green-brown vine with bark texture, small leaves and a curled glowing sprout tip bursting straight up out of a hole in the ground: four frames — the tip poking out with dirt flying, shooting up tall, arching over at the top, bending down as if to wrap something, the base always at the same spot at the bottom of the frame` |
+| `druid-vine-coil.png` [3 เฟรม] | เถาพันรอบตัว (วนลูป) | `a spiral of thick leafy vines wrapped three times around an invisible upright round body, empty in the middle, seen from a 55 degree angle, front loops in front and back loops behind, three frames of the coils squeezing tighter with leaves shaking` |
+| `druid-root-erupt.png` [4 เฟรม] | รากยักษ์ (แทนของเดิม) | `a colossal ancient tree root erupting from a fissure in the earth, gnarled bark with moss and vines, boulders and turf blasting outward: four frames — fissure splitting with dust, root bursting up, towering at full height with leaves swirling, crashing down in a ring of dust` |
+
+> ทำแล้ววางไฟล์ตามชื่อ → `npm run sprites` · เกมใช้ `druid-ground-burst` ทันทีที่มี (ตอนนี้ใช้ฝุ่นของ Carrot Knight แทน) ส่วนเถา/ขดเถาตอนนี้วาดด้วยเส้นในเกม ถ้าชอบภาพที่ได้จะเปลี่ยนไปใช้ภาพแทน
+
+### 13.2 ฉากสนามต่อสู้ (1 ภาพ/บท + ฉากบอส)
+
+**กฎสำคัญของฉากสนาม (มุมเกม):**
+- มุมกล้องสูงมองลง ~55° แบบเดียวกับตัวละคร · ภาพแนวตั้ง 9:16
+- **กลางภาพต้องเป็นลานโล่ง** (พื้นดิน/หญ้าเรียบ อ่านง่าย) กินพื้นที่ ~ครึ่งกลางของภาพ เพราะตัวละครสู้กันตรงนั้น
+- ของรกๆ (ต้นไม้ หิน รั้ว ดอกไม้) อยู่ **ขอบซ้าย-ขวาและขอบล่าง** เป็นกรอบ · ท้องฟ้า/วิวไกลอยู่ **1/4 บน**
+- ไม่มีตัวละคร ไม่มี UI ไม่มีตัวหนังสือ
+
+```
+Top-down 55 degree game battlefield for a mobile RPG, vertical 9:16, <PLACE>,
+a wide open clearing of <GROUND> filling the middle half of the image for characters to fight on,
+framed by <FRAME> along the left, right and bottom edges, distant <VISTA> and sky in the top quarter,
+no characters, no UI, no text. [SCENE STYLE] --ar 9:16
+```
+
+| บท | ไฟล์ (`assets/generated/v2/backgrounds/`) | `<PLACE>` | `<GROUND>` | `<FRAME>` | `<VISTA>` |
+|---|---|---|---|---|---|
+| 1 ทุ่งงีบหลับ | `01-meadow-of-naps.png` | a sleepy flower meadow kingdom | soft trampled grass and sunlit dirt path | round bushes, sleeping daisies, mossy rocks and a wooden fence | rolling hills, a white castle and waterfalls |
+| 2 ป่าแครอทกรอบ | `02-carrot-forest.png` | a cozy forest of giant carrot trees | packed earth with fallen carrot leaves | giant carrot trunks, mushrooms and ferns | layered misty forest ridges |
+| 3 หนองบัวจันทร์ | `03-lotus-lagoon.png` | a shallow lotus lagoon at dusk | wide flat stone platform over still water | lotus leaves, reeds and stone lanterns | a glowing moon rising over the water |
+| 4 หุบเขาทานตะวัน | `04-sunflower-valley.png` | a warm valley of towering sunflowers | dry golden earth and flat sandstone | sunflower stalks and warm boulders | canyon cliffs and a big golden sun |
+| 5 ทะเลนม | `05-milk-sea-shore.png` | a creamy white milk-sea shore | smooth pale sand and pebble flats | driftwood, shells and candy-colored rocks | a calm milky sea and cotton clouds |
+| 6 สระดาว | `06-star-pond.png` | a starlit night garden pond | glowing moss stone plaza | night flowers, fireflies and crystal rocks | a starry sky with a milky way |
+
+**ฉากบอส** ของแต่ละบท (`0N-...-boss.png`) — ใช้ prompt เดียวกัน เปลี่ยนท้ายเป็น:
+```
+same place as a boss arena: the clearing is a large circle of cracked earth with a faint glowing rune ring,
+giant thorny vines and dark petals creeping in from the edges, stormy dramatic sky with a warm rim of light,
+[SCENE STYLE] --ar 9:16
+```
+
+### 13.3 หมู่บ้านพัฟ (วาดใหม่ในสไตล์นี้) → `v2/backgrounds/village-hub.png`
+> ต้องคงตำแหน่งลานหญ้า 6 วงเดิม (ตึกวางทับตามพิกัด) — อัปโหลดภาพเดิมเป็นภาพอ้างอิงและบอกให้คงเลย์เอาต์
+```
+Repaint this village map in a new style while keeping the exact same layout: the same six round grassy
+plateaus in the same positions, the same dirt paths, bridge and stream, same top-down 55 degree camera,
+vertical 9:16, no buildings on the plateaus (they are placed by the game), no characters, no text.
+[SCENE STYLE] --ar 9:16
+```

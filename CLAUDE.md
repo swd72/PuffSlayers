@@ -6,6 +6,7 @@ Idle RPG บนเว็บ (มือถือเป็นหลัก) — ส
 ## เอกสารหลัก
 - `docs/GDD.md` (v0.2) — ดีไซน์ทั้งหมด: ข้อ 0 แรงจูงใจ (ทุกวัย, เรื่อง "The Grumpy Bloom", สวนปลุกโลก), ข้อ 4 ต่อสู้, ข้อ 5 บอส/Giant, ข้อ 6 ไอเทม/อาวุธ/ของแรร์/สกิน, ข้อ 13.1 ได้พัฟ 3 ทาง (กาชา+ฟาร์ม+ตกปลา), ข้อ 16 decisions
 - `docs/art-prompts-v2.md` — prompt ภาพชุดปัจจุบัน (มุม top-down 55°, เอฟเฟกต์แยกชิ้น origin/projectile/trail/impact/aftermath, ไอเทมข้อ 4.10) · `art-prompts.md` = v1 (ข้อ 7 ฉากหลังยังใช้)
+- **สไตล์ภาพยนตร์อนิเมะ:** art-prompts ข้อ 13 — `[SCENE STYLE]` (ฉาก painterly ตามที่ผู้ใช้กำหนด) + `[PAINTED VFX]` (ของทึบ เช่น เถา/ดิน วาดบน **พื้นเทา** → pipeline kind `actor`; พื้นดำจะกลายเป็น additive) · ฉากบอสบท 2–6 มีไฟล์แล้วใน `assets/generated/v2/backgrounds/` แต่เกมยังใช้แค่ฉากบท 1
 - `docs/sfx-prompts.md` — prompt เสียง (ElevenLabs) · ยังไม่มีไฟล์เสียงจริง
 
 ## โครงสร้างโค้ด (npm workspaces)
@@ -49,7 +50,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - **คำในเกม: ใช้ "Bop" ห้ามใช้ "Bonk"** ในข้อความที่ผู้เล่นเห็น (Bonk เป็นสแลงทางเพศ) — ชื่อในโค้ด (`bonk` event, `bonkPetals`, `vfx/bonk-petals`, `sfx bonk.mp3`) คงเดิมได้
 - **ห้ามใช้ class `.ready` ใน UI ใหม่** — ชนกับป้าย ULT ของ HUD (style.css) ใช้ `.hot` แทน
 - **ตำแหน่งการต่อสู้:** `BOSS_SPOT` = กลางสนามขึ้นไป 70 · ศัตรูเกิดรอบๆ ด้านบน+สองข้าง (`spawnArc` −1.25π…0.25π, radius 260) → ค่าเฉลี่ย y การต่อสู้ ~473 (กลาง 500) ไม่กองอยู่ขอบบน
-- **Root Awakening (Taro) แบบหลายจังหวะ ~2.5 วิ:** เถาวัลย์ `crawlingVine` เลื้อยจากขอบล่างจอ → `coilAround` พันขึ้นตัว (วาดครึ่งหลัง/ครึ่งหน้าบน `actor.body`) + ยกลอย → รัด 3 จังหวะ (ฮิต) → รากยักษ์ปะทุ กระชากลง (finisher) → เถาหดกลับ · ท่าอื่นควรทำสไตล์เดียวกัน (หลายบีต แบบการ์ตูน ไม่ใช่ตู้มเดียว)
+- **Root Awakening (Taro) แบบหลายจังหวะ ~2.8 วิ:** รอยแตก+เนินดิน (`burrow`) วิ่งใต้ดินไปหาศัตรู → พื้นแตกเป็นหลุม (`groundHole`) รอบตัว → เถา `growingVine` พุ่งขึ้นจากหลุมโค้งลงหาตัว (อยู่ใน `api.field` z ตามหลุม: หน้า/หลังตัว) → `coilAround` พันขึ้นตัว (วาดครึ่งหลัง/ครึ่งหน้าบน `actor.body`) + ยกลอย → รัด 3 จังหวะ (ฮิต) → รากยักษ์ปะทุ กระชากลง (finisher) → เถาหดกลับ · ท่าอื่นควรทำสไตล์เดียวกัน (หลายบีต แบบการ์ตูน ไม่ใช่ตู้มเดียว)
 - **สเกล fx:** sprite จาก `fxSprite/statusLoop` ถูกย่อ scale ไว้แล้ว — tween scale ต้องคูณจาก scale เดิม ห้าม tween ไปที่ 1 (เคยทำให้วงรากของ Taro ใหญ่เต็มสนาม)
 - `BattleScene.reset()` kill ทุก tween (`gsap.exportRoot().kill()`) + ล้างเลเยอร์ fx; `ActorView.destroy()` ถอดออกทันทีแต่ free ทีหลัง 5 วิ (`actor.removed` แทน `root.destroyed`)
 

@@ -77,6 +77,8 @@ JOBS.push(
   })),
   { src: 'v2/characters/root-druid-signature.png', name: 'sig/root-druid', frames: 4, kind: 'actor', optional: true },
   ...Object.entries({ 'druid-root-spike': 4, 'druid-root-erupt': 4, 'druid-root-bind': 3 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
+  // painted (solid) effects on a gray background — art-prompts §13
+  ...Object.entries({ 'druid-ground-burst': 4, 'druid-vine-emerge': 4, 'druid-vine-coil': 3 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'actor', optional: true })),
 );
 const SKINS = ['pajama-pudding', 'sakura-festival-momo', 'pumpkin-knight-tofu', 'rainbow-ranger-usagi', 'snow-globe-kinako', 'bear-king-mimi'];
 JOBS.push(...SKINS.map((k) => ({ src: `v2/items/skins/${k}-poses.png`, name: `skin/${k}`, frames: 6, kind: 'actor' })));

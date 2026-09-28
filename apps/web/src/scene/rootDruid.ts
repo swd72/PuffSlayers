@@ -115,48 +115,50 @@ function leaf(layer: Container, at: Point, angle: number, size: number): Graphic
   return g;
 }
 
-/**
- * A thick vine that snakes along the ground from `from` to `to` over `grow` seconds (tapered, bark outline,
- * green shine), sprouting leaves as its tip passes. Returns a handle to retract it later.
- */
-function crawlingVine(layer: Container, from: Point, to: Point, grow: number, thickness: number): { retract: (seconds: number) => void } {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const len = Math.hypot(dx, dy) || 1;
-  const nx = -dy / len;
-  const ny = dx / len;
-  // an S-bend so it slithers instead of shooting straight
-  const bend = (Math.random() < 0.5 ? -1 : 1) * Math.min(90, len * 0.35);
-  const path: VinePath = {
-    from,
-    c1: { x: from.x + dx * 0.33 + nx * bend, y: from.y + dy * 0.33 + ny * bend },
-    c2: { x: from.x + dx * 0.66 - nx * bend * 0.8, y: from.y + dy * 0.66 - ny * bend * 0.8 },
-    to,
+/** Where a vine bursts out of the ground next to a foe, and how it arcs over onto the body. */
+function emergePath(hole: Point, target: ActorView, side: number): VinePath {
+  const h = target.height;
+  const top = target.root.y - h * (0.75 + Math.random() * 0.25);
+  return {
+    from: hole,
+    // shoots straight up out of the hole…
+    c1: { x: hole.x + side * 6, y: hole.y - h * 0.9 },
+    // …arcs over the foe…
+    c2: { x: target.root.x + side * h * 0.1, y: top },
+    // …and dives onto its waist, where the coil takes over
+    to: { x: target.root.x + side * h * 0.28, y: target.root.y - h * 0.18 },
   };
+}
+
+/**
+ * A thick vine growing along a curve over `grow` seconds: tapered from a heavy base to a thin tip,
+ * dark bark outline with a green shine, leaves popping out as the tip passes. Returns a handle to pull it back in.
+ */
+function growingVine(layer: Container, path: VinePath, grow: number, thickness: number, zIndex: number): { retract: (seconds: number) => void } {
   const root = new Container();
-  root.zIndex = -800;
+  root.zIndex = zIndex;
   layer.addChild(root);
   const body = new Graphics();
   const leaves = new Container();
   root.addChild(body, leaves);
-  const SEGMENTS = 36;
+  const SEGMENTS = 32;
   const points = Array.from({ length: SEGMENTS + 1 }, (_, i) => bezier(path, i / SEGMENTS));
-  const leafAt = [0.22, 0.4, 0.58, 0.76].map((t) => ({ t, done: false, side: Math.random() < 0.5 ? -1 : 1 }));
+  const leafAt = [0.3, 0.5, 0.7].map((t) => ({ t, done: false, side: Math.random() < 0.5 ? -1 : 1 }));
   const state = { p: 0 };
   const draw = () => {
     if (body.destroyed) return;
-    const n = Math.max(1, Math.round(SEGMENTS * state.p));
+    // back.out overshoots past 1: clamp so the tip never reads past the end of the curve
+    const n = Math.min(SEGMENTS, Math.max(1, Math.round(SEGMENTS * state.p)));
     body.clear();
-    // tapered: thick at the base, thin at the growing tip
     for (const [extra, color, alpha] of [
       [3, BARK_DARK, 1],
       [0, BARK, 1],
-      [-thickness * 0.55, SHOOT, 0.55],
+      [-thickness * 0.55, SHOOT, 0.45],
     ] as const) {
       for (let i = 0; i < n; i++) {
         const a = points[i]!;
         const b = points[i + 1]!;
-        const w = Math.max(1, thickness * (1 - (i / n) * 0.75) + extra);
+        const w = Math.max(1, thickness * (1 - (i / n) * 0.7) + extra);
         body.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ color, width: w, alpha, cap: 'round' });
       }
     }
@@ -166,16 +168,46 @@ function crawlingVine(layer: Container, from: Point, to: Point, grow: number, th
       const i = Math.round(l.t * SEGMENTS);
       const a = points[i]!;
       const b = points[Math.min(SEGMENTS, i + 1)]!;
-      leaf(leaves, a, Math.atan2(b.y - a.y, b.x - a.x) + l.side * 0.9, thickness * 2.2);
+      leaf(leaves, a, Math.atan2(b.y - a.y, b.x - a.x) + l.side * 0.9, thickness * 2);
     }
   };
-  gsap.to(state, { p: 1, duration: grow, ease: 'sine.inOut', onUpdate: draw });
+  gsap.to(state, { p: 1, duration: grow, ease: 'back.out(1.4)', onUpdate: draw });
   return {
     retract: (seconds) => {
       gsap.to(state, { p: 0, duration: seconds, ease: 'power2.in', onUpdate: draw });
-      gsap.to(root, { alpha: 0, duration: seconds, delay: seconds * 0.4, onComplete: () => void (!root.destroyed && root.destroy({ children: true })) });
+      gsap.to(root, { alpha: 0, duration: seconds, delay: seconds * 0.5, onComplete: () => void (!root.destroyed && root.destroy({ children: true })) });
     },
   };
+}
+
+/** A dark hole torn in the ground, with a rim of dirt (lasts until the vines sink back). */
+function groundHole(layer: Container, at: Point, size: number, hold: number): void {
+  const g = new Graphics()
+    .ellipse(0, 0, size, size * 0.38)
+    .fill({ color: 0x6b4a2a, alpha: 0.9 })
+    .ellipse(0, size * 0.04, size * 0.72, size * 0.26)
+    .fill({ color: 0x1e120a, alpha: 0.95 });
+  g.position.set(at.x, at.y);
+  g.zIndex = -850;
+  g.scale.set(0.2);
+  layer.addChild(g);
+  gsap
+    .timeline({ onComplete: () => void (!g.destroyed && g.destroy()) })
+    .to(g.scale, { x: 1, y: 1, duration: 0.12, ease: 'back.out(3)' })
+    .to(g, { alpha: 0, duration: 0.4 }, hold);
+}
+
+/** A mound of dirt ploughing along under the surface, from `from` to `to` (something is coming…). */
+function burrow(layer: Container, from: Point, to: Point, seconds: number): void {
+  const g = new Graphics().ellipse(0, 0, 13, 6).fill(0x8a6a44).ellipse(-3, -2, 6, 2.5).fill({ color: 0xc8a67a, alpha: 0.8 });
+  g.position.set(from.x, from.y);
+  g.zIndex = -840;
+  layer.addChild(g);
+  gsap
+    .timeline({ onComplete: () => void (!g.destroyed && g.destroy()) })
+    .to(g, { x: to.x, y: to.y, duration: seconds, ease: 'power1.in' })
+    .to(g.scale, { x: 1.2, y: 1.6, duration: seconds * 0.3, yoyo: true, repeat: 3 }, 0)
+    .to(g, { alpha: 0, duration: 0.1 });
 }
 
 /**
@@ -253,9 +285,9 @@ function coilAround(target: ActorView, climb: number): { squeeze: () => void; bu
 }
 
 /**
- * Root Awakening (~2.5 s), told like a cartoon beat by beat:
- * 1 Taro raises the staff, the ground rumbles · 2 stamps — vines burst out of the ground at the bottom of the
- * screen and snake across the field to every foe · 3 they coil up the bodies and hoist them · 4 three
+ * Root Awakening (~2.8 s), told like a cartoon beat by beat:
+ * 1 Taro raises the staff, the ground rumbles · 2 stamps — cracks and dirt mounds race underground to every foe,
+ * then the ground tears open and vines burst up out of the holes around them · 3 they coil up the bodies and hoist them · 4 three
  * squeezes · 5 a giant root erupts in the middle and the vines yank everyone down · 6 the vines let go.
  */
 export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, targets: ActorView[]): ImpactTimes {
@@ -268,9 +300,9 @@ export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, ta
   glowFlare(api.fx, druid.root.x, druid.root.y - 40, MOSS, 110, 0.5);
   at(0.1, [], () => api.shake(2));
 
-  // 2 — stamp, the vines come from below
+  // 2 — stamp: cracks and dirt mounds race underground to every foe…
   const stamp = 0.3;
-  const arrive = 0.95;
+  const arrive = 0.78;
   const vines: { retract: (s: number) => void }[] = [];
   at(stamp, [druid], () => {
     druid.pose('sig', 1, 0.35);
@@ -278,35 +310,50 @@ export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, ta
     api.shake(6);
     api.sound('hit');
     playFx(api.ground, 'vfx/knight-leap-dust', druid.root.x, druid.root.y + 6, { size: 70, frameTime: 0.1, tint: 0xd8c09a });
-    const bottom = api.screen.y + api.screen.height + 30;
-    bound.forEach((t, i) => {
+    const from = { x: druid.root.x, y: druid.root.y };
+    for (const t of bound) {
+      const to = { x: t.root.x, y: t.root.y + 6 };
+      groundCrack(api, from, to, arrive - stamp, 5);
+      burrow(api.ground, from, to, arrive - stamp);
+    }
+  });
+
+  // …then the ground tears open around each foe and the vines burst up out of the holes and arc over onto it
+  for (const t of bound) {
+    at(arrive, [t], () => {
       const big = t.unit.isBoss;
-      const count = big ? 3 : 2;
+      const count = big ? 4 : 2;
+      const ring = t.height * (big ? 0.42 : 0.55);
+      api.shake(big ? 6 : 3);
       for (let k = 0; k < count; k++) {
-        const spread = (k - (count - 1) / 2) * (big ? 90 : 70);
-        const fromX = Math.min(api.screen.x + api.screen.width - 20, Math.max(api.screen.x + 20, t.root.x + spread + (i % 2 ? 60 : -60)));
-        const to = { x: t.root.x + (k - (count - 1) / 2) * t.height * 0.18, y: t.root.y + 2 };
-        const grow = arrive - stamp - 0.05 * k;
-        vines.push(crawlingVine(api.ground, { x: fromX, y: bottom }, to, grow, big ? 20 : 13));
-        // dirt bursting where each vine breaks the surface on the way
-        at(grow * 0.15, [], () => playFx(api.ground, 'vfx/knight-leap-dust', fromX, Math.min(bottom - 40, api.screen.y + api.screen.height - 30), { size: 60, frameTime: 0.08, tint: 0xb89a70 }));
+        // holes spread around the feet, alternating left / right, some in front and some behind
+        const angle = Math.PI * (0.15 + (0.7 * k) / Math.max(1, count - 1)) + (k % 2 ? Math.PI : 0);
+        const side = Math.cos(angle) >= 0 ? 1 : -1;
+        const hole = { x: t.root.x + Math.cos(angle) * ring, y: t.root.y + Math.sin(angle) * ring * 0.35 + 4 };
+        groundHole(api.ground, hole, big ? 22 : 14, 1.9);
+        // painted ground-burst sheet once it exists (art-prompts §13.1), the knight's dust until then
+        if (hasSheet('vfx/druid-ground-burst')) playFx(api.field, 'vfx/druid-ground-burst', hole.x, hole.y + 6, { size: big ? 60 : 40, frameTime: 0.07, zIndex: hole.y - 1 });
+        else playFx(api.ground, 'vfx/knight-leap-dust', hole.x, hole.y + 4, { size: big ? 70 : 46, frameTime: 0.07, tint: 0xb89a70 });
+        sparks(api.fx, hole.x, hole.y - 8, 0xc8a67a, 5, 80);
+        // vines in front of the foe draw over it, the ones behind stay behind it
+        vines.push(growingVine(api.field, emergePath(hole, t, -side), 0.32 + k * 0.03, big ? 16 : 10, hole.y + (hole.y > t.root.y ? 2 : -2)));
       }
     });
-  });
+  }
 
   // 3 — coil and hoist
   const coils = new Map<string, ReturnType<typeof coilAround>>();
   for (const t of bound) {
-    at(arrive, [t], () => {
+    at(arrive + 0.28, [t], () => {
       coils.set(t.unit.id, coilAround(t, 0.35));
       rootSpike(api, t.root.x, t.root.y + 4, t.unit.isBoss ? 80 : 40);
       if (!t.unit.isBoss) gsap.to(t.body, { y: -22, duration: 0.35, ease: 'power2.out' });
     });
   }
-  at(arrive + 0.1, [druid], () => druid.pose('sig', 2, 0.9));
+  at(arrive + 0.3, [druid], () => druid.pose('sig', 2, 0.9));
 
   // 4 — three squeezes (the hit numbers pop on each one)
-  const squeezes = [1.4, 1.62, 1.84];
+  const squeezes = [1.55, 1.77, 1.99];
   squeezes.forEach((when, j) => {
     for (const t of bound) {
       addHit(hits, t.unit.id, when);
@@ -328,7 +375,7 @@ export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, ta
   }
 
   // 5 — the giant root and the yank down
-  const erupt = 2.15;
+  const erupt = 2.3;
   at(erupt - 0.14, [], () => {
     const s = sheet('vfx/druid-root-erupt', 'vfx/boss-vine-slam');
     playFx(api.fx, s.sheet, center.x, center.y + 10, { size: 150, frameTime: 0.07, zIndex: center.y + 60, tint: s.tint });
