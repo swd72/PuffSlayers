@@ -524,6 +524,41 @@
   "refHeight": 220,
   "additive": false
  },
+ "hero-bare/bunbun-leaf-archer": {
+  "frames": 6,
+  "width": 178,
+  "height": 227,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero-bare/bunbun-mochi-cleric": {
+  "frames": 6,
+  "width": 190,
+  "height": 245,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero-bare/hamham-bell-bard": {
+  "frames": 6,
+  "width": 232,
+  "height": 241,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero-bare/hamham-pillow-guard": {
+  "frames": 6,
+  "width": 250,
+  "height": 224,
+  "refHeight": 220,
+  "additive": false
+ },
+ "hero-bare/shibu-bubble-mage": {
+  "frames": 6,
+  "width": 213,
+  "height": 235,
+  "refHeight": 220,
+  "additive": false
+ },
  "hero-bare/shibu-carrot-knight": {
   "frames": 6,
   "width": 229,
@@ -531,10 +566,59 @@
   "refHeight": 220,
   "additive": false
  },
+ "hero-bare/molemo-root-druid": {
+  "frames": 6,
+  "width": 238,
+  "height": 242,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig-bare/leaf-archer": {
+  "frames": 4,
+  "width": 175,
+  "height": 220,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig-bare/mochi-cleric": {
+  "frames": 4,
+  "width": 155,
+  "height": 223,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig-bare/bell-bard": {
+  "frames": 4,
+  "width": 237,
+  "height": 225,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig-bare/pillow-guard": {
+  "frames": 4,
+  "width": 247,
+  "height": 242,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig-bare/bubble-mage": {
+  "frames": 4,
+  "width": 199,
+  "height": 221,
+  "refHeight": 220,
+  "additive": false
+ },
  "sig-bare/carrot-knight": {
   "frames": 4,
   "width": 225,
   "height": 238,
+  "refHeight": 220,
+  "additive": false
+ },
+ "sig-bare/root-druid": {
+  "frames": 4,
+  "width": 259,
+  "height": 224,
   "refHeight": 220,
   "additive": false
  },

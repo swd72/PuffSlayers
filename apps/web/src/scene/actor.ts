@@ -186,6 +186,9 @@ export class ActorView {
     const w = this.weapon;
     const cls = this.unit.heroClass;
     if (!w || !cls) return;
+    // The shared Cheek Cannon art still includes its shield; avoid drawing a second one.
+    w.visible = frame.set !== 'cheek';
+    if (!w.visible) return;
     const table = WEAPON_POSE[cls];
     const list = this.sets.has(frame.set) ? table[frame.set] : table.pose;
     const hold = list[Math.min(frame.index, list.length - 1)] ?? table.pose[0]!;

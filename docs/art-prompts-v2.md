@@ -552,7 +552,7 @@ Plain flat light gray background, no floor shadow. [STYLE] [SHEET]
 | `hamham-bell-bard-poses-bare.png` | `bell-bard-signature-bare.png` |
 | `molemo-root-druid-poses-bare.png` | `root-druid-signature-bare.png` |
 
-> ทำทีละตัวได้ — แนะนำเริ่มที่ **Tofu (carrot-knight)** ก่อน ผมจะตั้งจุดจับ/มุมอาวุธทุกท่าให้ แล้วค่อยทำตัวอื่นตาม
+> **สถานะ: ครบ 7 อาชีพแล้ว** — Tofu ใช้แผ่นเดิม; อีก 6 ตัวมี Pose + Signature มือเปล่า รวม 12 แผ่น / 60 เฟรม พร้อมจุดจับอาวุธใน `scene/weaponHold.ts` · prompt ที่ใช้สร้างและ cleanup: [bare-paws-generation.md](bare-paws-generation.md)
 
 ---
 

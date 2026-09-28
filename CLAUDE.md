@@ -42,7 +42,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - **หน้าหมู่บ้าน (Hub)** `ui/hub.ts` + **เตรียมลงด่าน** `ui/prep.ts` (`ui/hub.css`): เปิดเกมมาที่หมู่บ้าน, สนามหยุด (`game.mode`), เวลาในหมู่บ้านนับเป็น Nap, ปุ่มบนซ้ายในสนาม = กลับหมู่บ้าน, มื้อก่อนลุยเสิร์ฟตอนกด "เริ่มลุย!" · ตึก 6 หลังล็อกไว้ตามเฟส (ภาพ: art-prompts ข้อ 8)
 
 - **สวนปลุกโลก (เฟส 2 ✅)** `sim/garden.ts` · `meta/garden.ts` · `ui/garden.ts`+`garden.css`: Bonk ดอกไม้มีโอกาสได้เมล็ด (บอสได้แน่นอน, นับทั้งชนะ/แพ้), ปลูก 6 แปลงโตตามเวลาจริง (ออฟไลน์ก็โต), รดน้ำได้ครั้งละขั้น, เก็บดอก → บัฟถาวรทั้งทีม (ทุก 5 ดอก, มีเพดาน) + % ฟื้นฟูโลก · ภาพต้นไม้แต่ละขั้นยังไม่มี (ใช้สไปรต์ดอกไม้ศัตรูย่อขนาดแทน; รองรับแผ่น `garden/<seed>` 4 เฟรม)
-- **อาวุธในมือ (ชั้นแยก)** `scene/weaponHold.ts`: ถ้ามีแผ่น `hero-bare/*` เกมใช้ตัวละครมือเปล่า + วางไอคอนอาวุธ Tier ที่ใส่ตามท่า (ตาราง `WEAPON_POSE` ปรับสดได้ที่ `window.__puff.weaponPose`) · ยังไม่มีภาพมือเปล่า → prompt art-prompts ข้อ 10 · **ห้ามใช้ `gsap.killTweensOf([...])` กับ array ของ Pixi object — ไม่ kill อะไรเลย ให้เรียกทีละตัว**
+- **อาวุธในมือ (ชั้นแยก)** `scene/weaponHold.ts`: ภาพมือเปล่า Pose + Signature **ครบ 7 อาชีพแล้ว** → `hero-bare/*` + `sig-bare/*`; เกมวางไอคอนอาวุธ Tier ที่ใส่ตามท่า (ตาราง `WEAPON_POSE` ของอีก 6 อาชีพปรับตามภาพจริงแล้ว; ปรับสดได้ที่ `window.__puff.weaponPose`) · ท่า Cheek Cannon ยังใช้แผ่นเดิมที่มีโล่ จึงซ่อนอาวุธชั้นแยกระหว่างท่านั้น · prompt ข้อ 10 + `docs/bare-paws-generation.md` · **ห้ามใช้ `gsap.killTweensOf([...])` กับ array ของ Pixi object — ไม่ kill อะไรเลย ให้เรียกทีละตัว**
 
 - **เฟส 3–5 (local) ✅:** สมุดพัฟ 13 ตัว (7 เริ่มต้น + Latte/Senbei/Nugget/Sakura ★5, Daifuku/Kuma-Shiba ★6 — **มีภาพจริงครบแล้ว**; stand-in ยืมแผ่นอาชีพเดียวกันเผื่อพัฟอนาคต) · Puff Capsule (Dew Drop, ฟรีวันละครั้ง, pity ★4/10 ★5/60, spark 150) · ชิ้นส่วนพัฟประจำบทจากทุกด่าน (บอสมากกว่า) · ภารกิจรายวัน · Puff Pond · Arena พัฟ vs พัฟ (`BattleConfig.rivals` + `puffHpScale`, คู่แข่งยิงอัลติเอง, 90 วิ) · Raid (EnemySpec `hpMult`/`hpLeft`, HP ×10, 60 วิ/รอบ, Game mode `'raid'`; เลเวลแนะนำตีได้ ~7%/รอบ) · ด่านแสดงเป็น "บท-ด่าน" (10 ด่าน/บท)
 - **เลย์เอาต์:** `#app` เป็นกรอบ 9:16; จอกว้างมีแผงข้างซ้าย/ขวา + พื้นหลังเบลอ · หมู่บ้านวางตึกบน `.hub-world` ที่สัดส่วนเท่าภาพ (941×1672) จึงไม่เพี้ยนทุกจอ
@@ -53,7 +53,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 
 ## ยังไม่ได้ทำ
 - ต่อเซิร์ฟเวอร์ (Arena ของผู้เล่นจริง, Raid pool ร่วม), Co-op Burrow Run, ร้าน Honor, ทำอาหารจากปลา
-- ภาพที่ยังขาด: มือเปล่าอีก 6 อาชีพ (มีแค่ Tofu `hero-bare/shibu-carrot-knight` + `sig-bare/carrot-knight`), ไอคอนวัตถุดิบ · มีแล้ว: พัฟใหม่ 6 ตัว, ไอคอนปลา `item/fish-0..11`, ต้นไม้ในสวน `garden/<seed>` 4 ขั้น · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal/Raid, เสียงจริงที่ยังขาด
+- ภาพที่ยังขาด: ไอคอนวัตถุดิบ · มีแล้ว: มือเปล่าครบ 7 อาชีพ (Pose + Signature), พัฟใหม่ 6 ตัว, ไอคอนปลา `item/fish-0..11`, ต้นไม้ในสวน `garden/<seed>` 4 ขั้น · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal/Raid, เสียงจริงที่ยังขาด
 
 ## วิธีตรวจงานในเบราว์เซอร์ (สำคัญ)
 - Browser pane มักถูกซ่อน → rAF แทบไม่เดิน. ใช้ dev handle `window.__puff = { app, game, gsap, sfx }` แล้ว pump เฟรมเอง:
