@@ -46,10 +46,12 @@ export function playUltimate(api: SceneApi, ev: UltimateEvent): ImpactTimes {
   if (!caster) return new Map();
   const targets = ev.targets.map((id) => api.actor(id)).filter((a): a is ActorView => !!a && !a.gone);
   api.dim(COMBO_DIM);
-  caster.playMove(`move/${ev.heroClass}-ult`, ULT_MOVE_SECONDS[ev.heroClass], ULT_MOVE_HOLDS);
+  const painted = caster.playMove(`move/${ev.heroClass}-ult`, ULT_MOVE_SECONDS[ev.heroClass], ULT_MOVE_HOLDS);
+  // with a painted move sheet the impact is already in the art: keep the zoom blur light so it stays readable
+  if (painted) api = softBlur(api);
   switch (ev.heroClass) {
     case 'carrot-knight':
-      return carrotCrescent(api, caster, ev, targets);
+      return carrotCrescent(api, caster, ev, targets, painted);
     case 'leaf-archer':
       return leafStorm(api, caster, ev, targets);
     case 'bubble-mage':
@@ -65,11 +67,29 @@ export function playUltimate(api: SceneApi, ev: UltimateEvent): ImpactTimes {
   }
 }
 
+/** The same scene api, with zoom bursts at a fraction of their strength. */
+function softBlur(api: SceneApi): SceneApi {
+  const f = api.filters;
+  const zoomBurst = (x: number, y: number, strength = 0.22): void => f.zoomBurst(x, y, strength * PAINTED_BLUR);
+  // everything else goes straight to the real filters (they keep their own state)
+  const filters = new Proxy(f, {
+    get: (target, key) => {
+      if (key === 'zoomBurst') return zoomBurst;
+      const v: unknown = Reflect.get(target, key);
+      return typeof v === 'function' ? v.bind(target) : v;
+    },
+  });
+  return { ...api, filters };
+}
+
+/** zoom-blur strength kept while a painted move sheet plays */
+const PAINTED_BLUR = 0.25;
+
 /**
  * Three dash-slashes through the pack (afterimages, crescent arcs), then a spinning leap
  * and a flaming crescent slam that sends a fire wave rolling on.
  */
-function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, targets: ActorView[]): ImpactTimes {
+function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, targets: ActorView[], painted = false): ImpactTimes {
   const color = CLASS_COLOR['carrot-knight'];
   const flip = knight.unit.facing < 0;
   const order = nearestFirst(knight, targets);
@@ -118,18 +138,19 @@ function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, tar
   at(slam, [knight], () => {
     knight.pose('sig', 3, 0.45);
     const t = { x: ev.at.x, y: ev.at.y - 30 };
-    playFx(api.fx, 'vfx/knight-impact', t.x, t.y + 20, { size: 150, anchor: 'center', frameTime: 0.07 });
+    // the painted sheet has its own fire burst on Tofu; the drawn one would cover it
+    if (!painted) playFx(api.fx, 'vfx/knight-impact', t.x, t.y + 20, { size: 150, anchor: 'center', frameTime: 0.07 });
     const wave = fxSprite('vfx/knight-firewave', { size: 140, byWidth: true, anchor: 'center', flip });
     wave.position.set(ev.at.x, ev.at.y - 12);
     wave.zIndex = ev.at.y + 25;
     api.fx.addChild(wave);
     gsap.timeline({ onComplete: () => wave.destroy() }).to(wave, { x: ev.at.x + knight.unit.facing * 170, duration: 0.5, ease: 'power2.out' }).to(wave, { alpha: 0, duration: 0.2 }, 0.35);
     decal(api.ground, 'vfx/knight-scorch', ev.at.x + knight.unit.facing * 40, ev.at.y, { width: 150, hold: 1.4 });
-    glowFlare(api.fx, t.x, t.y, 0xff8a2a, 170, 0.5);
-    lightPillar(api.fx, ev.at.x, ev.at.y, 0xffc680, 90, 420, 0.6);
+    glowFlare(api.fx, t.x, t.y, 0xff8a2a, painted ? 100 : 170, 0.5);
+    if (!painted) lightPillar(api.fx, ev.at.x, ev.at.y, 0xffc680, 90, 420, 0.6);
     api.filters.shockwave(t.x, t.y, 26);
     api.filters.zoomBurst(t.x, t.y, 0.18);
-    screenFlash(api.overlay, api.screen, 0xffc680, 0.4);
+    screenFlash(api.overlay, api.screen, 0xffc680, painted ? 0.15 : 0.4);
     api.sound('ult-carrot-knight');
     api.shake(14);
     api.hitstop(90);
