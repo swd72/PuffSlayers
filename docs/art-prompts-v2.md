@@ -34,6 +34,8 @@ v2 จึงแยกเอฟเฟกต์ทุกท่าเป็น **5 
 
 ## 1. Style Anchors
 
+> **ลุคหลักของเกม (ผู้ใช้กำหนด):** ทุกภาพใช้โทน **Japanese anime movie / hand-painted cinematic** — `[SCENE STYLE]` ข้อ 13 สำหรับฉาก, `[PAINTED VFX]` สำหรับเอฟเฟกต์ของทึบ, `[MOVE STYLE]` ข้อ 14 สำหรับท่าสกิล (ทั้งสามมีคำชุดเดียวกัน: painterly, visible brush texture, golden-hour peach-orange highlights, teal-blue shadows, not photorealistic, not 3D) · `[STYLE]`/`[VFX STYLE]` ด้านล่างเป็นชุดเดิม — ถ้าทำภาพใหม่ให้ต่อท้ายด้วยบรรทัดสไตล์ภาพยนตร์ด้วย
+
 ### `[STYLE]` — ใช้กับตัวละคร, ศัตรู, ฉาก
 ```
 2.5D anime mobile idle RPG art, high top-down camera at about 55 degrees, tiny chibi
@@ -708,13 +710,17 @@ vertical 9:16, no buildings on the plateaus (they are placed by the game), no ch
 
 ### 14.2 Template
 
-**`[MOVE STYLE]`**
+**`[MOVE STYLE]`** — สไตล์ภาพยนตร์อนิเมะเดียวกับฉาก (ข้อ 13) แต่ปรับให้เป็นแผ่นท่าบนพื้นเทา
 ```
 chibi anime web-game skill animation sheet, the exact same puff character as the reference (keep face,
-body, outfit and weapon identical), bold readable action poses with squash and stretch, crisp cel-shaded
+body, outfit and weapon identical), bold readable action poses with squash and stretch,
+Japanese anime movie quality, hand-painted cinematic look, semi-realistic painterly anime style,
+subtle clean linework, soft cel-painted shapes, visible brush texture, stylized natural forms,
+warm golden-hour key light with peach-orange highlights and cool teal-blue shadows,
+rich controlled color palette, illustrated, not photorealistic, not 3D,
 anime VFX painted together with the character: thick-to-thin crescent smear arcs, layered energy with a
-white-hot core, bright class-color middle and a deep darker edge, sharp speed lines, sparkles and debris
-chunks, clean hard-edged shapes with no soft haze, top-down 55 degree view, the character faces right
+white-hot core, bright class-color middle and a deeper edge, sharp speed lines, sparkles and debris chunks,
+effect edges kept crisp (no haze spilling onto the background), top-down 55 degree view, the character faces right
 ```
 
 **`[MOVE GRID 12]`** (อัลติ → `assets/generated/v2/moves/<class>-ult.png`)

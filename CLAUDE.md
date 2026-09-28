@@ -73,6 +73,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - CSS animation ตรวจด้วย `el.getAnimations()[0].currentTime = t` (pane ซ่อน)
 
 ## ความชอบของผู้ใช้ (จากการคุยที่ผ่านมา)
+- **ทุก prompt ภาพต้องใช้สไตล์ "Japanese anime environment background, hand-painted cinematic scenery … illustrated, not photorealistic, not 3D"** (ข้อความเต็มใน art-prompts ข้อ 13 `[SCENE STYLE]`; ท่าสกิลใช้ `[MOVE STYLE]` ข้อ 14 ที่รวมไว้แล้ว)
 - ต้องการภาพสไตล์ anime fantasy อลังการ แต่ตัวละครน่ารัก, มุมแผนที่ top-down แบบภาพอ้างอิง
 - ไม่ต้องการ turn-based / ยืนประจำช่อง; เอฟเฟกต์ต้องเดินทางจากตัวละคร ไม่ใช่ก้อนระเบิดกับที่
 - สร้างภาพเองด้วย AI ตาม prompt แล้วบอก "ทำภาพแล้ว" → หาไฟล์ใหม่ใน `assets/generated/` แล้วรัน pipeline
