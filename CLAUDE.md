@@ -47,6 +47,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - **เฟส 3–5 (local) ✅:** สมุดพัฟ 13 ตัว (7 เริ่มต้น + Latte/Senbei/Nugget/Sakura ★5, Daifuku/Kuma-Shiba ★6 — **มีภาพจริงครบแล้ว**; stand-in ยืมแผ่นอาชีพเดียวกันเผื่อพัฟอนาคต) · Puff Capsule (Dew Drop, ฟรีวันละครั้ง, pity ★4/10 ★5/60, spark 150) · ชิ้นส่วนพัฟประจำบทจากทุกด่าน (บอสมากกว่า) · ภารกิจรายวัน · Puff Pond · Arena พัฟ vs พัฟ (`BattleConfig.rivals` + `puffHpScale`, คู่แข่งยิงอัลติเอง, 90 วิ) · Raid (EnemySpec `hpMult`/`hpLeft`, HP ×10, 60 วิ/รอบ, Game mode `'raid'`; เลเวลแนะนำตีได้ ~7%/รอบ) · ด่านแสดงเป็น "บท-ด่าน" (10 ด่าน/บท)
 - **เลย์เอาต์:** `#app` เป็นกรอบ 9:16; จอกว้างมีแผงข้างซ้าย/ขวา + พื้นหลังเบลอ · หมู่บ้านวางตึกบน `.hub-world` ที่สัดส่วนเท่าภาพ (941×1672) จึงไม่เพี้ยนทุกจอ
 - **ห้ามใช้ class `.ready` ใน UI ใหม่** — ชนกับป้าย ULT ของ HUD (style.css) ใช้ `.hot` แทน
+- **สเกล fx:** sprite จาก `fxSprite/statusLoop` ถูกย่อ scale ไว้แล้ว — tween scale ต้องคูณจาก scale เดิม ห้าม tween ไปที่ 1 (เคยทำให้วงรากของ Taro ใหญ่เต็มสนาม)
 - `BattleScene.reset()` kill ทุก tween (`gsap.exportRoot().kill()`) + ล้างเลเยอร์ fx; `ActorView.destroy()` ถอดออกทันทีแต่ free ทีหลัง 5 วิ (`actor.removed` แทน `root.destroyed`)
 
 - **จอมือถือไม่ดับ:** `src/screenAwake.ts` (NoSleep.js — Wake Lock API บน https/localhost, วิดีโอเงียบวนบน http ผ่าน Wi-Fi) เปิดเมื่อแตะจอครั้งแรก · WebGL context หลุด → save + reload อัตโนมัติ · มือถือจำกัด resolution ≤2 · preload ภาพทั้งหมด ~540 เฟรม (~170MB ถอดรหัส) — ถ้ามือถือรุ่นเก่ายังดำ ให้ทำ lazy-load

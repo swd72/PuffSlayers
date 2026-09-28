@@ -3,7 +3,7 @@
 import gsap from 'gsap';
 import { Graphics } from 'pixi.js';
 import type { Point } from '@puff/sim';
-import { CLASS_COLOR, vfxOr } from '../assets';
+import { CLASS_COLOR, hasSheet, vfxOr } from '../assets';
 import type { ActorView } from './actor';
 import { glowFlare, magicCircle, screenFlash, sparks, speedLines } from './anime';
 import type { SceneApi } from './api';
@@ -72,7 +72,7 @@ export function druidAttack(api: SceneApi, druid: ActorView, target: ActorView):
   const from = { x: druid.root.x, y: druid.root.y };
   const to = { x: target.root.x, y: target.root.y };
   groundCrack(api, from, to, travel, 3);
-  at(travel, [target], () => rootSpike(api, target.root.x, target.root.y, 60));
+  at(travel, [target], () => rootSpike(api, target.root.x, target.root.y, 46));
   return travel + 0.04;
 }
 
@@ -103,8 +103,8 @@ export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, ta
       const w = when + (t.unit.id.length % 3) * 0.02;
       addHit(hits, t.unit.id, w);
       at(w, [t], () => {
-        const side = (j - 1) * 16;
-        rootSpike(api, t.root.x + side, t.root.y + 4, 56 + j * 16);
+        const side = (j - 1) * 10;
+        rootSpike(api, t.root.x + side, t.root.y + 4, 42 + j * 10);
         api.sound('hit');
       });
     }
@@ -114,7 +114,7 @@ export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, ta
   for (const t of targets) {
     at(1.15, [t], () => {
       gsap.to(t.body, { y: -34, duration: 0.25, ease: 'power2.out' });
-      decal(api.ground, vfxOr('vfx/druid-root-bind', 'vfx/guard-taunt'), t.root.x, t.root.y, { width: 70, hold: 0.4, tint: STAND_IN_TINT });
+      decal(api.ground, vfxOr('vfx/druid-root-bind', 'vfx/guard-taunt'), t.root.x, t.root.y, { width: 64, hold: 0.4, ...(hasSheet('vfx/druid-root-bind') ? {} : { tint: STAND_IN_TINT }) });
     });
   }
 
@@ -122,15 +122,15 @@ export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, ta
   const erupt = 1.52;
   at(erupt - 0.12, [], () => {
     const s = sheet('vfx/druid-root-erupt', 'vfx/boss-vine-slam');
-    playFx(api.fx, s.sheet, center.x, center.y + 10, { size: 230, frameTime: 0.07, zIndex: center.y + 60, tint: s.tint });
+    playFx(api.fx, s.sheet, center.x, center.y + 10, { size: 150, frameTime: 0.07, zIndex: center.y + 60, tint: s.tint });
     speedLines(api.overlay, center.x, center.y - 50, 0xd9ff9a, 0.45);
   });
   at(erupt, [], () => {
     for (const t of targets) if (alive(t)) gsap.to(t.body, { y: 0, duration: 0.14, ease: 'power3.in' });
-    playFx(api.ground, 'vfx/guard-slam-ring', center.x, center.y, { size: 240, byWidth: true, anchor: 'center', frameTime: 0.07, tint: 0xb8e07a });
-    decal(api.ground, 'vfx/knight-scorch', center.x, center.y, { width: 160, hold: 1.2, tint: 0x6b8f3a });
-    glowFlare(api.fx, center.x, center.y - 30, MOSS, 240, 0.5);
-    sparks(api.fx, center.x, center.y - 40, 0xd9ff9a, 22, 190);
+    playFx(api.ground, 'vfx/guard-slam-ring', center.x, center.y, { size: 180, byWidth: true, anchor: 'center', frameTime: 0.07, tint: 0xb8e07a });
+    decal(api.ground, 'vfx/knight-scorch', center.x, center.y, { width: 120, hold: 1.0, tint: 0x6b8f3a });
+    glowFlare(api.fx, center.x, center.y - 30, MOSS, 170, 0.5);
+    sparks(api.fx, center.x, center.y - 40, 0xd9ff9a, 16, 130);
     api.filters.shockwave(center.x, center.y, 30);
     api.filters.zoomBurst(center.x, center.y - 30, 0.16);
     screenFlash(api.overlay, api.screen, 0xe6ffc0, 0.3);

@@ -258,7 +258,10 @@ export class ActorView {
       this.root.addChild(this.rooted);
     }
     this.root.setChildIndex(this.rooted, Math.min(1, this.root.children.length - 1));
-    gsap.fromTo(this.rooted.scale, { x: 0.3, y: 0.3 }, { x: 1, y: 1, duration: 0.2, ease: 'back.out(2)' });
+    // grow from its own scale: the sheet sprite is already scaled down to fit the feet (tweening to 1 blew it up to full sheet size)
+    const sx = this.rooted.scale.x;
+    const sy = this.rooted.scale.y;
+    gsap.fromTo(this.rooted.scale, { x: sx * 0.3, y: sy * 0.3 }, { x: sx, y: sy, duration: 0.2, ease: 'back.out(2)' });
   }
 
   makeSticky(): void {
