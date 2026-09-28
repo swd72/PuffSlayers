@@ -73,7 +73,7 @@ async function boot(): Promise<void> {
 
   let game: Game | undefined;
   const scene = new BattleScene(app.stage, {
-    onUltimateCast: (heroId, heroClass, castMs) => game?.onUltimateCast(heroId, heroClass, castMs),
+    onUltimateCast: () => game?.onUltimateCast(),
     onPetals: (amount) => game?.addPetals(amount),
     onHitstop: (ms) => game?.freeze(ms),
     onBanner: (text) => hud.banner(text, 1700),

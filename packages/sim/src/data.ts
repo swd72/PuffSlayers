@@ -122,7 +122,7 @@ export const TUNING = {
   energyPerAttack: 1.5,
   energyPerHit: 1,
   /** how long the ultimate cut-in holds the battle before the skill fires */
-  castMs: 900,
+  castMs: 450,
   /** enemies within this distance of a Pillow Guard must hit it first */
   tauntRadius: 120,
   /** allies push apart when closer than this */

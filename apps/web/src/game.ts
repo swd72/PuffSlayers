@@ -33,7 +33,7 @@ import {
 } from '@puff/sim';
 import { addForage, mealStats, serveMeals, type ServedMeal } from './meta/picnic';
 import { addSeeds } from './meta/garden';
-import { BACKGROUND, BOSS_BACKGROUND, frameUrl, hasSheet, heroDef, heroSheet } from './assets';
+import { BACKGROUND, BOSS_BACKGROUND, heroDef } from './assets';
 import { activeTeam, autoEquipEmpty, itemById, heroLevel, loadSave, ownedRoster, teamLevel, teamLuck, writeSave, type SaveData } from './meta/save';
 import { heroPower } from './meta/power';
 import { addShards } from './meta/album';
@@ -241,12 +241,9 @@ export class Game {
   }
 
   /** Shows the cut-in banner for exactly as long as the battle is frozen for the cast. */
-  onUltimateCast(heroId: string, heroClass: Parameters<Hud['ultimate']>[0], castMs: number): void {
-    const hero = this.state.units.find((u) => u.id === heroId);
-    // a painted close-up of the class (art-prompts §14.6) beats the idle frame
-    const cutin = `ui/cutin-${heroClass}`;
-    const portrait = hasSheet(cutin) && !hero?.skin ? frameUrl(cutin, 0) : hero?.species ? frameUrl(hero.skin ? `skin/${hero.skin}` : heroSheet(hero.species, heroClass), 0) : '';
-    this.hud.ultimate(heroClass, this.clock, portrait, castMs / this.speed);
+  /** The cast itself plays in the scene (camera push-in); the HUD only counts ultimate chains. */
+  onUltimateCast(): void {
+    this.hud.ultimate(this.clock);
   }
 
   /** Anime hit-stop: the simulation pauses for a beat when a big hit lands. */
@@ -289,7 +286,6 @@ export class Game {
       return this.endSideMode(true);
     }
     if (events.length === 0) return this.renderClock();
-    if (events.some((e) => e.type === 'ultimate')) this.hud.endUltimate();
     this.scene.handle(events);
     this.render();
     this.checkEnd();

@@ -414,14 +414,14 @@ export class BattleScene {
     src.pose('pose', 4, seconds);
     const color = CLASS_COLOR[heroClass];
     // 1 the camera pushes in on the caster while power gathers into it
-    this.cameraFocus(src.root.x, src.root.y - src.height * 0.5, 1.45, seconds * 0.35);
+    this.cameraFocus(src.root.x, src.root.y - src.height * 0.5, 1.3, seconds * 0.45);
     glowFlare(this.fx, src.root.x, src.root.y - src.height * 0.4, color, src.height * 2.4, seconds);
     ring(this.ground, color, src.root.x, src.root.y, src.height * 0.7);
     risingMotes(this.fx, src.root.x, src.root.y, color, 12);
     converge(this.fx, src.root.x, src.root.y - src.height * 0.45, color, seconds * 0.6);
     castFlourish(this.api, src, heroClass, color, seconds);
-    // 2 a white flash as it peaks (the HUD then swipes the class emblem across the screen)
-    gsap.delayedCall(seconds * 0.45, () => screenFlash(this.overlay, this.screen, 0xffffff, 0.55));
+    // 2 a soft flash as the power peaks, right before the skill fires
+    gsap.delayedCall(seconds * 0.8, () => screenFlash(this.overlay, this.screen, 0xffffff, 0.22));
   }
 
   private animateEnrage(bossId: string): void {

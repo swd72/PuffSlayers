@@ -328,7 +328,6 @@ body {
   place-items: center;
 }
 
-.cutin,
 .combo,
 .banner {
   position: absolute;
@@ -337,53 +336,6 @@ body {
   white-space: nowrap;
   -webkit-text-stroke: 1cqw var(--ink);
   paint-order: stroke fill;
-}
-
-.cutin {
-  top: 26%;
-  left: -4cqw;
-  right: -4cqw;
-  height: 24cqw;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 8cqw;
-  font-size: 8.5cqw;
-  background:
-    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.28) 0 0.6cqw, transparent 0.6cqw 5cqw),
-    linear-gradient(90deg, transparent, var(--accent) 12%, var(--accent) 88%, transparent);
-  border-top: 1cqw solid #fff;
-  border-bottom: 1cqw solid #fff;
-  box-shadow: 0 0 6cqw var(--accent);
-  transform: skewY(-7deg);
-  overflow: hidden;
-  animation: cutin var(--dur, 900ms) cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
-}
-
-.cutin-hero {
-  position: absolute;
-  left: 4cqw;
-  top: -6cqw;
-  width: 40cqw;
-  height: 40cqw;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  transform: skewY(7deg);
-  filter: drop-shadow(0 0 2cqw #fff);
-  animation: cutin-hero var(--dur, 900ms) cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
-}
-
-.cutin-text {
-  position: relative;
-  transform: skewY(7deg);
-}
-
-@keyframes cutin-hero {
-  0% { translate: -30cqw 0; scale: 0.8; }
-  25% { translate: 0 0; scale: 1.1; }
-  80% { translate: 3cqw 0; scale: 1.1; }
-  100% { translate: 10cqw 0; scale: 1.1; }
 }
 
 .combo {
@@ -400,13 +352,6 @@ body {
   font-size: 11cqw;
   color: var(--gold);
   animation: pop 1.6s ease-out forwards;
-}
-
-@keyframes cutin {
-  0% { transform: skewY(-6deg) translateX(-110%); }
-  18% { transform: skewY(-6deg) translateX(0); }
-  78% { transform: skewY(-6deg) translateX(3%); opacity: 1; }
-  100% { transform: skewY(-6deg) translateX(110%); opacity: 0; }
 }
 
 @keyframes pop {
@@ -543,13 +488,6 @@ body {
 /* Reduced motion: no sliding or popping, but banners must still be seen (fade in, hold, fade out). */
 @media (prefers-reduced-motion: reduce) {
   .portrait.is-ready .ring {
-    animation: none;
-  }
-  .cutin {
-    animation-name: fade-hold;
-    animation-timing-function: linear;
-  }
-  .cutin-hero {
     animation: none;
   }
   .combo,
@@ -996,96 +934,4 @@ body {
   font-size: 3.2cqw;
 }
 
-/* ---------- ultimate emblem swipe (second half of the cast) ---------- */
-.emblem {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  animation: emblem-in var(--dur, 450ms) linear var(--delay, 400ms) forwards;
-}
 
-.emblem-band {
-  position: absolute;
-  left: -10%;
-  right: -10%;
-  top: 36%;
-  height: 28%;
-  background: linear-gradient(180deg, transparent, rgba(12, 6, 20, 0.92) 18%, rgba(12, 6, 20, 0.92) 82%, transparent);
-  transform: skewY(-8deg);
-}
-
-.emblem-slash {
-  position: absolute;
-  left: -20%;
-  right: -20%;
-  top: 49%;
-  height: 1.6cqw;
-  background: linear-gradient(90deg, transparent, var(--accent) 20%, #fff 50%, var(--accent) 80%, transparent);
-  box-shadow: 0 0 4cqw var(--accent), 0 0 1.4cqw #fff;
-  transform: rotate(-8deg) scaleX(0);
-  transform-origin: left center;
-  animation: emblem-slash var(--dur, 450ms) cubic-bezier(0.2, 0.9, 0.2, 1) var(--delay, 400ms) forwards;
-}
-
-.emblem-mark {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 30cqw;
-  height: 30cqw;
-  margin: -15cqw 0 0 -15cqw;
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 2cqw var(--accent)) drop-shadow(0 0 0.6cqw #fff);
-  animation: emblem-mark var(--dur, 450ms) cubic-bezier(0.3, 1.4, 0.5, 1) var(--delay, 400ms) forwards;
-}
-
-.emblem-mark.painted {
-  width: 44cqw;
-  height: 44cqw;
-  margin: -22cqw 0 0 -22cqw;
-  object-fit: contain;
-}
-
-@keyframes emblem-in {
-  0% { opacity: 0; }
-  12% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-@keyframes emblem-slash {
-  0% { transform: rotate(-8deg) scaleX(0); }
-  35% { transform: rotate(-8deg) scaleX(1); }
-  100% { transform: rotate(-8deg) scaleX(1) scaleY(0.2); }
-}
-
-@keyframes emblem-mark {
-  0% { transform: scale(0.3) rotate(-90deg); opacity: 0; }
-  40% { transform: scale(1.1) rotate(0deg); opacity: 1; }
-  100% { transform: scale(1.35) rotate(8deg); opacity: 0.85; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .emblem-slash,
-  .emblem-mark {
-    animation-name: fade-hold;
-  }
-}
-
-/* the skill fired: the cut-in leaves at once instead of waiting for its timer */
-.cutin.leaving {
-  animation: cutin-leave 0.18s ease-in forwards;
-}
-
-.cutin.leaving .cutin-hero {
-  animation: none;
-}
-
-@keyframes cutin-leave {
-  to { transform: skewY(-6deg) translateX(110%); opacity: 0; }
-}
