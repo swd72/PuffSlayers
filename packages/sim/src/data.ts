@@ -139,8 +139,14 @@ export const TUNING = {
   castMs: 450,
   /** enemies within this distance of a Pillow Guard must hit it first */
   tauntRadius: 120,
-  /** allies push apart when closer than this */
-  personalSpace: 24,
+  /** allies push apart when closer than this (two regular bodies side by side) */
+  personalSpace: 40,
+  /** body radius used for spacing and reach: bosses/giants are big, so fighters stand at their edge */
+  body: { unit: 20, boss: 48, giant: 72 },
+  /** a unit already fighting in place only gives way this much when an ally bumps into it */
+  anchoredGive: 0.1,
+  /** melee units prefer a foe with fewer allies on it: extra "distance" per ally already there */
+  crowdPenalty: 45,
   /** ranged units back off when a foe gets closer than this share of their range */
   kiteRatio: 0.4,
   spawnRadius: 260,

@@ -1,5 +1,5 @@
 import { BOSS_MINION, TUNING, ULTIMATE_COOLDOWN_MS, ULTIMATE_DAMAGE, ULTIMATE_RADIUS } from './data';
-import { clampToArena, distance, distanceToSegment, face, moveAway, moveToward, place, type WorkUnit } from './movement';
+import { bodyRadius, clampToArena, distance, distanceToSegment, face, moveAway, moveToward, place, reach, type WorkUnit } from './movement';
 import type { Rng } from './rng';
 import { bonkPetals } from './progression';
 import { createEnemy } from './units';
@@ -60,7 +60,32 @@ export class TickContext {
   pickTarget(unit: Unit): WorkUnit | undefined {
     const foes = this.opponents(unit);
     const taunt = foes.find((u) => u.heroClass === 'pillow-guard' && distance(unit, u) <= TUNING.tauntRadius);
-    return taunt ?? this.nearest(unit, foes);
+    if (taunt) return taunt;
+    // already in contact: keep fighting right here
+    const inReach = foes.filter((f) => distance(unit, f) <= reach(unit, f) + 4);
+    if (inReach.length > 0) return this.nearest(unit, inReach);
+    if (unit.stats.range > 80) return this.nearest(unit, foes);
+    // melee spreads out over the foes instead of everyone piling onto the same one
+    let best: WorkUnit | undefined;
+    let bestScore = Infinity;
+    for (const f of foes) {
+      const score = distance(unit, f) + TUNING.crowdPenalty * this.crowdOn(unit, f);
+      if (score < bestScore) {
+        best = f;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+
+  /** Allies of `unit` already crowding around `foe` (big bodies have room for more). */
+  private crowdOn(unit: Unit, foe: Unit): number {
+    const around = bodyRadius(foe) + TUNING.personalSpace;
+    let n = 0;
+    for (const u of this.units) {
+      if (u !== unit && u.side === unit.side && isAlive(u) && u.stats.range <= 80 && distance(u, foe) <= around) n++;
+    }
+    return n * (TUNING.body.unit / bodyRadius(foe));
   }
 
   woundedAlly(unit: Unit): WorkUnit | undefined {
