@@ -30,6 +30,11 @@ interface PoseFrame {
   readonly scale: number;
 }
 
+/** size of painted move frames relative to the idle puff */
+const MOVE_SCALE = 1.35;
+/** zIndex lift while a move plays, so the caster draws over big targets */
+const MOVE_FRONT = 400;
+
 export class ActorView {
   readonly root = new Container();
   readonly body = new Container();
@@ -193,7 +198,8 @@ export class ActorView {
   playMove(sheet: string, seconds: number, holds: Readonly<Record<number, number>> = {}): boolean {
     if (this.gone || !hasSheet(sheet)) return false;
     const meta = sheetMeta(sheet);
-    const scale = this.height / meta.refHeight;
+    // painted moves are the star of the shot: drawn a bit larger than the idle puff so the art reads
+    const scale = (this.height / meta.refHeight) * MOVE_SCALE;
     const list = frames(sheet).map((texture) => ({ texture, scale }));
     if (!list.length) return false;
     const weights = list.map((_, i) => 1 + (holds[i] ?? 0));
@@ -235,7 +241,8 @@ export class ActorView {
       this.root.x += (u.x - this.root.x) * follow;
       this.root.y += (u.y - this.root.y) * follow;
     }
-    this.root.zIndex = this.root.y;
+    // while a painted move plays the caster stays in front of whatever it is hitting (a giant would hide it)
+    this.root.zIndex = this.root.y + (this.move ? MOVE_FRONT : 0);
     this.root.scale.set(depthScale(this.root.y));
 
     const isHero = !!u.heroClass;
