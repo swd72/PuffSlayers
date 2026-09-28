@@ -81,7 +81,8 @@ JOBS.push(
   ...Object.entries({ 'druid-ground-burst': 4, 'druid-vine-emerge': 4, 'druid-vine-coil': 3, 'druid-root-erupt': 4 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'painted-vfx', optional: true })),
   // per-class signature set-pieces (art-prompts §14.9): drawn live in the game until these exist
   { src: 'vfx2/knight-spirit-blade.png', name: 'vfx/knight-spirit-blade', frames: 1, kind: 'painted-vfx', optional: true },
-  ...Object.entries({ 'archer-target-mark': 1, 'archer-spiral-arrow': 1, 'mage-vortex': 1, 'guard-pillow-dome': 1, 'cleric-halo': 1, 'bard-spirit-bear': 2 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
+  { src: 'vfx2/archer-spiral-arrow.png', name: 'vfx/archer-spiral-arrow', frames: 1, kind: 'painted-vfx', optional: true },
+  ...Object.entries({ 'archer-target-mark': 1, 'mage-vortex': 1, 'guard-pillow-dome': 1, 'cleric-halo': 1, 'bard-spirit-bear': 2 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
 );
 const SKINS = ['pajama-pudding', 'sakura-festival-momo', 'pumpkin-knight-tofu', 'rainbow-ranger-usagi', 'snow-globe-kinako', 'bear-king-mimi'];
 JOBS.push(...SKINS.map((k) => ({ src: `v2/items/skins/${k}-poses.png`, name: `skin/${k}`, frames: 6, kind: 'actor' })));
@@ -297,18 +298,20 @@ async function extract(job) {
   if (job.name.startsWith('hero/') || job.name.startsWith('skin/')) await writePortrait(master, boxes[0], job.name.replace('/', '-').replace(/^hero-/, ''));
   const dir = path.join(OUT, path.dirname(job.name));
   await mkdir(dir, { recursive: true });
+  let outputSize;
   for (const [i, box] of boxes.entries()) {
     const piece = await sharp(master).extract(box).png().toBuffer();
     const framed = await sharp({ create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
       .composite([{ input: piece, left: Math.round((canvasW - box.width) / 2), top: canvasH - box.height }])
       .png()
       .toBuffer();
-    await sharp(framed)
+    outputSize = await sharp(framed)
       .resize({ width: Math.max(1, Math.round(canvasW * scale)) })
       .png({ compressionLevel: 9 })
       .toFile(path.join(OUT, `${job.name}-${i}.png`));
   }
-  return [job.name, { frames: job.frames, width: Math.round(canvasW * scale), height: Math.round(canvasH * scale), refHeight: Math.round(refH * scale), additive }];
+  // Width rounding can change Sharp's aspect-preserving height by several pixels for narrow effects.
+  return [job.name, { frames: job.frames, width: outputSize.width, height: outputSize.height, refHeight: Math.round(refH * outputSize.height / canvasH), additive }];
 }
 
 /**
@@ -354,8 +357,9 @@ async function extractMove(job) {
   const scale = Math.min(1, TARGET.actor / bodyH);
   const master = await sharp(data, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
   await mkdir(path.join(OUT, path.dirname(job.name)), { recursive: true });
+  let outputSize;
   for (const [i, b] of boxes.entries()) {
-    await sharp(master)
+    outputSize = await sharp(master)
       .extract({ left: b.cx + union.left, top: b.cy + union.top, width: uw, height: uh })
       .resize({ width: Math.max(1, Math.round(uw * scale)) })
       .png({ compressionLevel: 9 })
@@ -365,9 +369,9 @@ async function extractMove(job) {
     job.name,
     {
       frames: job.frames,
-      width: Math.round(uw * scale),
-      height: Math.round(uh * scale),
-      refHeight: Math.round(bodyH * scale),
+      width: outputSize.width,
+      height: outputSize.height,
+      refHeight: Math.round(bodyH * outputSize.height / uh),
       additive: false,
       // the anticipation pose's feet: bottom-centre of frame 0's own content, as a share of the shared crop
       anchorX: ((first.left + first.right) / 2 - union.left) / uw,
@@ -484,5 +488,5 @@ for (const job of tierIcons) {
 const bgs = await ready(BACKGROUNDS);
 await Promise.all(bgs.map(background));
 await writeFile(path.join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 1));
-console.log(`extracted ${Object.keys(manifest).length}/${jobs.length + icons.length} sheets, ${bgs.length} backgrounds`);
+console.log(`extracted ${Object.keys(manifest).length}/${jobs.length + icons.length + moves.length} sheets, ${bgs.length} backgrounds`);
 process.exitCode = failed ? 1 : 0;

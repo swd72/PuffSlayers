@@ -1,0 +1,433 @@
+{
+  "sheets": [
+    {
+      "name": "vfx/knight-spirit-blade",
+      "frames": 1,
+      "additive": false,
+      "width": 119,
+      "height": 359,
+      "refHeight": 359,
+      "visible": [
+        0.33
+      ]
+    },
+    {
+      "name": "vfx/archer-target-mark",
+      "frames": 1,
+      "additive": true,
+      "width": 366,
+      "height": 360,
+      "refHeight": 360,
+      "visible": [
+        0.248
+      ]
+    },
+    {
+      "name": "vfx/archer-spiral-arrow",
+      "frames": 1,
+      "additive": false,
+      "width": 65,
+      "height": 362,
+      "refHeight": 362,
+      "visible": [
+        0.436
+      ]
+    },
+    {
+      "name": "vfx/mage-vortex",
+      "frames": 1,
+      "additive": true,
+      "width": 366,
+      "height": 360,
+      "refHeight": 360,
+      "visible": [
+        0.591
+      ]
+    },
+    {
+      "name": "vfx/guard-pillow-dome",
+      "frames": 1,
+      "additive": true,
+      "width": 508,
+      "height": 360,
+      "refHeight": 360,
+      "visible": [
+        0.764
+      ]
+    },
+    {
+      "name": "vfx/cleric-halo",
+      "frames": 1,
+      "additive": true,
+      "width": 883,
+      "height": 360,
+      "refHeight": 360,
+      "visible": [
+        0.359
+      ]
+    },
+    {
+      "name": "vfx/bard-spirit-bear",
+      "frames": 2,
+      "additive": true,
+      "width": 388,
+      "height": 360,
+      "refHeight": 360,
+      "visible": [
+        0.663,
+        0.564
+      ]
+    },
+    {
+      "name": "move/carrot-knight-ult",
+      "frames": 12,
+      "additive": false,
+      "width": 314,
+      "height": 291,
+      "refHeight": 162,
+      "anchorX": 0.5429936305732485,
+      "anchorY": 0.9209621993127147,
+      "visible": [
+        0.224,
+        0.234,
+        0.273,
+        0.346,
+        0.335,
+        0.345,
+        0.271,
+        0.396,
+        0.54,
+        0.358,
+        0.26,
+        0.231
+      ]
+    },
+    {
+      "name": "move/leaf-archer-ult",
+      "frames": 12,
+      "additive": false,
+      "width": 303,
+      "height": 321,
+      "refHeight": 220,
+      "anchorX": 0.5206489675516224,
+      "anchorY": 0.9331476323119777,
+      "visible": [
+        0.419,
+        0.507,
+        0.428,
+        0.516,
+        0.422,
+        0.377,
+        0.391,
+        0.376,
+        0.618,
+        0.439,
+        0.29,
+        0.317
+      ]
+    },
+    {
+      "name": "move/bubble-mage-ult",
+      "frames": 12,
+      "additive": false,
+      "width": 292,
+      "height": 320,
+      "refHeight": 208,
+      "anchorX": 0.5222602739726028,
+      "anchorY": 0.94375,
+      "visible": [
+        0.317,
+        0.37,
+        0.434,
+        0.387,
+        0.396,
+        0.329,
+        0.448,
+        0.353,
+        0.518,
+        0.369,
+        0.251,
+        0.286
+      ]
+    },
+    {
+      "name": "move/pillow-guard-ult",
+      "frames": 12,
+      "additive": false,
+      "width": 300,
+      "height": 294,
+      "refHeight": 189,
+      "anchorX": 0.515,
+      "anchorY": 0.95578231292517,
+      "visible": [
+        0.375,
+        0.346,
+        0.309,
+        0.403,
+        0.376,
+        0.371,
+        0.363,
+        0.468,
+        0.599,
+        0.356,
+        0.367,
+        0.39
+      ]
+    },
+    {
+      "name": "move/mochi-cleric-ult",
+      "frames": 12,
+      "additive": false,
+      "width": 286,
+      "height": 310,
+      "refHeight": 220,
+      "anchorX": 0.5557377049180328,
+      "anchorY": 0.9758308157099698,
+      "visible": [
+        0.247,
+        0.329,
+        0.386,
+        0.372,
+        0.433,
+        0.351,
+        0.267,
+        0.359,
+        0.602,
+        0.297,
+        0.266,
+        0.28
+      ]
+    },
+    {
+      "name": "move/bell-bard-ult",
+      "frames": 12,
+      "additive": false,
+      "width": 285,
+      "height": 291,
+      "refHeight": 198,
+      "anchorX": 0.5263157894736842,
+      "anchorY": 0.9621993127147767,
+      "visible": [
+        0.285,
+        0.327,
+        0.402,
+        0.363,
+        0.361,
+        0.559,
+        0.607,
+        0.589,
+        0.573,
+        0.255,
+        0.206,
+        0.317
+      ]
+    },
+    {
+      "name": "move/root-druid-ult",
+      "frames": 12,
+      "additive": false,
+      "width": 297,
+      "height": 316,
+      "refHeight": 214,
+      "anchorX": 0.531986531986532,
+      "anchorY": 0.8987341772151899,
+      "visible": [
+        0.251,
+        0.381,
+        0.307,
+        0.359,
+        0.341,
+        0.354,
+        0.336,
+        0.379,
+        0.497,
+        0.4,
+        0.263,
+        0.285
+      ]
+    },
+    {
+      "name": "move/carrot-knight-attack",
+      "frames": 6,
+      "additive": false,
+      "width": 257,
+      "height": 234,
+      "refHeight": 220,
+      "anchorX": 0.4717741935483871,
+      "anchorY": 0.9402654867256637,
+      "visible": [
+        0.323,
+        0.439,
+        0.425,
+        0.38,
+        0.314,
+        0.307
+      ]
+    },
+    {
+      "name": "move/leaf-archer-attack",
+      "frames": 6,
+      "additive": false,
+      "width": 285,
+      "height": 254,
+      "refHeight": 220,
+      "anchorX": 0.568241469816273,
+      "anchorY": 0.9705882352941176,
+      "visible": [
+        0.383,
+        0.396,
+        0.444,
+        0.395,
+        0.384,
+        0.368
+      ]
+    },
+    {
+      "name": "move/bubble-mage-attack",
+      "frames": 6,
+      "additive": false,
+      "width": 302,
+      "height": 247,
+      "refHeight": 220,
+      "anchorX": 0.5139442231075697,
+      "anchorY": 1,
+      "visible": [
+        0.406,
+        0.512,
+        0.503,
+        0.451,
+        0.387,
+        0.411
+      ]
+    },
+    {
+      "name": "move/pillow-guard-attack",
+      "frames": 6,
+      "additive": false,
+      "width": 327,
+      "height": 289,
+      "refHeight": 220,
+      "anchorX": 0.4958100558659218,
+      "anchorY": 0.9018987341772152,
+      "visible": [
+        0.394,
+        0.496,
+        0.468,
+        0.465,
+        0.398,
+        0.414
+      ]
+    },
+    {
+      "name": "move/mochi-cleric-attack",
+      "frames": 6,
+      "additive": false,
+      "width": 263,
+      "height": 231,
+      "refHeight": 220,
+      "anchorX": 0.537525354969574,
+      "anchorY": 1,
+      "visible": [
+        0.4,
+        0.357,
+        0.455,
+        0.485,
+        0.39,
+        0.322
+      ]
+    },
+    {
+      "name": "move/bell-bard-attack",
+      "frames": 6,
+      "additive": false,
+      "width": 282,
+      "height": 271,
+      "refHeight": 220,
+      "anchorX": 0.4798994974874372,
+      "anchorY": 0.9268929503916449,
+      "visible": [
+        0.335,
+        0.4,
+        0.507,
+        0.37,
+        0.327,
+        0.336
+      ]
+    },
+    {
+      "name": "move/root-druid-attack",
+      "frames": 6,
+      "additive": false,
+      "width": 241,
+      "height": 236,
+      "refHeight": 220,
+      "anchorX": 0.5262008733624454,
+      "anchorY": 0.9309576837416481,
+      "visible": [
+        0.381,
+        0.417,
+        0.599,
+        0.403,
+        0.336,
+        0.29
+      ]
+    },
+    {
+      "name": "vfx/druid-ground-burst",
+      "frames": 4,
+      "additive": false,
+      "width": 478,
+      "height": 331,
+      "refHeight": 330,
+      "visible": [
+        0.483,
+        0.563,
+        0.607,
+        0.534
+      ]
+    },
+    {
+      "name": "vfx/druid-vine-emerge",
+      "frames": 4,
+      "additive": false,
+      "width": 224,
+      "height": 362,
+      "refHeight": 360,
+      "visible": [
+        0.133,
+        0.315,
+        0.36,
+        0.319
+      ]
+    },
+    {
+      "name": "vfx/druid-vine-coil",
+      "frames": 3,
+      "additive": false,
+      "width": 390,
+      "height": 382,
+      "refHeight": 360,
+      "visible": [
+        0.466,
+        0.412,
+        0.349
+      ]
+    },
+    {
+      "name": "vfx/druid-root-erupt",
+      "frames": 4,
+      "additive": false,
+      "width": 428,
+      "height": 473,
+      "refHeight": 360,
+      "visible": [
+        0.24,
+        0.334,
+        0.406,
+        0.479
+      ]
+    }
+  ],
+  "warnings": [],
+  "totalFrames": 149
+}

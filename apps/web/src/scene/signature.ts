@@ -118,7 +118,8 @@ export function targetMark(api: SceneApi, target: ActorView, color: number, hold
     .timeline({ onComplete: done(g) })
     .to(g, { alpha: 1, duration: 0.1 })
     .to(g.scale, { x: 1, y: 0.42, duration: 0.25, ease: 'back.out(2)' }, 0)
-    .to(g, { rotation: Math.PI, duration: hold, ease: 'none' }, 0)
+    // Spin the round artwork inside the projected holder so the mark stays flat on the ground.
+    .to(g.children[0]!, { rotation: Math.PI, duration: hold, ease: 'none' }, 0)
     .to(g, { alpha: 0, duration: 0.2 }, hold - 0.1);
 }
 
@@ -144,7 +145,7 @@ export function spiralArrow(api: SceneApi, to: Point, color: number, landAt: num
     d.addChild(spiral, shaft);
     return d;
   });
-  c.blendMode = 'add';
+  if (!hasSheet('vfx/archer-spiral-arrow')) c.blendMode = 'add';
   c.position.set(to.x, to.y - 520);
   c.zIndex = 30_000;
   c.alpha = 0;
