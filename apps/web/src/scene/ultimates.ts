@@ -36,7 +36,9 @@ const ULT_MOVE_SECONDS: Record<HeroClass, number> = {
   'bell-bard': 1.7,
   'root-druid': 2.8,
 };
-const ULT_MOVE_HOLDS = { 8: 2, 11: 1 } as const;
+const ULT_MOVE_HOLDS: Readonly<Record<number, number>> = { 8: 2, 11: 1 };
+/** Taro plays only its caster frames (see MOVE_FRAMES in actor.ts): arms up (frame 6) holds while the vines squeeze */
+const ULT_MOVE_HOLDS_BY_CLASS: Partial<Record<HeroClass, Readonly<Record<number, number>>>> = { 'root-druid': { 6: 5, 11: 1 } };
 
 /** How long the field stays dimmed while a combo plays. */
 const COMBO_DIM = 1.8;
@@ -46,7 +48,7 @@ export function playUltimate(api: SceneApi, ev: UltimateEvent): ImpactTimes {
   if (!caster) return new Map();
   const targets = ev.targets.map((id) => api.actor(id)).filter((a): a is ActorView => !!a && !a.gone);
   api.dim(COMBO_DIM);
-  const painted = caster.playMove(`move/${ev.heroClass}-ult`, ULT_MOVE_SECONDS[ev.heroClass], ULT_MOVE_HOLDS);
+  const painted = caster.playMove(`move/${ev.heroClass}-ult`, ULT_MOVE_SECONDS[ev.heroClass], ULT_MOVE_HOLDS_BY_CLASS[ev.heroClass] ?? ULT_MOVE_HOLDS);
   switch (ev.heroClass) {
     case 'carrot-knight':
       return carrotCrescent(api, caster, ev, targets, painted);

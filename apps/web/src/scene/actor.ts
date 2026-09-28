@@ -30,6 +30,18 @@ interface PoseFrame {
   readonly scale: number;
 }
 
+/**
+ * Frames of a painted move sheet to play, for sheets that paint the far-away part of a skill on the caster itself
+ * (Taro's roots bursting at its own feet, the archer's rain landing around her): those frames are skipped, the
+ * caster just does its moves, and the drawn effect happens on the foes. Sheets not listed play every frame.
+ */
+const MOVE_FRAMES: Readonly<Record<string, readonly number[]>> = {
+  'move/root-druid-attack': [0, 1, 5],
+  'move/root-druid-ult': [0, 1, 2, 6, 10, 11],
+  'move/leaf-archer-ult': [0, 1, 2, 3, 4, 5, 6, 9, 10, 11],
+  'move/bubble-mage-ult': [0, 1, 2, 3, 4, 5, 6, 7, 10, 11],
+};
+
 /** size of painted move frames relative to the idle puff */
 const MOVE_SCALE = 1.35;
 /** zIndex lift while a move plays, so the caster draws over big targets */
@@ -200,9 +212,12 @@ export class ActorView {
     const meta = sheetMeta(sheet);
     // painted moves are the star of the shot: drawn a bit larger than the idle puff so the art reads
     const scale = (this.height / meta.refHeight) * MOVE_SCALE;
-    const list = frames(sheet).map((texture) => ({ texture, scale }));
+    const all = frames(sheet);
+    const pick = (MOVE_FRAMES[sheet] ?? all.map((_, i) => i)).filter((i) => i < all.length);
+    // holds are keyed by the sheet's own frame numbers, so they still apply when frames are skipped
+    const list = pick.map((i) => ({ texture: all[i]!, scale }));
     if (!list.length) return false;
-    const weights = list.map((_, i) => 1 + (holds[i] ?? 0));
+    const weights = pick.map((i) => 1 + (holds[i] ?? 0));
     const unit = seconds / weights.reduce((a, b) => a + b, 0);
     this.move = { frames: list, index: 0, anchor: { x: meta.anchorX ?? 0.5, y: meta.anchorY ?? 1 } };
     this.override = null;

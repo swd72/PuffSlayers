@@ -827,6 +827,11 @@ staff catching breath, leaves falling, 12 patting the sprout on the head with a 
 | `bell-bard-attack.png` | `1 lifting the bell, 2 ringing it with a pink sound ring smear, 3 IMPACT a burst of music notes, 4 swing back, 5 notes floating, 6 ready stance` |
 | `root-druid-attack.png` | `1 lifting the root staff, 2 tapping it down with a green crack spark, 3 dirt puffing up, 4 a small root sprouting at the feet, 5 leaves falling, 6 ready stance` |
 
+### 14.4b กฎสำคัญสำหรับอาชีพระยะไกล (Taro, Usagi, Kinako)
+> **ในแผ่นท่า วาดเฉพาะ "ต้นทาง" ของเอฟเฟกต์ที่ตัวละคร** (ไม้เท้าเรืองแสง, รอยแตกเริ่มจากเท้า, ธนูปล่อยลูก, เป่าฟอง) — **ห้ามวาดผลที่ปลายทาง** (รากปะทุ, ฝนธนูตก, ฟองระเบิด) ไว้รอบตัวละคร เพราะในเกมศัตรูอยู่ไกล ผลปลายทางเกมวาดเองที่ตัวศัตรู
+> แผ่นชุดแรกที่วาดผลปลายทางไว้ที่ตัว เกมข้ามเฟรมพวกนั้น (`MOVE_FRAMES` ใน `scene/actor.ts`): Taro ตีปกติใช้เฟรม 1,2,6 · Taro อัลติใช้ 1,2,3,7,11,12 · Usagi อัลติข้ามเฟรม 8–9 · Kinako อัลติข้ามเฟรม 9–10 (นับจาก 1) — ถ้าวาดใหม่ตามกฎนี้แล้วลบรายการออกได้
+> เติมท้าย prompt: `the effect only starts at the character (glowing staff, a crack starting at its feet); do not draw the impact, roots, rain or explosions around the character — they happen far away at the enemy`
+
 ### 14.5 วิธีตรวจภาพก่อนใส่เกม (เช็กลิสต์)
 - [ ] ตาราง **ช่องเท่ากันเป๊ะ** (4×3 หรือ 3×2) ไม่มีเส้นตาราง ไม่มีตัวเลข
 - [ ] ตัวละครขนาดเท่ากันทุกช่อง เท้าอยู่ตำแหน่งเดิม (ยกเว้นเฟรมกระโดด)

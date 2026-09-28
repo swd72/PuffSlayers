@@ -59,20 +59,27 @@ export function groundCrack(api: SceneApi, from: Point, to: Point, seconds: numb
     .to(g, { alpha: 0, duration: 0.6 }, seconds + 0.6);
 }
 
-/** A root bursting up out of the ground at a point. */
+/**
+ * A root bursting up out of the ground at a point. It depth-sorts with the units (just in front of whoever stands
+ * at `y`), so a puff standing nearer the camera still draws over it instead of wearing it on its head.
+ */
 export function rootSpike(api: SceneApi, x: number, y: number, size: number): void {
   const s = sheet('vfx/druid-root-spike', 'vfx/boss-summon');
-  playFx(api.fx, s.sheet, x, y + 6, { size, frameTime: 0.06, zIndex: y + 20, tint: s.tint, swell: 1 });
+  playFx(api.field, s.sheet, x, y + 6, { size, frameTime: 0.06, zIndex: y + 2, tint: s.tint, swell: 1 });
   sparks(api.fx, x, y - size * 0.3, 0xc8f08a, 5, 60);
 }
 
-/** Basic attack: tap the staff, a thin crack runs to the foe and a small root jabs up under it. */
+/**
+ * Basic attack: tap the staff, a crack and a dirt mound race underground from Taro to the foe, and a root jabs
+ * up under the foe (sized to it). Farther foes take a little longer to reach.
+ */
 export function druidAttack(api: SceneApi, druid: ActorView, target: ActorView): number {
-  const travel = 0.2;
   const from = { x: druid.root.x, y: druid.root.y };
   const to = { x: target.root.x, y: target.root.y };
+  const travel = Math.min(0.34, Math.max(0.18, Math.hypot(to.x - from.x, to.y - from.y) / 650));
   groundCrack(api, from, to, travel, 3);
-  at(travel, [target], () => rootSpike(api, target.root.x, target.root.y, 46));
+  burrow(api.ground, from, to, travel);
+  at(travel, [target], () => rootSpike(api, target.root.x, target.root.y, Math.max(46, target.height * 0.75)));
   return travel + 0.04;
 }
 
