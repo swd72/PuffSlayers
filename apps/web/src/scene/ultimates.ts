@@ -47,8 +47,6 @@ export function playUltimate(api: SceneApi, ev: UltimateEvent): ImpactTimes {
   const targets = ev.targets.map((id) => api.actor(id)).filter((a): a is ActorView => !!a && !a.gone);
   api.dim(COMBO_DIM);
   const painted = caster.playMove(`move/${ev.heroClass}-ult`, ULT_MOVE_SECONDS[ev.heroClass], ULT_MOVE_HOLDS);
-  // with a painted move sheet the impact is already in the art: keep the zoom blur light so it stays readable
-  if (painted) api = softBlur(api);
   switch (ev.heroClass) {
     case 'carrot-knight':
       return carrotCrescent(api, caster, ev, targets, painted);
@@ -67,24 +65,6 @@ export function playUltimate(api: SceneApi, ev: UltimateEvent): ImpactTimes {
   }
 }
 
-/** The same scene api, with zoom bursts at a fraction of their strength. */
-function softBlur(api: SceneApi): SceneApi {
-  const f = api.filters;
-  const zoomBurst = (x: number, y: number, strength = 0.22): void => f.zoomBurst(x, y, strength * PAINTED_BLUR);
-  // everything else goes straight to the real filters (they keep their own state)
-  const filters = new Proxy(f, {
-    get: (target, key) => {
-      if (key === 'zoomBurst') return zoomBurst;
-      const v: unknown = Reflect.get(target, key);
-      return typeof v === 'function' ? v.bind(target) : v;
-    },
-  });
-  return { ...api, filters };
-}
-
-/** zoom-blur strength kept while a painted move sheet plays */
-const PAINTED_BLUR = 0.25;
-
 /**
  * Three dash-slashes through the pack (afterimages, crescent arcs), then a spinning leap
  * and a flaming crescent slam that sends a fire wave rolling on.
@@ -101,7 +81,9 @@ function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, tar
   knight.pose('sig', 0, 0.12);
   playFx(api.ground, 'vfx/knight-leap-dust', ev.from.x, ev.from.y + 6, { size: 70, frameTime: 0.2 });
   // signature: spirit carrot-blades rise in a ring around the pack while the knight slashes, and fall with the slam
-  at(0.3, [], () => bladeRing(api, ev.at, color, slam - 0.3));
+  // they hang above the tallest foe in the pack (a giant included) before they fall
+  const tallest = Math.max(80, ...targets.map((t) => t.height * t.root.scale.y));
+  at(0.3, [], () => bladeRing(api, ev.at, color, slam - 0.3, tallest + 70));
 
   slashes.forEach((when, i) => {
     const stop = stops[i]!;
@@ -149,7 +131,6 @@ function carrotCrescent(api: SceneApi, knight: ActorView, ev: UltimateEvent, tar
     glowFlare(api.fx, t.x, t.y, 0xff8a2a, painted ? 100 : 170, 0.5);
     if (!painted) lightPillar(api.fx, ev.at.x, ev.at.y, 0xffc680, 90, 420, 0.6);
     api.filters.shockwave(t.x, t.y, 26);
-    api.filters.zoomBurst(t.x, t.y, 0.18);
     screenFlash(api.overlay, api.screen, 0xffc680, painted ? 0.15 : 0.4);
     api.sound('ult-carrot-knight');
     api.shake(14);
@@ -217,7 +198,6 @@ function leafStorm(api: SceneApi, archer: ActorView, ev: UltimateEvent, targets:
   rain.forEach((when, wave) => {
     at(when, [archer], () => {
       api.shake(wave === rain.length - 1 ? 10 : 5);
-      if (wave === rain.length - 1) api.filters.zoomBurst(ev.at.x, ev.at.y - 20, 0.14);
     });
     targets.forEach((t, i) => {
       const w = when + (i % 3) * 0.03;
@@ -366,7 +346,6 @@ function ultimateRoll(api: SceneApi, guard: ActorView, ev: UltimateEvent, target
     glowFlare(api.fx, b.x, b.y - 20, color, 200, 0.5, 0.5);
     sparks(api.fx, b.x, b.y - 10, 0xfff0c0, 20, 180);
     api.filters.shockwave(b.x, b.y, 30);
-    api.filters.zoomBurst(b.x, b.y - 20, 0.14);
     api.sound('ult-pillow-guard');
     // signature: the slam raises a pillow-fort dome over every ally, and the pack turns to glare at the guard
     pillowFort(api, api.team(guard.unit.side), color, 1.1);

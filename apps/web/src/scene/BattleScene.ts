@@ -54,7 +54,7 @@ export class BattleScene {
   private readonly root = new Container();
   /** shaken and filtered as a whole */
   readonly world = new Container();
-  /** the cinematic camera: zooms in on a caster for the ultimate intro (shake stays on `world`) */
+  /** camera container around the world (kept at 1x: the zoom-in was dropped, the fight moves too fast for it) */
   private readonly camera = new Container();
   private readonly bg = new Sprite(Texture.from(BACKGROUND));
   private screen: ScreenRect = { x: 0, y: 0, width: VIEW.width, height: VIEW.height };
@@ -157,31 +157,6 @@ export class BattleScene {
     this.cameraHome(0);
   }
 
-  /** Camera push-in on a point (world coords), pulling it toward the middle of the screen. */
-  private cameraFocus(x: number, y: number, zoom: number, seconds: number): void {
-    const cam = this.camera;
-    gsap.killTweensOf(cam);
-    gsap.killTweensOf(cam.pivot);
-    gsap.killTweensOf(cam.position);
-    gsap.killTweensOf(cam.scale);
-    // keep the point where it is at zoom 1, then drift it 55% of the way to the centre
-    const cx = VIEW.width / 2;
-    const cy = VIEW.height / 2;
-    // never let the zoomed view slide past the backdrop's edges (the bare canvas would show)
-    const sc = this.screen;
-    const bgL = this.bg.x;
-    const bgT = this.bg.y;
-    const bgR = bgL + this.bg.width;
-    const bgB = bgT + this.bg.height;
-    const clamp = (v: number, lo: number, hi: number) => (lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v)));
-    const px = clamp(x + (cx - x) * 0.55, sc.x + sc.width - zoom * (bgR - x), sc.x + zoom * (x - bgL));
-    const py = clamp(y + (cy - y) * 0.55, sc.y + sc.height - zoom * (bgB - y), sc.y + zoom * (y - bgT));
-    const ease = 'power3.out';
-    gsap.to(cam.pivot, { x, y, duration: seconds, ease });
-    gsap.to(cam.position, { x: px, y: py, duration: seconds, ease });
-    gsap.to(cam.scale, { x: zoom, y: zoom, duration: seconds, ease });
-  }
-
   /** Camera back to the whole field (0 = snap). */
   private cameraHome(seconds: number): void {
     const cam = this.camera;
@@ -242,8 +217,7 @@ export class BattleScene {
       case 'ultimateCast':
         return this.animateCast(ev.source, ev.heroClass, ev.castMs);
       case 'ultimate': {
-        // 3 the skill fires: the camera snaps back out with a little overshoot
-        this.cameraHome(0.28);
+        // 3 the skill fires
         const hits = playUltimate(api, ev);
         for (const [id, times] of hits) this.impactAt.set(id, times);
         // 4 afterwards: embers linger on the ground, and the caster stays empowered for a while
@@ -413,8 +387,7 @@ export class BattleScene {
     this.api.dim(seconds - 0.1);
     src.pose('pose', 4, seconds);
     const color = CLASS_COLOR[heroClass];
-    // 1 the camera pushes in on the caster while power gathers into it
-    this.cameraFocus(src.root.x, src.root.y - src.height * 0.5, 1.3, seconds * 0.45);
+    // 1 power gathers into the caster (no camera zoom: the fight moves too fast for it)
     glowFlare(this.fx, src.root.x, src.root.y - src.height * 0.4, color, src.height * 2.4, seconds);
     ring(this.ground, color, src.root.x, src.root.y, src.height * 0.7);
     risingMotes(this.fx, src.root.x, src.root.y, color, 12);
@@ -433,7 +406,6 @@ export class BattleScene {
     const c = boss.chest();
     glowFlare(this.fx, c.x, c.y, 0xff4a2a, boss.height * 2, 0.9);
     this.filters.shockwave(c.x, c.y, 34);
-    this.filters.zoomBurst(c.x, c.y, 0.2);
     this.api.dim(0.8);
     shake(this.world, 18);
   }

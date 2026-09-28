@@ -462,7 +462,6 @@ export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, ta
     glowFlare(api.fx, center.x, center.y - 30, MOSS, 170, 0.5);
     sparks(api.fx, center.x, center.y - 40, SHOOT, 16, 130);
     api.filters.shockwave(center.x, center.y, 30);
-    api.filters.zoomBurst(center.x, center.y - 30, 0.16);
     screenFlash(api.overlay, api.screen, 0xe6ffc0, 0.3);
     api.sound('ult-root-druid');
     api.shake(15);

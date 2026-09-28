@@ -43,40 +43,48 @@ function blade(color: number, length: number): Graphics {
 }
 
 /**
- * Spirit carrot-blades burst out of the ground in a ring around `center`, hover pointing down, and all plunge
- * in at `plungeAt` (seconds from now).
+ * Spirit carrot-blades appear high in the sky in a ring over `center` — above the tallest foe — hang there point
+ * down, then all fall at once and stab into the ground at `plungeAt` (seconds from now). `dropHeight` is how
+ * far above the ground they hang.
  */
-export function bladeRing(api: SceneApi, center: Point, color: number, plungeAt: number, count = 6, radius = 105): void {
+export function bladeRing(api: SceneApi, center: Point, color: number, plungeAt: number, dropHeight = 220, count = 6, radius = 105): void {
+  const BLADE = 96;
   for (let i = 0; i < count; i++) {
     const a = (i / count) * Math.PI * 2 + 0.3;
     const x = center.x + Math.cos(a) * radius;
     const y = center.y + Math.sin(a) * radius * 0.5;
-    // a soft additive glow behind each blade so it reads over the dimmed field
     // painted blade (hilt at the bottom, tip up) once it exists; the drawn one is flipped the same way
     const b = paintedOr('vfx/knight-spirit-blade', 110, () => {
       const c = new Container();
+      // a soft additive glow behind each blade so it reads over the dimmed field
       const glow = new Graphics().ellipse(0, -46, 22, 56).fill({ color, alpha: 0.3 });
       glow.blendMode = 'add';
-      c.addChild(glow, blade(color, 96));
+      c.addChild(glow, blade(color, BLADE));
       return c;
     });
-    b.position.set(x, y + 20);
-    b.zIndex = y + 1;
-    b.scale.set(0.2, 0);
-    b.rotation = Math.PI; // points down, hilt up — like a sword about to fall
-    api.field.addChild(b);
-    const rise = i * 0.04;
+    b.rotation = Math.PI; // hilt up, tip down — a sword about to fall
+    // the hilt hangs above the foes (but stays on screen); the tip ends up stuck a little into the ground
+    const hang = Math.max(api.screen.y + 16, y - dropHeight - BLADE);
+    const landed = y - BLADE * 0.82;
+    b.position.set(x, hang);
+    b.zIndex = 30_000; // over every unit while it is up in the air
+    b.scale.set(0.3);
+    b.alpha = 0;
+    api.fx.addChild(b);
+    const appear = i * 0.05;
+    const fall = 0.16;
     gsap
       .timeline({ onComplete: done(b) })
-      // out of the ground…
-      .to(b.scale, { x: 1, y: 1, duration: 0.18, ease: 'back.out(2)' }, rise)
-      .to(b, { y: y - 70, duration: 0.3, ease: 'power2.out' }, rise)
-      // …a slow hover with a glint…
-      .to(b, { y: y - 78, duration: Math.max(0.1, plungeAt - rise - 0.45), ease: 'sine.inOut' })
-      // …and down all at once
-      .to(b, { y: y + 6, duration: 0.1, ease: 'power4.in' }, plungeAt - 0.1)
-      .to(b, { alpha: 0, duration: 0.35 }, plungeAt + 0.25);
-    at(plungeAt, [], () => sparks(api.fx, x, y, 0xffc680, 5, 90));
+      // blinks into the sky…
+      .to(b, { alpha: 1, duration: 0.12 }, appear)
+      .to(b.scale, { x: 1, y: 1, duration: 0.22, ease: 'back.out(2)' }, appear)
+      // …bobs while the knight is slashing…
+      .to(b, { y: hang - 10, duration: Math.max(0.1, plungeAt - fall - appear - 0.22), ease: 'sine.inOut' }, appear + 0.22)
+      // …and every blade drops at once
+      .to(b, { y: landed, duration: fall, ease: 'power4.in' }, plungeAt - fall)
+      .call(() => void (b.zIndex = y + 1), undefined, plungeAt)
+      .to(b, { alpha: 0, duration: 0.35 }, plungeAt + 0.3);
+    at(plungeAt, [], () => sparks(api.fx, x, y, 0xffc680, 6, 100));
   }
 }
 
