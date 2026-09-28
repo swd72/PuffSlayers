@@ -32,7 +32,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 - ต่อสู้เรียลไทม์เดินอิสระหลายทิศ, มุมมองแผนที่ top-down, ตัวละคร ~72px (ยักษ์ 250, บอส 170), เต็มจอทุกสัดส่วน (fitView)
 - Roster 7 ตัว ลงสนาม 6 (`ROSTER`/`TEAM_SIZE` ใน assets.ts, สลับ "ลงทีม/พัก" ในกระเป๋า, `save.team`): Pudding (hamham pillow-guard), Tofu (shibu carrot-knight), Usagi (bunbun leaf-archer), Kinako (shibu bubble-mage), Momo (bunbun mochi-cleric), Mimi (hamham bell-bard), **Taro (molemo root-druid)** — เผ่าตุ่นใหม่ (ไม่ติด Sticky), สถานะ **Rooted** (`rootMs`: เดินไม่ได้แต่ยังตีได้), อัลติ Root Awakening (`scene/rootDruid.ts`)
 - Taro มีภาพจริงแล้ว (stand-in จะใช้เฉพาะพัฟที่ยังไม่มีแผ่น:  (`STAND_IN` ใน assets.ts = แผ่น hamham-bell-bard ย้อมน้ำตาล + CSS `.stand-in`, เอฟเฟกต์ยืม boss-summon/boss-vine-slam ย้อมเขียว ผ่าน `vfxOr()`)) · pipeline รองรับ job `optional` (ข้ามถ้ายังไม่มีไฟล์)
-- **ปิกนิกก่อนลุย** (GDD 6.12, `sim/pantry.ts`, `meta/picnic.ts`, `ui/lunchbox.ts`): วัตถุดิบ 16 ชนิดดรอปจากด่าน, แต่ละพัฟเลือกมื้อก่อนลุย → กินอัตโนมัติก่อนทุกด่าน (รวมตอนเริ่มใหม่หลังแพ้), บางอย่างเป็นพิษกับบางเผ่าตามสัตว์จริง (ปวดท้อง = บัฟติดลบ), สมุดอาหาร `save.foodLog` · ไอคอนวัตถุดิบยังไม่มีภาพ (แสดงเป็นวงกลมตัวอักษร) → prompt ใน art-prompts ข้อ 4.10
+- **ปิกนิกก่อนลุย** (GDD 6.12, `sim/pantry.ts`, `meta/picnic.ts`, `ui/lunchbox.ts`): วัตถุดิบ 16 ชนิดดรอปจากด่าน, แต่ละพัฟเลือกมื้อก่อนลุย → กินอัตโนมัติก่อนทุกด่าน (รวมตอนเริ่มใหม่หลังแพ้), บางอย่างเป็นพิษกับบางเผ่าตามสัตว์จริง (ปวดท้อง = บัฟติดลบ), สมุดอาหาร `save.foodLog` · ไอคอนครบ 16 ชิ้นจาก `assets/generated/v2/items/ingredients-sixteen-icons.png` (prompt ข้อ 4.10) → `item/ingredient-0..15` พื้นหลังโปร่งใส 128×128 ใช้ในกล่องอาหารและของดรอปแล้ว
 - **อาวุธ 7 Tier ออกแบบใหม่:** ทำทีละ Tier ที่ `assets/generated/v2/items/weapons/<class>-t<1-7>.png` (ทับแผ่นแถวเดิมทีละ Tier) · ห้ามกลับไปใช้ template แถวเดียว "same shape family"
 - ท่าไม้ตาย: cast 900ms (เกมหยุด + cut-in แบนเนอร์) แล้วค่อยปล่อย; cooldown ต่างกันต่ออาชีพ; สกิล "ออกจากตัว→วิ่ง→กระแทก" (ลูกศร, เมล็ดพ่นจากปาก, ฟองลอย, โมจิโค้ง, กระโดดฟัน, กลิ้ง)
 - Hamham Cheek Cannon, สถานะ bubble/sticky/sleepy, บอสทุก 5 ด่าน (เรียกสมุน, วงเตือนฟาดพื้น), **Giant Boss ทุก 10 ด่าน** (×2.4 HP, ENRAGED <50%)
@@ -54,7 +54,7 @@ launch config: `.claude/launch.json` ชื่อ `web` · **dev server ที�
 
 ## ยังไม่ได้ทำ
 - ต่อเซิร์ฟเวอร์ (Arena ของผู้เล่นจริง, Raid pool ร่วม), Co-op Burrow Run, ร้าน Honor, ทำอาหารจากปลา
-- ภาพที่ยังขาด: ไอคอนวัตถุดิบ · มีแล้ว: มือเปล่าครบ 7 อาชีพ (Pose + Signature), พัฟใหม่ 6 ตัว, ไอคอนปลา `item/fish-0..11`, ต้นไม้ในสวน `garden/<seed>` 4 ขั้น · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal/Raid, เสียงจริงที่ยังขาด
+- ภาพที่มีแล้ว: ไอคอนวัตถุดิบ `item/ingredient-0..15`, มือเปล่าครบ 7 อาชีพ (Pose + Signature), พัฟใหม่ 6 ตัว, ไอคอนปลา `item/fish-0..11`, ต้นไม้ในสวน `garden/<seed>` 4 ขั้น · อื่นๆ: ชุดเซ็ต, Weapon Perk, บาลานซ์ Petal/Raid, เสียงจริงที่ยังขาด
 
 ## วิธีตรวจงานในเบราว์เซอร์ (สำคัญ)
 - Browser pane มักถูกซ่อน → rAF แทบไม่เดิน. ใช้ dev handle `window.__puff = { app, game, gsap, sfx }` แล้ว pump เฟรมเอง:

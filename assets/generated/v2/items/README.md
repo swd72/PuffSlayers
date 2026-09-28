@@ -21,6 +21,19 @@
 - [Trinket 8 แบบ](trinkets-eight-icons.png)
 - [Booster 6 แบบ](boosters-six-icons.png)
 
+## วัตถุดิบปิกนิก
+
+[แผ่นวัตถุดิบ 16 ชิ้น](ingredients-sixteen-icons.png) ตาม prompt ข้อ 4.10 เป็นกริด 4×4 เรียงซ้าย→ขวา บน→ล่างตรงกับ `INGREDIENT_IDS` ใน `packages/sim/src/pantry.ts`:
+
+| แถว | ชิ้นที่ 1 | ชิ้นที่ 2 | ชิ้นที่ 3 | ชิ้นที่ 4 |
+|---|---|---|---|---|
+| 1 | โคลเวอร์หวาน | แดนดิไลออน | แครอทแดดอุ่น | มันหวานเผา |
+| 2 | เมล็ดทานตะวัน | ลูกโอ๊กกรอบ | อัลมอนด์ขม | องุ่นป่า |
+| 3 | มะนาวหยดน้ำผึ้ง | อะโวคาโดป่า | หัวหอมป่า | ฝักโกโก้ |
+| 4 | เห็ดเรืองแสง | รวงผึ้ง | ไส้เดือนดุ๊กดิ๊ก | เบอร์รี่แสงจันทร์ |
+
+`npm run sprites` ตัดและลบพื้นหลังเทาของแผ่นต้นฉบับเป็น PNG โปร่งใส 128×128 ที่ `apps/web/public/sprites/v2/item/ingredient-0.png` ถึง `ingredient-15.png` พร้อม manifest `item/ingredient` 16 เฟรม เกมใช้ไอคอนในช่องมื้อก่อนลุย ตู้วัตถุดิบ และของดรอปหลังผ่านด่านผ่าน `ingredientIcon()`.
+
 ## ของแรร์
 
 - [Carrot Excalibur](relic-carrot-excalibur.png)
