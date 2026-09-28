@@ -644,7 +644,7 @@ no text, not photorealistic, not 3D
 | `druid-vine-coil.png` [3 เฟรม] | เถาพันรอบตัว (วนลูป) | `a spiral of thick leafy vines wrapped three times around an invisible upright round body, empty in the middle, seen from a 55 degree angle, front loops in front and back loops behind, three frames of the coils squeezing tighter with leaves shaking` |
 | `druid-root-erupt.png` [4 เฟรม] | รากยักษ์ (แทนของเดิม) | `a colossal ancient tree root erupting from a fissure in the earth, gnarled bark with moss and vines, boulders and turf blasting outward: four frames — fissure splitting with dust, root bursting up, towering at full height with leaves swirling, crashing down in a ring of dust` |
 
-> ทำแล้ววางไฟล์ตามชื่อ → `npm run sprites` · เกมใช้ `druid-ground-burst` ทันทีที่มี (ตอนนี้ใช้ฝุ่นของ Carrot Knight แทน) ส่วนเถา/ขดเถาตอนนี้วาดด้วยเส้นในเกม ถ้าชอบภาพที่ได้จะเปลี่ยนไปใช้ภาพแทน
+> ทำแล้ววางไฟล์ตามชื่อ → `npm run sprites` · เกมใช้ `druid-ground-burst` ทันทีที่มี (ตอนนี้ใช้ฝุ่นของ Carrot Knight แทน) เถาและขดเถาใช้ภาพจริงแล้ว (`paintedVine`/`paintedCoil` ใน `scene/rootDruid.ts`)
 
 ### 13.2 ฉากสนามต่อสู้ (1 ภาพ/บท + ฉากบอส)
 
@@ -888,7 +888,7 @@ photorealistic, not 3D, isolated on a plain flat light gray #E8E8E8 background, 
 6. **ออร่าหลังอัลติ** — ตัวละครยังเรืองพลังอยู่สักพัก ตีปกติแรงขึ้นทางภาพ
 
 ### 14.8 ท่าประจำตัวรายอาชีพ (โค้ดวาดสดแล้ว — `scene/signature.ts`)
-ตอนนี้แต่ละอาชีพมี "ช็อตเด่น" ของตัวเองที่วาดด้วยโค้ด (ไม่ต้องรอภาพ) ถ้าจะวาดภาพจริงมาแทน ให้ใช้ `[PAINTED VFX]` + `[SCENE STYLE]` ตามรายการนี้:
+ตอนนี้แต่ละอาชีพมี "ช็อตเด่น" ของตัวเองที่วาดด้วยโค้ด (ไม่ต้องรอภาพ) ถ้าจะวาดภาพจริงมาแทน ให้ใช้ `[PAINTED VFX]` + `[SCENE STYLE]` ตามรายการนี้: (**prompt พร้อมใช้ + ชื่อไฟล์อยู่ข้อ 14.9**)
 
 | อาชีพ | ช็อตเด่น | จังหวะ |
 |---|---|---|
@@ -901,3 +901,28 @@ photorealistic, not 3D, isolated on a plain flat light gray #E8E8E8 background, 
 | Root Druid (Taro) | (เดิม) มุดดิน → หลุม → เถาพุ่งพันยก → รัด 3 ครั้ง → รากยักษ์กระชาก | ~2.8 วิ |
 
 ระหว่างร่าย (cut-in) มีลูกเล่นเฉพาะอาชีพด้วย: ประกายวิ่งตามดาบ / ใบไม้หมุนรอบตัว / ฟองลอยขึ้นแตก / หกเหลี่ยมโล่ / รัศมี / คลื่นเสียง+โน้ต
+
+### 14.9 ภาพสำหรับท่าประจำตัว (แทนของที่โค้ดวาด) — วางที่ `assets/generated/vfx2/`
+> ทำแล้ววางไฟล์ตามชื่อ → `npm run sprites` · เกมเปลี่ยนไปใช้ภาพเองทันทีที่มีไฟล์ (ไม่มีไฟล์ = ใช้ของที่โค้ดวาดเหมือนเดิม)
+> **ของทึบ** ต่อท้าย `[PAINTED VFX]` (พื้นเทา #E8E8E8) · **แสง/พลัง** ต่อท้าย `[VFX STYLE]` + บรรทัดสไตล์ภาพยนตร์ด้านล่าง (พื้นดำล้วน — pipeline ทำเป็นแสง additive)
+> หลายเฟรม ต่อท้าย `[SHEET]` ด้วย
+
+บรรทัดสไตล์ภาพยนตร์ (ใส่ทุกภาพ):
+```
+Japanese anime environment background, hand-painted cinematic scenery, premium JRPG game background,
+semi-realistic painterly anime style, subtle clean linework, soft cel-painted shapes, visible brush texture,
+warm golden-hour lighting, peach-orange highlights, cool teal-blue shadows, anime movie background quality,
+illustrated, not photorealistic, not 3D
+```
+
+| ไฟล์ | อาชีพ | พื้น | Prompt |
+|---|---|---|---|
+| `knight-spirit-blade.png` [1] | Tofu | เทา `[PAINTED VFX]` | `a single spirit sword shaped like a giant glowing carrot, standing perfectly vertical with the hilt at the bottom and the sharp tip pointing straight up, orange crystal blade with a white-hot edge and faint fire wisps, green carrot-leaf crossguard, small leather-wrapped grip, soft orange glow around it, centered, full sword visible` |
+| `archer-target-mark.png` [1] | Usagi | ดำ `[VFX STYLE]` | `a glowing green hunter's targeting sigil seen perfectly from directly above, flat circle: an outer ring of leaf shapes, an inner thin ring, four arrowhead ticks pointing inward, a small diamond in the center, bright mint-green lines with white core, perfectly round, centered` |
+| `archer-spiral-arrow.png` [1] | Usagi | ดำ `[VFX STYLE]` | `one huge magic arrow of light diving straight down, the arrowhead at the bottom of the image pointing down, long glowing shaft above it with leaf fletching at the top, a tight spiral of green wind wrapped around the shaft, trailing sparkles and small leaves, vertical composition, centered` |
+| `mage-vortex.png` [1] | Kinako | ดำ `[VFX STYLE]` | `a swirling galaxy whirlpool seen perfectly from directly above, four curved spiral arms of blue-violet starlight and small bubbles, a dark indigo eye in the center, tiny stars along the arms, a thin bright outer ring, perfectly round, centered` |
+| `guard-pillow-dome.png` [1] | Pudding | ดำ `[VFX STYLE]` | `a soft translucent protective dome shaped like a puffy quilted pillow, seen from the front at a slight high angle, cream and warm yellow light, stitched quilt seams forming a honeycomb pattern, soft glowing edge, a few floating feathers, bottom edge flat and open, centered` |
+| `cleric-halo.png` [1] | Momo | ดำ `[VFX STYLE]` | `a golden angel halo seen from a slightly high angle so it looks like a flat oval, double ring of warm gold light with tiny sakura petals and sparkles around it, bright white core, centered, wide composition` |
+| `bard-spirit-bear.png` [2] | Mimi | ดำ `[VFX STYLE]` + `[SHEET]` | `a giant friendly translucent spirit bear made of warm pink-gold light, round ears, gentle smiling face, sitting upright, seen from the front: two frames — frame 1 arms spread wide open ready to hug, frame 2 arms wrapped closed in a big warm hug with little hearts floating up, same size and position in both frames` |
+
+> Taro: เถา (`druid-vine-emerge`) และขดเถา (`druid-vine-coil`) ใช้ภาพจริงในเกมแล้ว

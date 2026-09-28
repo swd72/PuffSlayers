@@ -1,4 +1,4 @@
-import { ARENA_CENTER, BOSS_SPOT, TUNING } from './data';
+import { ARENA_CENTER, BOSS_SPOT, TUNING, ULTIMATE_COMBO_MS } from './data';
 import { TickContext, isAlive } from './combat';
 import { separate } from './movement';
 import { createRng, type Rng } from './rng';
@@ -74,6 +74,8 @@ export function step(state: BattleState): StepResult {
     else ctx.resolveHazard(h);
   }
 
+  const ultLockMs = Math.max(0, (state.ultLockMs ?? 0) - TUNING.tickMs);
+  ctx.ultLocked = ultLockMs > 0;
   const pending = new Set(state.pendingUltimates);
   for (const unit of ctx.units) {
     if (isAlive(unit)) ctx.act(unit, state.config.autoUltimate, pending);
@@ -83,7 +85,7 @@ export function step(state: BattleState): StepResult {
   const casting = ctx.castStarted ? { heroId: ctx.castStarted, remainingMs: TUNING.castMs } : null;
   // everyone stands still for the cut-in (no running in place while frozen)
   if (casting) for (const u of ctx.units) u.moving = false;
-  return resolveWave({ ...state, casting, hazards: [...hazards, ...ctx.newHazards] }, ctx, [...pending]);
+  return resolveWave({ ...state, casting, ultLockMs, hazards: [...hazards, ...ctx.newHazards] }, ctx, [...pending]);
 }
 
 /** During a cut-in everything holds still; when the timer ends the ultimate lands. */
@@ -96,7 +98,8 @@ function stepCasting(state: BattleState, casting: { heroId: string; remainingMs:
   const hero = ctx.units.find((u) => u.id === casting.heroId);
   const target = hero && isAlive(hero) ? ctx.pickTarget(hero) : undefined;
   if (hero && target) ctx.ultimate(hero, target);
-  return resolveWave({ ...state, casting: null }, ctx, [...state.pendingUltimates]);
+  const ultLockMs = hero?.heroClass && target ? ULTIMATE_COMBO_MS[hero.heroClass] : 0;
+  return resolveWave({ ...state, casting: null, ultLockMs }, ctx, [...state.pendingUltimates]);
 }
 
 function resolveWave(state: BattleState, ctx: TickContext, pending: string[]): StepResult {

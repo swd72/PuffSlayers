@@ -169,6 +169,8 @@ export interface BattleState {
   readonly pendingUltimates: readonly string[];
   /** an ultimate cut-in in progress; the battle is frozen while it plays */
   readonly casting: { readonly heroId: string; readonly remainingMs: number } | null;
+  /** an ultimate combo is still playing: no new cast may start until this runs out */
+  readonly ultLockMs?: number;
   readonly hazards: readonly Hazard[];
   /** counter for ids of units summoned mid-wave */
   readonly serial: number;

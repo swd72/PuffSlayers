@@ -3,12 +3,12 @@
 import gsap from 'gsap';
 import { Container, Graphics } from 'pixi.js';
 import type { Point } from '@puff/sim';
-import { CLASS_COLOR, hasSheet, vfxOr } from '../assets';
+import { CLASS_COLOR, frames, hasSheet, vfxOr } from '../assets';
 import type { ActorView } from './actor';
 import { glowFlare, magicCircle, screenFlash, sparks, speedLines } from './anime';
 import type { SceneApi } from './api';
 import { addHit, alive, at, hop, type ImpactTimes } from './choreo';
-import { decal, playFx } from './fx';
+import { decal, fxSprite, playFx } from './fx';
 
 const MOSS = CLASS_COLOR['root-druid'];
 /** stand-in effects are the boss's magenta vines: pull them toward green */
@@ -180,6 +180,68 @@ function growingVine(layer: Container, path: VinePath, grow: number, thickness: 
   };
 }
 
+const VINE_SHEET = 'vfx/druid-vine-emerge';
+const COIL_SHEET = 'vfx/druid-vine-coil';
+
+/**
+ * The painted vine (art-prompts §13): a shoot bursts out of the hole, grows tall and arcs over toward the foe
+ * (frames 0–3), holds, then sinks back into the ground.
+ */
+function paintedVine(layer: Container, hole: Point, target: ActorView, grow: number, height: number, zIndex: number): { retract: (seconds: number) => void } {
+  const tex = frames(VINE_SHEET);
+  // the painted vine bends to the right: mirror it when the foe is on the left of the hole
+  const v = fxSprite(VINE_SHEET, { size: height, flip: target.root.x < hole.x });
+  v.position.set(hole.x, hole.y + 4);
+  v.zIndex = zIndex;
+  layer.addChild(v);
+  const sx = v.scale.x;
+  const sy = v.scale.y;
+  v.scale.set(sx * 0.6, sy * 0.2);
+  const tl = gsap.timeline();
+  tl.to(v.scale, { x: sx, y: sy, duration: grow, ease: 'back.out(1.6)' }, 0);
+  tex.forEach((t, i) => tl.call(() => void (!v.destroyed && (v.texture = t)), undefined, (grow * i) / (tex.length - 1)));
+  return {
+    retract: (seconds) => {
+      if (v.destroyed) return;
+      gsap
+        .timeline({ onComplete: () => void (!v.destroyed && v.destroy()) })
+        .call(() => void (!v.destroyed && (v.texture = tex[1]!)))
+        .to(v.scale, { y: 0, x: sx * 0.5, duration: seconds, ease: 'power2.in' })
+        .to(v, { alpha: 0, duration: seconds * 0.4 }, seconds * 0.6);
+    },
+  };
+}
+
+/** The painted coil: loose rings wrap the body, then tighten a frame on every squeeze. */
+function paintedCoil(target: ActorView): { squeeze: () => void; burst: () => void } {
+  const tex = frames(COIL_SHEET);
+  const h = target.height;
+  const c = fxSprite(COIL_SHEET, { size: h * (target.unit.isBoss ? 0.9 : 1.25), anchor: 'center' });
+  c.position.set(0, -h * 0.42);
+  target.body.addChild(c);
+  const sx = c.scale.x;
+  const sy = c.scale.y;
+  c.scale.set(sx * 0.3, sy * 0.3);
+  c.alpha = 0;
+  gsap.timeline().to(c, { alpha: 1, duration: 0.12 }).to(c.scale, { x: sx, y: sy, duration: 0.3, ease: 'back.out(2)' }, 0);
+  let frame = 0;
+  return {
+    squeeze: () => {
+      if (c.destroyed) return;
+      frame = Math.min(tex.length - 1, frame + 1);
+      c.texture = tex[frame]!;
+      gsap.fromTo(c.scale, { x: sx * 0.86, y: sy * 0.92 }, { x: sx, y: sy, duration: 0.18, ease: 'back.out(3)' });
+    },
+    burst: () => {
+      if (c.destroyed) return;
+      gsap
+        .timeline({ onComplete: () => void (!c.destroyed && c.destroy()) })
+        .to(c.scale, { x: sx * 1.4, y: sy * 1.4, duration: 0.3, ease: 'power2.out' })
+        .to(c, { alpha: 0, duration: 0.3 }, 0.05);
+    },
+  };
+}
+
 /** A dark hole torn in the ground, with a rim of dirt (lasts until the vines sink back). */
 function groundHole(layer: Container, at: Point, size: number, hold: number): void {
   const g = new Graphics()
@@ -336,16 +398,21 @@ export function rootAwakening(api: SceneApi, druid: ActorView, center: Point, ta
         else playFx(api.ground, 'vfx/knight-leap-dust', hole.x, hole.y + 4, { size: big ? 70 : 46, frameTime: 0.07, tint: 0xb89a70 });
         sparks(api.fx, hole.x, hole.y - 8, 0xc8a67a, 5, 80);
         // vines in front of the foe draw over it, the ones behind stay behind it
-        vines.push(growingVine(api.field, emergePath(hole, t, -side), 0.32 + k * 0.03, big ? 16 : 10, hole.y + (hole.y > t.root.y ? 2 : -2)));
+        const z = hole.y + (hole.y > t.root.y ? 2 : -2);
+        vines.push(
+          hasSheet(VINE_SHEET)
+            ? paintedVine(api.field, hole, t, 0.32 + k * 0.03, t.height * (big ? 1.1 : 1.5), z)
+            : growingVine(api.field, emergePath(hole, t, -side), 0.32 + k * 0.03, big ? 16 : 10, z),
+        );
       }
     });
   }
 
   // 3 — coil and hoist
-  const coils = new Map<string, ReturnType<typeof coilAround>>();
+  const coils = new Map<string, { squeeze: () => void; burst: () => void }>();
   for (const t of bound) {
     at(arrive + 0.28, [t], () => {
-      coils.set(t.unit.id, coilAround(t, 0.35));
+      coils.set(t.unit.id, hasSheet(COIL_SHEET) ? paintedCoil(t) : coilAround(t, 0.35));
       rootSpike(api, t.root.x, t.root.y + 4, t.unit.isBoss ? 80 : 40);
       if (!t.unit.isBoss) gsap.to(t.body, { y: -22, duration: 0.35, ease: 'power2.out' });
     });

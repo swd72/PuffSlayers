@@ -95,6 +95,20 @@ export const ULTIMATE_COOLDOWN_MS: Record<HeroClass, number> = {
   'root-druid': 26000,
 };
 
+/**
+ * How long each ultimate's combo plays on screen (plus a short breath). No other ultimate may start in that
+ * window, so combos never pile on top of each other; the cast just waits its turn.
+ */
+export const ULTIMATE_COMBO_MS: Record<HeroClass, number> = {
+  'pillow-guard': 2000,
+  'carrot-knight': 1900,
+  'leaf-archer': 2200,
+  'bubble-mage': 2000,
+  'mochi-cleric': 1900,
+  'bell-bard': 2000,
+  'root-druid': 3000,
+};
+
 export const ULTIMATE_DAMAGE: Record<HeroClass, number> = {
   'pillow-guard': 3.5,
   'carrot-knight': 6.2,

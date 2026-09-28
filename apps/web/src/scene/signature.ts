@@ -6,13 +6,25 @@ import gsap from 'gsap';
 import { Container, Graphics, Text } from 'pixi.js';
 import type { HeroClass, Point } from '@puff/sim';
 import type { ActorView } from './actor';
+import { frames, hasSheet } from '../assets';
 import { glowFlare, lightPillar, sparks } from './anime';
 import type { SceneApi } from './api';
 import { alive, at } from './choreo';
+import { fxSprite } from './fx';
 
 const done = (g: Container) => () => {
   if (!g.destroyed) g.destroy({ children: true });
 };
+
+/**
+ * The painted version of a set-piece (art-prompts §14.9) if its sheet exists, else the drawn one. Either way it
+ * comes wrapped in a container, so the choreography can scale and fade it without touching the sprite's own scale.
+ */
+function paintedOr(sheet: string, size: number, drawn: () => Container, opts: { anchor?: 'center'; byWidth?: boolean } = {}): Container {
+  const holder = new Container();
+  holder.addChild(hasSheet(sheet) ? fxSprite(sheet, { size, ...opts }) : drawn());
+  return holder;
+}
 
 // ---------- Carrot Knight: a circle of spirit blades ----------
 
@@ -40,10 +52,14 @@ export function bladeRing(api: SceneApi, center: Point, color: number, plungeAt:
     const x = center.x + Math.cos(a) * radius;
     const y = center.y + Math.sin(a) * radius * 0.5;
     // a soft additive glow behind each blade so it reads over the dimmed field
-    const b = new Container();
-    const glow = new Graphics().ellipse(0, -46, 22, 56).fill({ color, alpha: 0.3 });
-    glow.blendMode = 'add';
-    b.addChild(glow, blade(color, 96));
+    // painted blade (hilt at the bottom, tip up) once it exists; the drawn one is flipped the same way
+    const b = paintedOr('vfx/knight-spirit-blade', 110, () => {
+      const c = new Container();
+      const glow = new Graphics().ellipse(0, -46, 22, 56).fill({ color, alpha: 0.3 });
+      glow.blendMode = 'add';
+      c.addChild(glow, blade(color, 96));
+      return c;
+    });
     b.position.set(x, y + 20);
     b.zIndex = y + 1;
     b.scale.set(0.2, 0);
@@ -68,14 +84,22 @@ export function bladeRing(api: SceneApi, center: Point, color: number, plungeAt:
 
 /** A spinning green reticle under a foe (it's marked for the rain). */
 export function targetMark(api: SceneApi, target: ActorView, color: number, hold: number): void {
-  const g = new Graphics();
   const r = target.height * 0.55;
-  g.circle(0, 0, r).stroke({ color, width: 4, alpha: 1 });
-  g.circle(0, 0, r * 0.62).stroke({ color: 0xffffff, width: 1.5, alpha: 0.7 });
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2;
-    g.moveTo(Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.8).lineTo(Math.cos(a) * r * 1.2, Math.sin(a) * r * 1.2).stroke({ color, width: 3 });
-  }
+  const g = paintedOr(
+    'vfx/archer-target-mark',
+    r * 2.5,
+    () => {
+      const d = new Graphics();
+      d.circle(0, 0, r).stroke({ color, width: 4, alpha: 1 });
+      d.circle(0, 0, r * 0.62).stroke({ color: 0xffffff, width: 1.5, alpha: 0.7 });
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2;
+        d.moveTo(Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.8).lineTo(Math.cos(a) * r * 1.2, Math.sin(a) * r * 1.2).stroke({ color, width: 3 });
+      }
+      return d;
+    },
+    { anchor: 'center', byWidth: true },
+  );
   g.scale.set(1.6, 0.6);
   g.alpha = 0;
   g.blendMode = 'add';
@@ -92,24 +116,27 @@ export function targetMark(api: SceneApi, target: ActorView, color: number, hold
 
 /** One huge arrow wrapped in a wind spiral dives out of the sky onto a point; `landAt` seconds from now. */
 export function spiralArrow(api: SceneApi, to: Point, color: number, landAt: number): void {
-  const c = new Container();
-  const shaft = new Graphics()
-    .poly([0, 0, 10, -40, 4, -40, 4, -150, -4, -150, -4, -40, -10, -40])
-    .fill({ color: 0xffffff, alpha: 0.95 })
-    .poly([0, -150, 14, -175, 0, -165, -14, -175])
-    .fill({ color });
-  const spiral = new Graphics();
-  for (let i = 0; i <= 40; i++) {
-    const t = i / 40;
-    const y = -t * 170;
-    const x = Math.sin(t * Math.PI * 6) * (8 + t * 16);
-    if (i === 0) spiral.moveTo(x, y);
-    else spiral.lineTo(x, y);
-  }
-  spiral.stroke({ color, width: 4, alpha: 0.8 });
-  c.addChild(spiral, shaft);
+  // tip at the origin, shaft up behind it: it points down as it dives
+  const c = paintedOr('vfx/archer-spiral-arrow', 200, () => {
+    const d = new Container();
+    const shaft = new Graphics()
+      .poly([0, 0, 10, -40, 4, -40, 4, -150, -4, -150, -4, -40, -10, -40])
+      .fill({ color: 0xffffff, alpha: 0.95 })
+      .poly([0, -150, 14, -175, 0, -165, -14, -175])
+      .fill({ color });
+    const spiral = new Graphics();
+    for (let i = 0; i <= 40; i++) {
+      const t = i / 40;
+      const y = -t * 170;
+      const x = Math.sin(t * Math.PI * 6) * (8 + t * 16);
+      if (i === 0) spiral.moveTo(x, y);
+      else spiral.lineTo(x, y);
+    }
+    spiral.stroke({ color, width: 4, alpha: 0.8 });
+    d.addChild(spiral, shaft);
+    return d;
+  });
   c.blendMode = 'add';
-  c.rotation = Math.PI; // tip down
   c.position.set(to.x, to.y - 520);
   c.zIndex = 30_000;
   c.alpha = 0;
@@ -130,7 +157,8 @@ export function spiralArrow(api: SceneApi, to: Point, color: number, landAt: num
 
 /** A galaxy-like whirlpool spinning on the ground; foes around it get dragged toward its eye. */
 export function vortex(api: SceneApi, center: Point, targets: readonly ActorView[], color: number, seconds: number): void {
-  const g = new Graphics();
+  const drawn = new Graphics();
+  const g = drawn;
   for (let arm = 0; arm < 4; arm++) {
     for (let i = 0; i <= 30; i++) {
       const t = i / 30;
@@ -144,7 +172,9 @@ export function vortex(api: SceneApi, center: Point, targets: readonly ActorView
   g.circle(0, 0, 118).stroke({ color: 0xffffff, width: 2, alpha: 0.5 });
   g.circle(0, 0, 22).fill({ color: 0x1a1450, alpha: 0.8 });
   const holder = new Container();
-  holder.addChild(g);
+  // painted whirlpool (seen straight from above; squashed here to lie on the ground) once it exists
+  const spin: Container = hasSheet('vfx/mage-vortex') ? fxSprite('vfx/mage-vortex', { size: 250, anchor: 'center', byWidth: true }) : drawn;
+  holder.addChild(spin);
   holder.scale.set(0.2, 0.08);
   holder.position.set(center.x, center.y);
   holder.zIndex = -750; // under every unit, but above the combo dim
@@ -153,7 +183,7 @@ export function vortex(api: SceneApi, center: Point, targets: readonly ActorView
   gsap
     .timeline({ onComplete: done(holder) })
     .to(holder.scale, { x: 1, y: 0.42, duration: 0.3, ease: 'back.out(1.6)' })
-    .to(g, { rotation: Math.PI * 4, duration: seconds, ease: 'power1.in' }, 0)
+    .to(spin, { rotation: Math.PI * 4, duration: seconds, ease: 'power1.in' }, 0)
     .to(holder, { alpha: 0, duration: 0.3 }, seconds - 0.2);
   // the pull: bodies slide toward the eye and spring back when the vortex closes
   for (const t of targets) {
@@ -191,9 +221,13 @@ export function starBurst(api: SceneApi, at2: Point, color: number): void {
 export function pillowFort(api: SceneApi, allies: readonly ActorView[], color: number, hold: number): void {
   for (const a of allies) {
     const r = a.height * 0.75;
-    const g = new Graphics().ellipse(0, -r * 0.55, r, r * 0.95).fill({ color, alpha: 0.3 }).stroke({ color: 0xffffff, width: 3, alpha: 0.9 });
-    // honeycomb-ish seams
-    for (let i = -2; i <= 2; i++) g.moveTo(i * r * 0.35, -r * 1.35).lineTo(i * r * 0.45, r * 0.25).stroke({ color, width: 1.5, alpha: 0.35 });
+    const g = paintedOr('vfx/guard-pillow-dome', r * 2.1, () => {
+      const d = new Graphics().ellipse(0, -r * 0.55, r, r * 0.95).fill({ color, alpha: 0.3 }).stroke({ color: 0xffffff, width: 3, alpha: 0.9 });
+      // honeycomb-ish seams
+      for (let i = -2; i <= 2; i++) d.moveTo(i * r * 0.35, -r * 1.35).lineTo(i * r * 0.45, r * 0.25).stroke({ color, width: 1.5, alpha: 0.35 });
+      return d;
+    }, { byWidth: true });
+    g.y = r * 0.35;
     g.blendMode = 'add';
     g.scale.set(0.2);
     a.root.addChild(g);
@@ -226,7 +260,12 @@ export function tauntMarks(api: SceneApi, foes: readonly ActorView[]): void {
 
 /** A golden halo that settles over an ally's head. */
 export function halo(api: SceneApi, ally: ActorView, color: number): void {
-  const g = new Graphics().ellipse(0, 0, ally.height * 0.3, ally.height * 0.09).stroke({ color: 0xfff4c0, width: 3 }).ellipse(0, 0, ally.height * 0.34, ally.height * 0.11).stroke({ color, width: 2, alpha: 0.6 });
+  const g = paintedOr(
+    'vfx/cleric-halo',
+    ally.height * 0.8,
+    () => new Graphics().ellipse(0, 0, ally.height * 0.3, ally.height * 0.09).stroke({ color: 0xfff4c0, width: 3 }).ellipse(0, 0, ally.height * 0.34, ally.height * 0.11).stroke({ color, width: 2, alpha: 0.6 }),
+    { anchor: 'center', byWidth: true },
+  );
   g.blendMode = 'add';
   g.position.set(0, -ally.height * 1.2);
   g.alpha = 0;
@@ -277,7 +316,10 @@ export function spiritBear(api: SceneApi, center: Point, color: number, hugAt: n
   armR.position.set(120, -70);
   armL.rotation = -0.9;
   armR.rotation = 0.9;
-  bear.addChild(body, armL, armR);
+  // painted bear (frame 0 arms open, frame 1 hugging) once it exists
+  const painted = hasSheet('vfx/bard-spirit-bear') ? fxSprite('vfx/bard-spirit-bear', { size: 300 }) : null;
+  if (painted) bear.addChild(painted);
+  else bear.addChild(body, armL, armR);
   bear.blendMode = 'add';
   bear.position.set(center.x, center.y + 40);
   bear.zIndex = center.y - 200; // behind the team
@@ -293,6 +335,9 @@ export function spiritBear(api: SceneApi, center: Point, color: number, hugAt: n
     .to(armR, { x: 40, y: -40, rotation: -0.35, duration: 0.18, ease: 'power3.in' }, hugAt - 0.18)
     .to(bear.scale, { x: 1.08, y: 0.94, duration: 0.12, yoyo: true, repeat: 1 }, hugAt)
     .to(bear, { alpha: 0, duration: 0.45 }, hugAt + 0.4);
+  at(hugAt - 0.1, [], () => {
+    if (painted && !painted.destroyed) painted.texture = frames('vfx/bard-spirit-bear')[1] ?? painted.texture;
+  });
   at(hugAt, [], () => hearts(api, { x: center.x, y: center.y - 60 }, color));
 }
 

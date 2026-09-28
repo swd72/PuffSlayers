@@ -3,6 +3,7 @@ import {
   ARENA,
   TUNING,
   ULTIMATE_COOLDOWN_MS,
+  ULTIMATE_COMBO_MS,
   createBattle,
   createEnemy,
   distance,
@@ -240,8 +241,11 @@ describe('step', () => {
       units: state.units.map((u) => (u.side === 'hero' ? { ...u, hp: Math.round(u.stats.maxHp / 2) } : u)),
     };
     state = withEnergy(withEnergy(state, 'momo', 100), 'mimi', 100);
-    // two ultimates ready at once: they cast one after the other
-    const { events } = runCast(state, CAST_TICKS + 2);
+    // two ultimates ready at once: the second waits until the first combo has finished playing
+    const lockTicks = Math.ceil(Math.max(ULTIMATE_COMBO_MS['mochi-cleric'], ULTIMATE_COMBO_MS['bell-bard']) / TUNING.tickMs);
+    const early = runCast(state, CAST_TICKS + 2);
+    expect(early.events.filter((e) => e.type === 'ultimateCast')).toHaveLength(1);
+    const { events } = runCast(state, CAST_TICKS + lockTicks + 2);
     expect(events.filter((e) => e.type === 'ultimateCast')).toHaveLength(2);
     expect(events.filter((e) => e.type === 'heal').length).toBeGreaterThanOrEqual(4);
     expect(events.filter((e) => e.type === 'buff')).toHaveLength(5);

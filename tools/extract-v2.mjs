@@ -79,6 +79,9 @@ JOBS.push(
   ...Object.entries({ 'druid-root-spike': 4, 'druid-root-bind': 3 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
   // painted (solid) effects on a gray background — art-prompts §13
   ...Object.entries({ 'druid-ground-burst': 4, 'druid-vine-emerge': 4, 'druid-vine-coil': 3, 'druid-root-erupt': 4 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'painted-vfx', optional: true })),
+  // per-class signature set-pieces (art-prompts §14.9): drawn live in the game until these exist
+  { src: 'vfx2/knight-spirit-blade.png', name: 'vfx/knight-spirit-blade', frames: 1, kind: 'painted-vfx', optional: true },
+  ...Object.entries({ 'archer-target-mark': 1, 'archer-spiral-arrow': 1, 'mage-vortex': 1, 'guard-pillow-dome': 1, 'cleric-halo': 1, 'bard-spirit-bear': 2 }).map(([n, frames]) => ({ src: `vfx2/${n}.png`, name: `vfx/${n}`, frames, kind: 'vfx', optional: true })),
 );
 const SKINS = ['pajama-pudding', 'sakura-festival-momo', 'pumpkin-knight-tofu', 'rainbow-ranger-usagi', 'snow-globe-kinako', 'bear-king-mimi'];
 JOBS.push(...SKINS.map((k) => ({ src: `v2/items/skins/${k}-poses.png`, name: `skin/${k}`, frames: 6, kind: 'actor' })));

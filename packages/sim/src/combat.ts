@@ -19,6 +19,8 @@ export class TickContext {
   readonly events: BattleEvent[] = [];
   /** hero whose ultimate cut-in started this tick (one at a time) */
   castStarted: string | null = null;
+  /** another ultimate's combo is still playing */
+  ultLocked = false;
   readonly spawned: WorkUnit[] = [];
   readonly newHazards: Hazard[] = [];
 
@@ -148,7 +150,7 @@ export class TickContext {
       return;
     }
     // Arena rivals always fire their ultimates on their own
-    if (unit.heroClass && unit.energy >= 100 && !this.castStarted && (autoUltimate || unit.side === 'enemy' || pending.has(unit.id))) {
+    if (unit.heroClass && unit.energy >= 100 && !this.castStarted && !this.ultLocked && (autoUltimate || unit.side === 'enemy' || pending.has(unit.id))) {
       pending.delete(unit.id);
       this.startCast(unit, unit.heroClass);
       return;

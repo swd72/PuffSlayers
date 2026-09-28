@@ -10,6 +10,7 @@ export {
   SPECIES_PASSIVE,
   TUNING,
   ULTIMATE_COOLDOWN_MS,
+  ULTIMATE_COMBO_MS,
   ULTIMATE_RADIUS,
   recommendedLevel,
 } from './data';
