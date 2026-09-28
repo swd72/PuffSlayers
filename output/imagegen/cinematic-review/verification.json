@@ -1,0 +1,147 @@
+{
+  "uiRuntimeEnabled": false,
+  "reason": "Current HEAD removes the cut-in banner and emblem swipe.",
+  "sourceAssets": [
+    {
+      "file": "assets/generated/v2/ui/class-emblems.png",
+      "width": 2206,
+      "height": 713
+    },
+    {
+      "file": "assets/generated/v2/ui/cutin-pillow-guard.png",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/generated/v2/ui/cutin-carrot-knight.png",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/generated/v2/ui/cutin-leaf-archer.png",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/generated/v2/ui/cutin-bubble-mage.png",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/generated/v2/ui/cutin-mochi-cleric.png",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/generated/v2/ui/cutin-bell-bard.png",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/generated/v2/ui/cutin-root-druid.png",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "assets/generated/v2/moves/carrot-knight-ult.png",
+      "width": 1448,
+      "height": 1086,
+      "cellSize": 362
+    }
+  ],
+  "moveFrames": [
+    {
+      "frame": 1,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 20513,
+      "transparentPixels": 70802
+    },
+    {
+      "frame": 2,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 21363,
+      "transparentPixels": 69886
+    },
+    {
+      "frame": 3,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 24929,
+      "transparentPixels": 66307
+    },
+    {
+      "frame": 4,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 31627,
+      "transparentPixels": 59563
+    },
+    {
+      "frame": 5,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 30581,
+      "transparentPixels": 60640
+    },
+    {
+      "frame": 6,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 31558,
+      "transparentPixels": 59598
+    },
+    {
+      "frame": 7,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 24770,
+      "transparentPixels": 66456
+    },
+    {
+      "frame": 8,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 36179,
+      "transparentPixels": 54969
+    },
+    {
+      "frame": 9,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 49387,
+      "transparentPixels": 41732
+    },
+    {
+      "frame": 10,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 32704,
+      "transparentPixels": 58471
+    },
+    {
+      "frame": 11,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 23791,
+      "transparentPixels": 67463
+    },
+    {
+      "frame": 12,
+      "width": 314,
+      "height": 291,
+      "visiblePixels": 21134,
+      "transparentPixels": 70178
+    }
+  ],
+  "moveMetadata": {
+    "frames": 12,
+    "width": 314,
+    "height": 291,
+    "refHeight": 162,
+    "additive": false,
+    "anchorX": 0.5429936305732485,
+    "anchorY": 0.9209621993127147
+  }
+}

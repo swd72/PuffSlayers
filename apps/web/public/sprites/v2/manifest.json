@@ -915,5 +915,14 @@
   "height": 128,
   "refHeight": 128,
   "additive": false
+ },
+ "move/carrot-knight-ult": {
+  "frames": 12,
+  "width": 314,
+  "height": 291,
+  "refHeight": 162,
+  "additive": false,
+  "anchorX": 0.5429936305732485,
+  "anchorY": 0.9209621993127147
  }
 }
